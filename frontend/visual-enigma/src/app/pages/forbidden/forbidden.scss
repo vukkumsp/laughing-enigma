@@ -1,0 +1,183 @@
+@use '../../../_variables' as *;
+
+.forbidden-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+  background: transparent;
+  padding: 20px 10px;
+  font-family: $font-default;
+}
+
+.forbidden-box {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 500px;
+  padding: 40px 30px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.forbidden-header {
+  text-align: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 20px;
+
+  .forbidden-code {
+    font-size: 72px;
+    font-weight: 900;
+    color: #e74c3c;
+    margin: 0;
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin: 10px 0 8px 0;
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+  }
+}
+
+.forbidden-content {
+  margin-bottom: 30px;
+
+  .forbidden-message {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .forbidden-reasons {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.8;
+    padding-left: 20px;
+    margin: 0;
+
+    li {
+      margin-bottom: 8px;
+    }
+  }
+}
+
+.forbidden-actions {
+  display: flex;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: inherit;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.btn-primary {
+    background: black;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background-color: #d5dbdb;
+      color: black;
+    }
+
+    &:active:not(:disabled) {
+      background-color: white;
+      color: black;
+    }
+  }
+
+  &.btn-secondary {
+    background-color: #ecf0f1;
+    color: #333;
+
+    &:hover:not(:disabled) {
+      background-color: #d5dbdb;
+      color: black;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 480px) {
+  .forbidden-box {
+    padding: 24px 18px;
+  }
+
+  .forbidden-header {
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+
+    .forbidden-code {
+      font-size: 56px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    p {
+      font-size: 12px;
+    }
+  }
+
+  .forbidden-content {
+    margin-bottom: 20px;
+
+    .forbidden-message {
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    .forbidden-reasons {
+      font-size: 12px;
+      padding-left: 18px;
+
+      li {
+        margin-bottom: 6px;
+      }
+    }
+  }
+
+  .forbidden-actions {
+    gap: 10px;
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 12px;
+    }
+  }
+}

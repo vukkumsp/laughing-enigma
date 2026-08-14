@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,7 @@ export class Login {
   loading = false;
   errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
@@ -44,8 +45,23 @@ export class Login {
     // Simulate API call
     setTimeout(() => {
       this.loading = false;
-      // Handle login logic here
-      console.log('Login attempt with:', this.loginForm.value);
+      
+      // Simulate login success/failure (for demonstration)
+      // In real scenario, this would depend on API response
+      const email = this.loginForm.get('email')?.value;
+      const password = this.loginForm.get('password')?.value;
+      
+      // Hardcoded credentials for demo (replace with actual API call)
+      const isValidLogin = email === 'admin@example.com' && password === 'password';
+      
+      if (isValidLogin) {
+        console.log('Login successful:', this.loginForm.value);
+        this.router.navigate(['/']); // Navigate to home on successful login
+      } else {
+        console.log('Login failed:', this.loginForm.value);
+        this.errorMessage = 'Invalid email or password. Please try again.';
+        this.router.navigate(['/forbidden']); // Navigate to forbidden on failed login
+      }
     }, 2000);
   }
 

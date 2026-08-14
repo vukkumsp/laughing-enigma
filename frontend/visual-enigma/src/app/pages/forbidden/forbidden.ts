@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-forbidden',
@@ -6,4 +7,14 @@ import { Component } from '@angular/core';
   templateUrl: './forbidden.html',
   styleUrl: './forbidden.scss',
 })
-export class Forbidden {}
+export class Forbidden {
+  constructor(private router: Router) {}
+
+  onLoginAgain() {
+    this.router.navigate(['/login']);
+  }
+
+  onGoHome() {
+    this.router.navigate(['/']);
+  }
+}

@@ -167,6 +167,7 @@
 
     &:active:not(:disabled) {
       background-color: white;
+      color: black;
     }
   }
 
@@ -176,6 +177,7 @@
 
     &:hover:not(:disabled) {
       background-color: #d5dbdb;
+      color: black;
     }
   }
 }
@@ -192,13 +194,13 @@
     margin: 0;
 
     a {
-      color: #667eea;
+      color: black;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
 
       &:hover {
-        color: #764ba2;
+        color: grey;
       }
     }
   }

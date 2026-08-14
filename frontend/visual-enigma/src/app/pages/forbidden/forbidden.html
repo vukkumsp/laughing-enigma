@@ -1,1 +1,30 @@
-<p>forbidden works!</p>
+<div class="forbidden-container">
+  <div class="forbidden-box">
+    <div class="forbidden-header">
+      <h1 class="forbidden-code">403</h1>
+      <h2>Access Forbidden</h2>
+      <p>You don't have permission to access this resource.</p>
+    </div>
+
+    <div class="forbidden-content">
+      <p class="forbidden-message">
+        It looks like you're trying to access a page that you don't have permission to view. 
+        This could be because:
+      </p>
+      <ul class="forbidden-reasons">
+        <li>Your account doesn't have the required permissions</li>
+        <li>Your session has expired</li>
+        <li>You need to log in with different credentials</li>
+      </ul>
+    </div>
+
+    <div class="forbidden-actions">
+      <button class="btn btn-primary" (click)="onLoginAgain()">
+        Login Again
+      </button>
+      <button class="btn btn-secondary" (click)="onGoHome()">
+        Go to Home
+      </button>
+    </div>
+  </div>
+</div>
