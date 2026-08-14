@@ -1,0 +1,16 @@
+
+
+
+After deploying to render.com, we need to add its rewrite rule as in 
+SPA routes are not physically located in server and js will redirect from
+index.html
+
+below are the steps:
+
+In your Render service (laughing-enigma), go to the left sidebar under Manage → click Redirects/Rewrites.
+Click Add Rule.
+Set:
+Source: /*
+Destination: /index.html
+Action: Rewrite
+Click Save.
