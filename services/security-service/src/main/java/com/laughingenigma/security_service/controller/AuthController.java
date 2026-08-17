@@ -1,10 +1,11 @@
-package com.laughingenigma.controller;
+package com.laughingenigma.security_service.controller;
 
-import com.laughingenigma.dto.RegisterRequest;
-import com.laughingenigma.service.UserService;
+import com.laughingenigma.security_service.dto.RegisterRequest;
+import com.laughingenigma.security_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,6 +20,7 @@ public class AuthController {
         this.userService = userService;
     }
 
+    @PostMapping("register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequest request){
         this.userService.createUser(request.getUsername(), request.getPassword());
         return ResponseEntity

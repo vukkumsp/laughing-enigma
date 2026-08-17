@@ -1,6 +1,6 @@
-package com.laughingenigma.repository;
+package com.laughingenigma.security_service.repository;
 
-import com.laughingenigma.entity.User;
+import com.laughingenigma.security_service.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

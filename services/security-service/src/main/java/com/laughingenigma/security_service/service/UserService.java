@@ -1,8 +1,8 @@
-package com.laughingenigma.service;
+package com.laughingenigma.security_service.service;
 
 
-import com.laughingenigma.entity.User;
-import com.laughingenigma.repository.UserRepository;
+import com.laughingenigma.security_service.entity.User;
+import com.laughingenigma.security_service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

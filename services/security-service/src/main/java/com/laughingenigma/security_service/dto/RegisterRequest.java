@@ -1,4 +1,4 @@
-package com.laughingenigma.dto;
+package com.laughingenigma.security_service.dto;
 
 public class RegisterRequest {
 

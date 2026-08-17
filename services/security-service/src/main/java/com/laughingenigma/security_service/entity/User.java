@@ -1,4 +1,4 @@
-package com.laughingenigma.entity;
+package com.laughingenigma.security_service.entity;
 
 import jakarta.persistence.*;
 

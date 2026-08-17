@@ -1,0 +1,8 @@
+
+create DB & User in Aiven.
+
+Then connect to new db using quick connect using aiven admin db creds.
+
+Give new user ownership to new db as below.
+
+ALTER DATABASE "security-db" OWNER TO "security-user";
