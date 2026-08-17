@@ -9,11 +9,9 @@ spring:
     gateway.server.webflux:
       routes:
         - id: security-service
-          uri: https://jsonplaceholder.typicode.com
+          uri: http://localhost:8082
           predicates:
             - Path=/auth/**
-          filters:
-            - RewritePath=/auth/?(?<segment>.*), /$\{segment}
 
 #/todos/1
 #http://localhost:8080/auth/todos/1
