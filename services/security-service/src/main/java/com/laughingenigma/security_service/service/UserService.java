@@ -23,4 +23,19 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(password));
         return userRepository.save(user);
     }
+
+    public boolean authenticate(String username, String rawPassword) {
+
+        User user = userRepository.findByUsername(username)
+                .orElse(null);
+
+        if (user == null) {
+            return false;
+        }
+
+        return passwordEncoder.matches(
+                rawPassword,
+                user.getPassword()
+        );
+    }
 }

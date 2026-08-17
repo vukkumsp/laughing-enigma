@@ -15,6 +15,10 @@ spring:
     hibernate:
       ddl-auto: update
 
+jwt:
+  private-key: ${JWT_PRIVATE_KEY}
+  public-key: ${JWT_PUBLIC_KEY}
+
 logging:
   level:
     org.springframework.security: DEBUG
