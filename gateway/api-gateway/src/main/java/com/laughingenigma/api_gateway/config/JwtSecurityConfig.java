@@ -3,8 +3,8 @@ package com.laughingenigma.api_gateway.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
+import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
 import java.security.KeyFactory;
 import java.security.PublicKey;
@@ -18,7 +18,7 @@ public class JwtSecurityConfig {
     private String publicKey;
 
     @Bean
-    public JwtDecoder jwtDecoder() throws Exception {
+    public ReactiveJwtDecoder jwtDecoder() throws Exception {
 
         byte[] keyBytes = Base64.getDecoder().decode(publicKey);
 
@@ -30,7 +30,7 @@ public class JwtSecurityConfig {
 
         PublicKey key = keyFactory.generatePublic(keySpec);
 
-        return NimbusJwtDecoder.withPublicKey((RSAPublicKey) key)
+        return NimbusReactiveJwtDecoder.withPublicKey((RSAPublicKey) key)
                 .build();
     }
 }
