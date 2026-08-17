@@ -14,5 +14,9 @@ spring:
             - Path=/auth/**
           filters:
             - RewritePath=/auth/?(?<segment>.*), /$\{segment}
+
 #/todos/1
 #http://localhost:8080/auth/todos/1
+
+jwt:
+  public-key: ${JWT_PUBLIC_KEY}
