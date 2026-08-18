@@ -1,5 +1,6 @@
 package com.laughingenigma.security_service.service;
 
+import com.laughingenigma.security_service.entity.Role;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,12 @@ public class JwtService {
         this.clock = clock;
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String username, Role role) {
         Instant now = clock.instant();
 
         return Jwts.builder()
                 .subject(username)
+                .claim("role", role.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(900)))
                 .signWith(privateKey)

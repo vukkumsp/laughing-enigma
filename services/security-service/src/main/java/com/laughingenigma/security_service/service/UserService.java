@@ -1,6 +1,7 @@
 package com.laughingenigma.security_service.service;
 
 
+import com.laughingenigma.security_service.entity.Role;
 import com.laughingenigma.security_service.entity.User;
 import com.laughingenigma.security_service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,21 +22,25 @@ public class UserService {
         User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
+        user.setRole(Role.USER);
         return userRepository.save(user);
     }
 
-    public boolean authenticate(String username, String rawPassword) {
+    public User authenticate(String username, String rawPassword) {
 
         User user = userRepository.findByUsername(username)
                 .orElse(null);
 
         if (user == null) {
-            return false;
+            return null;
         }
 
-        return passwordEncoder.matches(
+        if (!passwordEncoder.matches(
                 rawPassword,
-                user.getPassword()
-        );
+                user.getPassword())
+        ) {
+            return null;
+        }
+        return user;
     }
 }

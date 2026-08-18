@@ -3,6 +3,7 @@ package com.laughingenigma.security_service.controller;
 import com.laughingenigma.security_service.dto.LoginRequest;
 import com.laughingenigma.security_service.dto.LoginResponse;
 import com.laughingenigma.security_service.dto.RegisterRequest;
+import com.laughingenigma.security_service.entity.User;
 import com.laughingenigma.security_service.service.JwtService;
 import com.laughingenigma.security_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +38,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
-        boolean authenticated = this.userService.authenticate(request.getUsername(), request.getPassword());
+        User user = this.userService.authenticate(request.getUsername(), request.getPassword());
 
-        if(!authenticated){
+        if(user == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new LoginResponse("Invalid username or password", null));
 
         }
 
-        String token = this.jwtService.generateToken(request.getUsername());
+        String token = this.jwtService.generateToken(user.getUsername(), user.getRole());
 
         return ResponseEntity
                 .ok(new LoginResponse("Login successful", token));
