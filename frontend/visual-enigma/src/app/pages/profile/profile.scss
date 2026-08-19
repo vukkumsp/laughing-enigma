@@ -128,6 +128,12 @@
 	border-top: 1px solid #ecf0f1;
 }
 
+.profile-actions {
+	display: flex;
+	flex: 0 1 auto;
+	gap: 10px;
+}
+
 .profile-badge {
 	padding: 6px 10px;
 	border-radius: 20px;
@@ -155,6 +161,16 @@
 	&:hover {
 		background: #d5dbdb;
 		color: black;
+	}
+
+	&.btn-secondary {
+		background: #ecf0f1;
+		color: #333;
+
+		&:hover {
+			background: #d5dbdb;
+			color: black;
+		}
 	}
 }
 
@@ -188,8 +204,16 @@
 	}
 
 	.profile-footer {
-		align-items: stretch;
+		align-items: flex-start;
 		flex-direction: column;
+	}
+
+	.profile-actions {
+		width: 100%;
+
+		.btn {
+			flex: 1;
+		}
 	}
 
 	.profile-badge {

@@ -43,7 +43,10 @@
 
 			<footer class="profile-footer">
 				<span class="profile-badge">Account active</span>
-				<button type="button" class="btn btn-primary">Edit Profile</button>
+				<div class="profile-actions">
+					<button type="button" class="btn btn-primary">Edit Profile</button>
+					<button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
+				</div>
 			</footer>
 			}
 		}

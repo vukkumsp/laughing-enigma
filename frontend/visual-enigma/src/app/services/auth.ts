@@ -26,6 +26,10 @@ export class Auth {
         );
     }
 
+    logout(): void {
+        this.clearToken();
+    }
+
     private readonly tokenKey = 'access_token';
 
     storeToken(token: string): void {

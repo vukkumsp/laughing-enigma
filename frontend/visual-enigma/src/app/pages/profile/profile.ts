@@ -1,5 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-profile',
@@ -10,6 +12,8 @@ import { Component, inject, signal } from '@angular/core';
 export class Profile {
 
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(Auth);
+  private readonly router = inject(Router);
   customer = signal<Record<string, string> | null>(null);
   loading = signal(true);
   errorMessage = signal('');
@@ -31,5 +35,10 @@ export class Profile {
         console.error('Error calling customer me endpoint:', error);
       }
     });
+  }
+
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
   }
 }
