@@ -15,22 +15,19 @@
 
       <!-- Email Field -->
       <div class="form-group">
-        <label for="email" class="form-label">Email Address</label>
+        <label for="username" class="form-label">Username</label>
         <input
-          id="email"
-          type="email"
-          formControlName="email"
+          id="username"
+          type="username"
+          formControlName="username"
           class="form-input"
-          [class.input-error]="submitted && email?.invalid"
-          placeholder="Enter your email"
+          [class.input-error]="submitted && username?.invalid"
+          placeholder="Enter your username"
         />
-        @if (submitted && email?.invalid) {
+        @if (submitted && username?.invalid) {
           <div class="error-message">
-            @if (email?.hasError('required')) {
-              <span>Email is required</span>
-            }
-            @if (email?.hasError('email')) {
-              <span>Please enter a valid email</span>
+            @if (username?.hasError('required')) {
+              <span>Username is required</span>
             }
           </div>
         }

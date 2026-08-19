@@ -1,0 +1,24 @@
+<div class="unauthorized-container">
+	<div class="unauthorized-box">
+		<div class="unauthorized-header">
+			<h1 class="unauthorized-code">401</h1>
+			<h2>Unauthorized</h2>
+			<p>We couldn't sign you in with those credentials.</p>
+		</div>
+
+		<div class="unauthorized-content">
+			<p class="unauthorized-message">
+				Your username or password is incorrect. Please check your credentials and try again.
+			</p>
+		</div>
+
+		<div class="unauthorized-actions">
+			<button class="btn btn-primary" (click)="onLoginAgain()">
+				Login Again
+			</button>
+			<button class="btn btn-secondary" (click)="onGoHome()">
+				Go to Home
+			</button>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,149 @@
+@use '../../../_variables' as *;
+
+.unauthorized-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	min-height: 70vh;
+	padding: 20px 10px;
+	font-family: $font-default;
+}
+
+.unauthorized-box {
+	width: 100%;
+	max-width: 500px;
+	padding: 40px 30px;
+	background: white;
+	border-radius: 10px;
+	box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+	animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.unauthorized-header {
+	margin-bottom: 30px;
+	padding-bottom: 20px;
+	text-align: center;
+	border-bottom: 2px solid #ecf0f1;
+
+	.unauthorized-code {
+		margin: 0;
+		color: #e67e22;
+		font-size: 72px;
+		font-weight: 900;
+		letter-spacing: 2px;
+	}
+
+	h2 {
+		margin: 10px 0 8px;
+		color: #333;
+		font-size: 28px;
+		font-weight: 600;
+	}
+
+	p {
+		margin: 0;
+		color: #666;
+		font-size: 14px;
+	}
+}
+
+.unauthorized-content {
+	margin-bottom: 30px;
+
+	.unauthorized-message {
+		margin: 0;
+		color: #555;
+		font-size: 14px;
+		line-height: 1.6;
+	}
+}
+
+.unauthorized-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.btn {
+	padding: 12px 20px;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	transition: all 0.3s ease;
+
+	&.btn-primary {
+		background: black;
+		color: white;
+
+		&:hover {
+			background-color: #d5dbdb;
+			color: black;
+		}
+	}
+
+	&.btn-secondary {
+		background-color: #ecf0f1;
+		color: #333;
+
+		&:hover {
+			background-color: #d5dbdb;
+			color: black;
+		}
+	}
+}
+
+@media (max-width: 480px) {
+	.unauthorized-box {
+		padding: 24px 18px;
+	}
+
+	.unauthorized-header {
+		margin-bottom: 20px;
+		padding-bottom: 16px;
+
+		.unauthorized-code {
+			font-size: 56px;
+		}
+
+		h2 {
+			font-size: 22px;
+		}
+
+		p {
+			font-size: 12px;
+		}
+	}
+
+	.unauthorized-content {
+		margin-bottom: 20px;
+
+		.unauthorized-message {
+			font-size: 13px;
+		}
+	}
+
+	.unauthorized-actions {
+		gap: 10px;
+
+		.btn {
+			padding: 10px 16px;
+			font-size: 12px;
+		}
+	}
+}

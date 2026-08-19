@@ -19,6 +19,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/forbidden/forbidden').then(m => m.Forbidden)
   },
   {
+    path: 'unauthorized',
+    loadComponent: () => import('./pages/unauthorized/unauthorized').then(m => m.Unauthorized)
+  },
+  {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found').then(m => m.NotFound)
   }

@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-login',
@@ -15,16 +16,17 @@ export class Login {
   submitted = false;
   loading = false;
   errorMessage: string | null = null;
+  private readonly auth = inject(Auth);
 
   constructor(private fb: FormBuilder, private router: Router) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  get email() {
-    return this.loginForm.get('email');
+  get username() {
+    return this.loginForm.get('username');
   }
 
   get password() {
@@ -41,28 +43,47 @@ export class Login {
 
     this.loading = true;
     console.log('Login form value:', this.loginForm.value);
+
+    this.auth.login({
+      username: this.loginForm.value.username!,
+      password: this.loginForm.value.password!
+    }).subscribe({
+      next: (response) => {
+        if (response.token) {
+          this.auth.storeToken(response.token);
+          this.router.navigate(['/profile']);
+        } else {
+          this.router.navigate(['/unauthorized']);
+        }
+      },
+      error: (error) => {
+        if (error.status === 401) {
+          this.router.navigate(['/unauthorized']);
+        }
+      }
+    });
     
     // Simulate API call
-    setTimeout(() => {
-      this.loading = false;
+    // setTimeout(() => {
+    //   this.loading = false;
       
-      // Simulate login success/failure (for demonstration)
-      // In real scenario, this would depend on API response
-      const email = this.loginForm.get('email')?.value;
-      const password = this.loginForm.get('password')?.value;
+    //   // Simulate login success/failure (for demonstration)
+    //   // In real scenario, this would depend on API response
+    //   const email = this.loginForm.get('email')?.value;
+    //   const password = this.loginForm.get('password')?.value;
       
-      // Hardcoded credentials for demo (replace with actual API call)
-      const isValidLogin = email === 'admin@example.com' && password === 'password';
+    //   // Hardcoded credentials for demo (replace with actual API call)
+    //   const isValidLogin = email === 'admin@example.com' && password === 'password';
       
-      if (isValidLogin) {
-        console.log('Login successful:', this.loginForm.value);
-        this.router.navigate(['/']); // Navigate to home on successful login
-      } else {
-        console.log('Login failed:', this.loginForm.value);
-        this.errorMessage = 'Invalid email or password. Please try again.';
-        this.router.navigate(['/forbidden']); // Navigate to forbidden on failed login
-      }
-    }, 2000);
+    //   if (isValidLogin) {
+    //     console.log('Login successful:', this.loginForm.value);
+    //     this.router.navigate(['/']); // Navigate to home on successful login
+    //   } else {
+    //     console.log('Login failed:', this.loginForm.value);
+    //     this.errorMessage = 'Invalid email or password. Please try again.';
+    //     this.router.navigate(['/unauthorized']); // Navigate to unauthorized on failed login
+    //   }
+    // }, 2000);
   }
 
   onReset() {
