@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginRequest {
   username: string;
@@ -15,7 +16,7 @@ export interface LoginResponse {
 @Service()
 export class Auth {
 
-    private readonly apiUrl = 'http://localhost:8080';
+    private readonly apiUrl =  environment.apiUrl;
 
     private readonly http = inject(HttpClient);
 
@@ -30,6 +31,10 @@ export class Auth {
         this.clearToken();
     }
 
+    isAuthenticated(): boolean {
+        return this.getToken() !== null;
+    }
+
     private readonly tokenKey = 'access_token';
 
     storeToken(token: string): void {
@@ -40,7 +45,7 @@ export class Auth {
         return localStorage.getItem(this.tokenKey);
     }
 
-    clearToken(): void {
+    private clearToken(): void {
         localStorage.removeItem(this.tokenKey);
     }
 }
