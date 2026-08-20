@@ -6,3 +6,4 @@ Then connect to new db using quick connect using aiven admin db creds.
 Give new user ownership to new db as below.
 
 ALTER DATABASE "security-db" OWNER TO "security-user";
+ALTER DATABASE "event-db" OWNER TO "event-user";
