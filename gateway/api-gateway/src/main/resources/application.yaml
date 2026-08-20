@@ -23,6 +23,11 @@ spring:
           predicates:
             - Path=/events/**
 # http://localhost:8085
+        - id: saga-orchestrator
+          uri: ${SAGA_ORCHESTRATOR_URL}
+          predicates:
+            - Path=/registrations/**
+# http://localhost:8086
 
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
