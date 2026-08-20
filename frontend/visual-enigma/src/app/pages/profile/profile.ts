@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { environment } from '../../../environments/environment.production';
 
 @Component({
   selector: 'app-profile',
@@ -10,6 +11,7 @@ import { Auth } from '../../services/auth';
   styleUrl: './profile.scss',
 })
 export class Profile {
+  private readonly apiUrl =  environment.apiUrl;
 
   private readonly http = inject(HttpClient);
   private readonly auth = inject(Auth);
@@ -23,7 +25,7 @@ export class Profile {
   }
 
   callCustomerMe(){
-    this.http.get<Record<string, string>>('http://localhost:8080/customers/me').subscribe({
+    this.http.get<Record<string, string>>(`${this.apiUrl}/customers/me`).subscribe({
       next: (response) => {
         this.customer.set(response);
         this.loading.set(false);
