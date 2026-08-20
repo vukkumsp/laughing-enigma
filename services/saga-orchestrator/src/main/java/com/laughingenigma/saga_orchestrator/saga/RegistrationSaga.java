@@ -1,4 +1,4 @@
-package com.laughingenigma.saga_orchestrator.service;
+package com.laughingenigma.saga_orchestrator.saga;
 
 import com.laughingenigma.saga_orchestrator.client.CustomerServiceClient;
 import com.laughingenigma.saga_orchestrator.client.EventServiceClient;
@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class RegistrationService {
+public class RegistrationSaga {
 
     private final CustomerServiceClient customerServiceClient;
     private final EventServiceClient eventServiceClient;
 
-    public RegistrationService(CustomerServiceClient customerServiceClient,  EventServiceClient eventServiceClient) {
+    public RegistrationSaga(CustomerServiceClient customerServiceClient, EventServiceClient eventServiceClient) {
         this.customerServiceClient = customerServiceClient;
         this.eventServiceClient = eventServiceClient;
     }
