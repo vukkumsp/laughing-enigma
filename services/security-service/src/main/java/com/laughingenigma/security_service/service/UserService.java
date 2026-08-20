@@ -7,6 +7,8 @@ import com.laughingenigma.security_service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -24,6 +26,10 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.USER);
         return userRepository.save(user);
+    }
+
+    public Optional<User> getUser(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public User authenticate(String username, String rawPassword) {

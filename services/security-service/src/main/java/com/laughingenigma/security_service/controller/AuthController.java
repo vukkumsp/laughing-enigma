@@ -2,6 +2,7 @@ package com.laughingenigma.security_service.controller;
 
 import com.laughingenigma.security_service.dto.LoginRequest;
 import com.laughingenigma.security_service.dto.LoginResponse;
+import com.laughingenigma.security_service.dto.RefreshTokenRequest;
 import com.laughingenigma.security_service.dto.RegisterRequest;
 import com.laughingenigma.security_service.entity.User;
 import com.laughingenigma.security_service.service.JwtService;
@@ -42,14 +43,58 @@ public class AuthController {
 
         if(user == null){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse("Invalid username or password", null));
+                    .body(new LoginResponse("Invalid username or password", null, null));
 
         }
 
-        String token = this.jwtService.generateToken(user.getUsername(), user.getRole());
+        String accessToken = this.jwtService.generateAccessToken(user.getUsername(), user.getRole());
+        String  refreshToken = this.jwtService.generateRefreshToken(user.getUsername());
 
         return ResponseEntity
-                .ok(new LoginResponse("Login successful", token));
+                .ok(new LoginResponse("Login successful", accessToken, refreshToken));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+
+        if (!jwtService.isRefreshTokenValid(refreshToken)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(
+                            "Invalid or expired refresh token",
+                            null,
+                            null
+                    ));
+        }
+
+        String username = jwtService.getUsernameFromToken(refreshToken);
+
+        User user = userService.getUser(username)
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(
+                            "Invalid refresh token",
+                            null,
+                            null
+                    ));
+        }
+
+        String accessToken = jwtService.generateAccessToken(
+                user.getUsername(),
+                user.getRole()
+        );
+
+        return ResponseEntity.ok(
+                new LoginResponse(
+                        "Access token refreshed",
+                        accessToken,
+                        null
+                )
+        );
     }
 
     @GetMapping("/public-key")

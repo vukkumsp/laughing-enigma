@@ -1,6 +1,7 @@
 package com.laughingenigma.customer_service.controller;
 
 import com.laughingenigma.customer_service.dto.MeResponse;
+import com.laughingenigma.customer_service.dto.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,12 @@ import static org.springframework.http.ResponseEntity.*;
 public class Me {
 
     @GetMapping("/me")
-    public ResponseEntity<String> getCustomer(
+    public ResponseEntity<Profile> getCustomer(
             @RequestHeader("X-Authenticated-User") String username) {
 
-        return ResponseEntity.ok(
-                "Customer service reached. User: " + username
-        );
+        Profile profile = new Profile(username, null, null);
+
+        return ResponseEntity
+                .ok(profile);
     }
 }
