@@ -7,3 +7,5 @@ spring:
 
 customer:
   service: ${CUSTOMER_SERVICE_URL}
+event:
+  service: ${EVENT_SERVICE_URL}

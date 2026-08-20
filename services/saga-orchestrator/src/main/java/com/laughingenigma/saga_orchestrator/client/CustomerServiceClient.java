@@ -11,7 +11,6 @@ public class CustomerServiceClient {
     private final RestClient restClient;
 
     public CustomerServiceClient(@Value("${customer.service}") String customerServiceUrl) {
-        System.out.println("Customer Service URL = " + customerServiceUrl);
         this.restClient = RestClient.builder()
                 .baseUrl(customerServiceUrl)
                 .build();

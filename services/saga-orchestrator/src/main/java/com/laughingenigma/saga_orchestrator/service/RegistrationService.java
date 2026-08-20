@@ -1,6 +1,7 @@
 package com.laughingenigma.saga_orchestrator.service;
 
 import com.laughingenigma.saga_orchestrator.client.CustomerServiceClient;
+import com.laughingenigma.saga_orchestrator.client.EventServiceClient;
 import com.laughingenigma.saga_orchestrator.dto.CustomerValidationResponse;
 import com.laughingenigma.saga_orchestrator.dto.RegistrationResponse;
 import org.springframework.stereotype.Service;
@@ -11,9 +12,11 @@ import java.util.UUID;
 public class RegistrationService {
 
     private final CustomerServiceClient customerServiceClient;
+    private final EventServiceClient eventServiceClient;
 
-    public RegistrationService(CustomerServiceClient customerServiceClient) {
+    public RegistrationService(CustomerServiceClient customerServiceClient,  EventServiceClient eventServiceClient) {
         this.customerServiceClient = customerServiceClient;
+        this.eventServiceClient = eventServiceClient;
     }
 
     public RegistrationResponse startRegistration(
@@ -22,6 +25,7 @@ public class RegistrationService {
 
         String registrationId = UUID.randomUUID().toString();
 
+        //Step 1: Validate Customer
         CustomerValidationResponse customer =
                 customerServiceClient.validateCustomer(username);
 
@@ -33,10 +37,29 @@ public class RegistrationService {
             );
         }
 
+        //Step 2: Reserve Seat
+        try {
+            eventServiceClient.reserveSeat(eventId);
+
+            // Simulate a later step failing
+//            throw new RuntimeException("Simulated failure");
+
+        } catch (Exception ex) {
+
+            // Compensation
+            eventServiceClient.releaseSeat(eventId);
+
+            return new RegistrationResponse(
+                    registrationId,
+                    eventId,
+                    "FAILED"
+            );
+        }
+
         return new RegistrationResponse(
                 registrationId,
                 eventId,
-                "VALIDATED_PENDING"
+                "SEAT_RESERVED"
         );
     }
 }

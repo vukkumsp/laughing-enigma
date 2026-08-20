@@ -3,9 +3,7 @@ package com.laughingenigma.event_service.controller;
 import com.laughingenigma.event_service.entity.Event;
 import com.laughingenigma.event_service.service.EventService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -22,5 +20,18 @@ public class EventController {
     @GetMapping
     public ResponseEntity<List<Event>> getEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
+    }
+
+    @PostMapping("/{eventId}/reserve")
+    public ResponseEntity<Event> reserveSeat(@PathVariable Long eventId) {
+        Event event = eventService.reserveSeat(eventId);
+
+        return ResponseEntity.ok(event);
+    }
+
+    @PostMapping("/{eventId}/release")
+    public ResponseEntity<Event> releaseSeat(@PathVariable Long eventId) {
+        Event event = eventService.releaseSeat(eventId);
+        return ResponseEntity.ok(event);
     }
 }
