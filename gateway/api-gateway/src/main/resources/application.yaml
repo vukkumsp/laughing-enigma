@@ -18,6 +18,12 @@ spring:
           predicates:
             - Path=/customers/**
 # http://localhost:8083
+        - id: event-service
+          uri: ${EVENT_SERVICE_URL}
+          predicates:
+            - Path=/events/**
+# http://localhost:8085
+
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
 
