@@ -20,3 +20,6 @@ spring:
 # http://localhost:8083
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
+
+visual:
+  enigma: http://localhost:4200
