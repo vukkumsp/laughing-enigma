@@ -21,7 +21,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of(visualEnigma)
+                List.of(visualEnigma, "http://localhost:4200/")
         );
 
         configuration.setAllowedMethods(
