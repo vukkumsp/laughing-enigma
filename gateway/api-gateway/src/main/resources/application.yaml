@@ -1,5 +1,26 @@
 server:
-  port: 8080
+  port: 9000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  services:
+    customer:
+      url: ${CUSTOMER_SERVICE_URL}
+    security:
+      url: ${SECURITY_SERVICE_URL}
+    event:
+      url: ${EVENT_SERVICE_URL}
+    saga:
+      url: ${SAGA_ORCHESTRATOR_URL}
 
 spring:
   application:
