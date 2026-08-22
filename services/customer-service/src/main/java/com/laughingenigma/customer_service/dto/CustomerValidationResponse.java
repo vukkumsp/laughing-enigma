@@ -1,4 +1,4 @@
-package com.laughingenigma.saga_orchestrator.dto;
+package com.laughingenigma.customer_service.dto;
 
 public record CustomerValidationResponse(
         String registrationId,

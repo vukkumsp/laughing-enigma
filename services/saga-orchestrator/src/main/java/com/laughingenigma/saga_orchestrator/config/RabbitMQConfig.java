@@ -1,0 +1,89 @@
+package com.laughingenigma.saga_orchestrator.config;
+
+import org.springframework.amqp.core.Binding;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class RabbitMQConfig {
+
+    // Incoming responses
+    public static final String SAGA_RESPONSE_EXCHANGE =
+            "saga.response.exchange";
+    public static final String CUSTOMER_VALIDATION_RESPONSE_QUEUE =
+            "customer-validation-response-queue";
+    public static final String CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY =
+            "customer.validation.response";
+    public static final String SEAT_RESERVATION_RESPONSE_QUEUE =
+            "seat-reservation-response-queue";
+    public static final String SEAT_RESERVATION_RESPONSE_ROUTING_KEY =
+            "seat.reservation.response";
+
+    //Outgoing commands
+    public static final String SAGA_COMMAND_EXCHANGE =
+            "saga.command.exchange";
+    public static final String CUSTOMER_VALIDATION_REQUEST_QUEUE =
+            "customer-validation-request-queue";
+    public static final String CUSTOMER_VALIDATION_REQUEST_ROUTING_KEY =
+            "customer.validation.request";
+    public static final String SEAT_RESERVATION_REQUEST_QUEUE =
+            "seat-reservation-request-queue";
+    public static final String SEAT_RESERVATION_REQUEST_ROUTING_KEY =
+            "seat.reservation.request";
+
+
+    @Bean
+    public TopicExchange sagaResponseExchange() {
+        return new TopicExchange(SAGA_RESPONSE_EXCHANGE);
+    }
+    @Bean
+    public Queue customerValidationResponseQueue() {
+        return new Queue(CUSTOMER_VALIDATION_RESPONSE_QUEUE);
+    }
+    @Bean
+    public Queue seatReservationResponseQueue() {
+        return new Queue(SEAT_RESERVATION_RESPONSE_QUEUE);
+    }
+
+    @Bean
+    public Binding customerValidationResponseBinding(
+            Queue customerValidationResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(customerValidationResponseQueue)
+                .to(sagaResponseExchange)
+                .with(CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY);
+    }
+    @Bean
+    public Binding seatReservationResponseBinding(
+            Queue seatReservationResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(seatReservationResponseQueue)
+                .to(sagaResponseExchange)
+                .with(SEAT_RESERVATION_RESPONSE_ROUTING_KEY);
+    }
+
+    /* Common */
+    @Bean
+    public MessageConverter jsonMessageConverter() {
+        return new JacksonJsonMessageConverter();
+    }
+
+    @Bean
+    public RabbitTemplate rabbitTemplate(
+            ConnectionFactory connectionFactory,
+            MessageConverter messageConverter) {
+        RabbitTemplate template =
+                new RabbitTemplate(connectionFactory);
+        template.setMessageConverter(messageConverter);
+        return template;
+    }
+}

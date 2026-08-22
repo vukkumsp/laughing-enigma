@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static org.springframework.http.ResponseEntity.*;
 
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/customers-deprecated")
 public class Me {
 
     @GetMapping("/me")

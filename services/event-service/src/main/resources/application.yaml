@@ -1,5 +1,5 @@
 server:
-  port: 8085
+  port: 9001
 
 spring:
   application:
@@ -12,6 +12,12 @@ spring:
     hikari:
       maximum-pool-size: 3
       minimum-idle: 1
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:/}
   jpa:
     hibernate:
       ddl-auto: update

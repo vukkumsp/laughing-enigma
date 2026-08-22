@@ -1,9 +1,8 @@
 package com.laughingenigma.saga_orchestrator.dto;
 
-public record CustomerValidationResponse(
+public record SeatReservationResponse(
         String registrationId,
         Long eventId,
-        boolean valid,
-        String username
+        boolean success
 ) {
 }
