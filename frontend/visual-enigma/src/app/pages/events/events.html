@@ -1,0 +1,31 @@
+<main class="events-container">
+  <section class="events-content" aria-labelledby="events-title">
+    <header class="events-header">
+      <p class="events-eyebrow">Discover what is next</p>
+      <h1 id="events-title">Upcoming events</h1>
+      <p>Find your next experience and save your seat.</p>
+    </header>
+
+    @if (loading()) {
+      <div class="events-status" role="status">Loading events...</div>
+    } @else if (errorMessage()) {
+      <div class="events-status events-status-error" role="alert">{{ errorMessage() }}</div>
+    } @else if (events().length === 0) {
+      <div class="events-status" role="status">There are no upcoming events right now.</div>
+    } @else {
+      @if (registrationMessage()) {
+        <div class="registration-status" [class.registration-status-error]="registrationError()" role="status">
+          {{ registrationMessage() }}
+        </div>
+      }
+      <div class="events-grid">
+        @for (event of events(); track event.id) {
+          <app-event-card
+            [event]="event"
+            [isRegistering]="registeringEventId() === event.id"
+            (registerEvent)="registerForEvent($event)" />
+        }
+      </div>
+    }
+  </section>
+</main>

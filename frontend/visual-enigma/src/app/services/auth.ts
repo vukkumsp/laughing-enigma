@@ -38,7 +38,24 @@ export class Auth {
     }
 
     isAuthenticated(): boolean {
-        return this.getAccessToken() !== null;
+        const accessToken = this.getAccessToken();
+
+        if (!accessToken) {
+            return false;
+        }
+
+        const tokenParts = accessToken.split('.');
+
+        if (tokenParts.length !== 3) {
+            return false;
+        }
+
+        try {
+            const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            return typeof payload.exp !== 'number' || payload.exp > Math.floor(Date.now() / 1000);
+        } catch {
+            return false;
+        }
     }
 
     refreshAccessToken(): Observable<RefreshResponse> {

@@ -1,0 +1,19 @@
+<article class="event-card">
+  <div class="event-card-topline">
+    <span class="event-date">{{ event().eventDate | date: 'EEE, MMM d, y' }}</span>
+    <span class="event-seats">{{ event().availableSeats }} seats left</span>
+  </div>
+  <h2>{{ event().name }}</h2>
+  <p class="event-description">{{ event().description }}</p>
+  <div class="event-card-footer">
+    <span>{{ event().eventDate | date: 'h:mm a' }}</span>
+    <span class="event-id">Event #{{ event().id }}</span>
+  </div>
+  <button
+    type="button"
+    class="register-button"
+    [disabled]="event().availableSeats === 0 || isRegistering()"
+    (click)="registerEvent.emit(event().id)">
+    {{ event().availableSeats === 0 ? 'Sold out' : isRegistering() ? 'Registering...' : 'Register' }}
+  </button>
+</article>
