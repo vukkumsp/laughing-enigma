@@ -70,47 +70,4 @@ public class RegistrationSaga {
         seatReservationRequestPublisher.publish(seatReservationRequest);
         System.out.println("reserveSeatsForRegistration - "+response.registrationId());
     }
-
-
-
-        /*
-        CustomerValidationResponse customer =
-                customerServiceClient.validateCustomer(username);
-
-        if (!customer.valid()) {
-            return new RegistrationResponse(
-                    registrationId,
-                    eventId,
-                    "FAILED"
-            );
-        }
-        */
-        //Step 2: Reserve Seat
-
-        /*
-        try {
-            eventServiceClient.reserveSeat(eventId);
-
-            // Simulate a later step failing
-//            throw new RuntimeException("Simulated failure");
-
-        } catch (Exception ex) {
-
-            // Compensation
-            eventServiceClient.releaseSeat(eventId);
-
-            return new RegistrationResponse(
-                    registrationId,
-                    eventId,
-                    "FAILED"
-            );
-        }
-
-        return new RegistrationResponse(
-                registrationId,
-                eventId,
-                "SEAT_RESERVED"
-        );
-
-        */
 }
