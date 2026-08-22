@@ -1,13 +1,11 @@
 package com.laughingenigma.saga_orchestrator.saga;
 
-import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.CustomerValidationResponse;
 import com.laughingenigma.saga_orchestrator.dto.RegistrationResponse;
 import com.laughingenigma.saga_orchestrator.dto.CustomerValidationRequest;
 import com.laughingenigma.saga_orchestrator.dto.SeatReservationRequest;
 import com.laughingenigma.saga_orchestrator.publisher.CustomerValidationRequestPublisher;
 import com.laughingenigma.saga_orchestrator.publisher.SeatReservationRequestPublisher;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
