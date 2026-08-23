@@ -2,7 +2,6 @@ package com.laughingenigma.api_gateway.indicator;
 
 import com.laughingenigma.api_gateway.config.ServiceUrls;
 import com.laughingenigma.api_gateway.dto.ServiceHealth;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.ReactiveHealthIndicator;
 import org.springframework.stereotype.Component;
@@ -14,7 +13,6 @@ public class MicroservicesHealthIndicator implements ReactiveHealthIndicator {
 
     private final WebClient webClient;
     private final ServiceUrls serviceUrls;
-
 
     public MicroservicesHealthIndicator(
             WebClient.Builder builder,
@@ -33,28 +31,27 @@ public class MicroservicesHealthIndicator implements ReactiveHealthIndicator {
 
         return Mono.zip(customer, security, event, saga)
                 .map(result -> {
+                    ServiceHealth customerHealth = result.getT1();
+                    ServiceHealth securityHealth = result.getT2();
+                    ServiceHealth eventHealth = result.getT3();
+                    ServiceHealth sagaHealth = result.getT4();
 
-                            ServiceHealth customerHealth = result.getT1();
-                            ServiceHealth securityHealth = result.getT2();
-                            ServiceHealth eventHealth = result.getT3();
-                            ServiceHealth sagaHealth = result.getT4();
+                    boolean allUp =
+                            isUp(customerHealth)
+                                    && isUp(securityHealth)
+                                    && isUp(eventHealth)
+                                    && isUp(sagaHealth);
 
-                            boolean allUp =
-                                    isUp(customerHealth)
-                                            && isUp(securityHealth)
-                                            && isUp(eventHealth)
-                                            && isUp(sagaHealth);
-                            
-                            Health.Builder health = allUp
-                                    ? Health.up()
-                                    : Health.down();
+                    Health.Builder health = allUp
+                            ? Health.up()
+                            : Health.down();
 
-                            return health
-                                    .withDetail("customer-service", customerHealth)
-                                    .withDetail("security-service", securityHealth)
-                                    .withDetail("event-service", eventHealth)
-                                    .withDetail("saga-orchestrator", sagaHealth)
-                                    .build();
+                    return health
+                            .withDetail("customer-service", customerHealth)
+                            .withDetail("security-service", securityHealth)
+                            .withDetail("event-service", eventHealth)
+                            .withDetail("saga-orchestrator", sagaHealth)
+                            .build();
                 });
     }
 
@@ -68,7 +65,7 @@ public class MicroservicesHealthIndicator implements ReactiveHealthIndicator {
                 .retrieve()
                 .bodyToMono(ServiceHealth.class)
                 .onErrorResume(ex ->
-                        Mono.just(new ServiceHealth("DOWN", null))
+                    Mono.just(new ServiceHealth("DOWN", null))
                 );
     }
 }
