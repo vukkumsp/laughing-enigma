@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Test</title>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+
+<body>
+
+<h2>Razorpay Test Payment</h2>
+
+<button onclick="startPayment()">
+    Pay ₹500
+</button>
+
+<script>
+
+async function startPayment() {
+
+    const response = await fetch(
+        'http://localhost:8080/payments/orders',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                customerId: 101,
+                amount: 500
+            })
+        }
+    );
+
+    const order = await response.json();
+
+    console.log("Created order:", order);
+
+    const options = {
+
+        key: 'rzp_test_TT6t5xEgSnNOk2',
+
+        amount: order.amount * 100,
+
+        currency: order.currency,
+
+        name: 'Laughing Enigma',
+
+        description: 'Payment Service Test',
+
+        order_id: order.orderId,
+
+        handler: async function (response) {
+
+			console.log("Payment response:", response);
+
+			const verificationResponse = await fetch(
+				'http://localhost:8080/payments/verify',
+				{
+					method: 'POST',
+
+					headers: {
+						'Content-Type': 'application/json'
+					},
+
+					body: JSON.stringify({
+						razorpayOrderId: response.razorpay_order_id,
+						razorpayPaymentId: response.razorpay_payment_id,
+						razorpaySignature: response.razorpay_signature
+					})
+				}
+			);
+
+			const result = await verificationResponse.json();
+
+			console.log("Verification:", result);
+
+			alert(
+				"Payment Status: " + result.status
+			);
+		}
+    };
+
+    const razorpay = new Razorpay(options);
+
+    razorpay.open();
+}
+
+</script>
+
+</body>
+</html>

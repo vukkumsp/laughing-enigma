@@ -7,3 +7,4 @@ Give new user ownership to new db as below.
 
 ALTER DATABASE "security-db" OWNER TO "security-user";
 ALTER DATABASE "event-db" OWNER TO "event-user";
+ALTER DATABASE "payment-db" OWNER TO "payment-user";
