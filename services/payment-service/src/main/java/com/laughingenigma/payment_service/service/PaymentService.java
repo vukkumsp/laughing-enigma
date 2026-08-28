@@ -19,6 +19,14 @@ import java.time.LocalDateTime;
 
 import com.razorpay.Utils;
 
+/*  TODO:
+
+    400 → invalid request
+    404 → payment not found
+    409 → conflicting payment state
+    500 → actual server/provider problem
+
+ */
 
 @Service
 public class PaymentService {
@@ -112,7 +120,7 @@ public class PaymentService {
     public PaymentVerificationResponse verifyPayment(
             PaymentVerificationRequest request
     ) {
-
+        System.out.println(request);
         try {
 
             String payload =
@@ -145,6 +153,22 @@ public class PaymentService {
                                     "Payment order not found"
                             )
                     );
+
+            if (payment.getRazorpayPaymentId() != null &&
+                    !payment.getRazorpayPaymentId()
+                            .equals(request.razorpayPaymentId())) {
+                throw new RuntimeException(
+                        "Payment ID does not match existing payment"
+                );
+            }
+
+            if (payment.getStatus() == PaymentStatus.SUCCESS) {
+                return new PaymentVerificationResponse(
+                        payment.getRazorpayOrderId(),
+                        payment.getRazorpayPaymentId(),
+                        "SUCCESS"
+                );
+            }
 
             payment.setRazorpayPaymentId(
                     request.razorpayPaymentId()
