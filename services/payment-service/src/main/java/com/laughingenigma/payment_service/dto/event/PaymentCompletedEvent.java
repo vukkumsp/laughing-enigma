@@ -1,4 +1,4 @@
-package com.laughingenigma.payment_service.dto;
+package com.laughingenigma.payment_service.dto.event;
 
 public record PaymentCompletedEvent(
         String sagaId,
