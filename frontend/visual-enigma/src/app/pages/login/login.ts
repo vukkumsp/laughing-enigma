@@ -52,7 +52,7 @@ export class Login {
         if (response.accessToken && response.refreshToken) {
           this.auth.storeAccessToken(response.accessToken);
           this.auth.storeRefreshToken(response.refreshToken);
-          this.router.navigate(['/profile']);
+          this.router.navigate(['/events']);
         } else {
           this.router.navigate(['/unauthorized']);
         }

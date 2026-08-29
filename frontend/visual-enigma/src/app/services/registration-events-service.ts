@@ -1,39 +1,86 @@
-import { Service } from '@angular/core';
+import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment.production';
+import { environment } from '../../environments/environment';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { Auth } from './auth';
 
 @Service()
 export class RegistrationEventsService {
 
-    private readonly apiUrl =  environment.apiUrl;
+    private readonly apiUrl = environment.apiUrl;
+    private readonly auth = inject(Auth);
+    private controller?: AbortController;
 
-    connect(registrationId: string): Observable<MessageEvent> {
+    connect(registrationId: string): void {
 
-    return new Observable(observer => {
+        // Close an existing connection if there is one
+        this.disconnect();
 
-      const url =
-        `${this.apiUrl}/registrations/${registrationId}/events`;
+        const controller = new AbortController();
+        const token = this.auth.getAccessToken();
 
-      const eventSource = new EventSource(url);
+        fetchEventSource(
+            `${this.apiUrl}/registrations/${registrationId}/events`,
+            {
+                method: 'GET',
 
-      eventSource.onopen = () => {
-        console.log('SSE connection opened');
-      };
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Accept': 'text/event-stream'
+                },
 
-      eventSource.onmessage = (event) => {
-        observer.next(event);
-      };
+                signal: controller.signal,
 
-      eventSource.onerror = (error) => {
-        console.error('SSE error:', error);
-        observer.error(error);
-        eventSource.close();
-      };
+                async onopen(response) {
+                    console.log(
+                        'SSE connection opened:',
+                        response.status
+                    );
+                },
 
-      return () => {
-        console.log('Closing SSE connection');
-        eventSource.close();
-      };
-    });
-  }
+                onmessage(event) {
+                    console.log(
+                        'SSE event:',
+                        event.event,
+                        event.data
+                    );
+                    console.log('SSE event name:', event.event);
+                    console.log('SSE data:', event.data);
+
+                    if (event.event === 'TEST') {
+                        const data = JSON.parse(event.data);
+
+                        console.log(
+                            'Received TEST event:',
+                            data
+                        );
+                    }
+                },
+
+                onerror(error) {
+                    if (error instanceof DOMException && error.name === 'AbortError') {
+                        console.log('SSE connection aborted');
+                        return;
+                    }
+
+                    console.error('SSE error:', error);
+                    throw error;
+                },
+
+                onclose() {
+                    console.log('SSE connection closed');
+                }
+            }
+        );
+    }
+
+    disconnect(): void {
+
+        if (this.controller) {
+            console.log('Aborting SSE connection');
+
+            this.controller.abort();
+            this.controller = undefined;
+        }
+    }
 }

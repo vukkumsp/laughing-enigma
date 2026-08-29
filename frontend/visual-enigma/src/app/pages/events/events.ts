@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { EventCard } from './event-card';
+import { RegistrationEventsService } from '../../services/registration-events-service';
 
 export interface Event {
   id: number;
@@ -17,7 +18,7 @@ export interface Event {
   templateUrl: './events.html',
   styleUrl: './events.scss',
 })
-export class Events {
+export class Events implements OnInit, OnDestroy {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
 
@@ -28,8 +29,18 @@ export class Events {
   readonly registrationError = signal(false);
   readonly registeringEventId = signal<number | null>(null);
 
+  private readonly registrationEventsService = inject(RegistrationEventsService);
+
   constructor() {
+  }
+
+  ngOnInit() {
     this.loadEvents();
+    this.registrationEventsService.connect('reg-123');
+  }
+
+  ngOnDestroy() {
+    this.registrationEventsService.disconnect();
   }
 
   private loadEvents(): void {
