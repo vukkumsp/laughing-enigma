@@ -1,0 +1,24 @@
+Running everything:
+===================
+
+From the directory containing docker-compose.yml:
+-------------------------------------------------
+docker compose up --build
+
+Or detached:
+------------
+docker compose up --build -d
+
+Stop everything:
+----------------
+docker compose down
+
+Rebuild a single service:
+-------------------------
+docker compose up --build payment-service
+
+View logs:
+----------
+docker compose logs -f api-gateway
+docker compose logs -f security-service
+docker compose logs -f payment-service

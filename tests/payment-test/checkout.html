@@ -49,6 +49,10 @@ async function startPayment() {
         description: 'Payment Service Test',
 
         order_id: order.orderId,
+		
+		retry: {
+			enabled: false
+		},
 
         handler: async function (response) {
 
@@ -78,6 +82,11 @@ async function startPayment() {
 			alert(
 				"Payment Status: " + result.status
 			);
+		},
+		modal: {
+			ondismiss: function() {
+				console.log("Checkout dismissed");
+			}
 		}
     };
 
