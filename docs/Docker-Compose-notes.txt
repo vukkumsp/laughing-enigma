@@ -13,12 +13,28 @@ Stop everything:
 ----------------
 docker compose down
 
-Rebuild a single service:
+Rebuild a single service: (code changes)
 -------------------------
+docker compose up --build saga-orchestrator
 docker compose up --build payment-service
+
+In detached:
+------------
+docker compose up -d --build saga-orchestrator
+docker compose up -d --build payment-service
+
+If you've changed configuration/environment and want to make absolutely sure the container is recreated:
+--------------------------------------------------------------------------------------------------------
+docker compose up -d --build --force-recreate payment-service
+
+If only .env is changed, which is run time config: (rebuild is not needed)
+--------------------------------------------------
+docker compose up -d payment-service
+
 
 View logs:
 ----------
 docker compose logs -f api-gateway
+docker compose logs -f saga-orchestrator
 docker compose logs -f security-service
 docker compose logs -f payment-service
