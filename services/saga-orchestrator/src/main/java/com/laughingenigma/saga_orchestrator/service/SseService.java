@@ -36,6 +36,10 @@ public class SseService {
         return emitter;
     }
 
+    public void sendUserPaymentRequestEvent(){}
+
+    public void sendPaymentStatusEvent(){}
+
     //test event send
     public void sendTestEvent(String registrationId) {
 

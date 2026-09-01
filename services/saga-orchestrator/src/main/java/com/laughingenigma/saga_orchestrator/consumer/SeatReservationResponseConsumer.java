@@ -20,8 +20,9 @@ public class SeatReservationResponseConsumer {
     @RabbitListener(
             queues = RabbitMQConfig.SEAT_RESERVATION_RESPONSE_QUEUE
     )
-    public void handleCustomerValidationResponse(SeatReservationResponse response){
+    public void handleSeatReservationResponse(SeatReservationResponse response){
         System.out.println("Reservation response: "+response);
         System.out.println("Reservation Status: "+response.success());
+        registrationSaga.initiatePaymentOrder(response);
     }
 }

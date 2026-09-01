@@ -1,5 +1,7 @@
 package com.laughingenigma.saga_orchestrator.controller;
 
+import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyRequest;
+import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import com.laughingenigma.saga_orchestrator.dto.RegistrationRequest;
 import com.laughingenigma.saga_orchestrator.dto.RegistrationResponse;
 import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
@@ -28,5 +30,11 @@ public class RegistrationController {
                 );
 
         return ResponseEntity.accepted().body(response);
+    }
+
+    @PostMapping("/payment/verify")
+    public ResponseEntity<String> verifyPayment(@RequestBody PaymentVerifyRequest request){
+        registrationSaga.verifyPaymentOrder(request);
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,13 +1,13 @@
 package com.laughingenigma.saga_orchestrator.saga;
 
-import com.laughingenigma.saga_orchestrator.dto.CustomerValidationResponse;
-import com.laughingenigma.saga_orchestrator.dto.RegistrationResponse;
-import com.laughingenigma.saga_orchestrator.dto.CustomerValidationRequest;
-import com.laughingenigma.saga_orchestrator.dto.SeatReservationRequest;
+import com.laughingenigma.saga_orchestrator.dto.*;
 import com.laughingenigma.saga_orchestrator.publisher.CustomerValidationRequestPublisher;
+import com.laughingenigma.saga_orchestrator.publisher.PaymentOrderRequestPublisher;
+import com.laughingenigma.saga_orchestrator.publisher.PaymentVerifyRequestPublisher;
 import com.laughingenigma.saga_orchestrator.publisher.SeatReservationRequestPublisher;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -15,12 +15,18 @@ public class RegistrationSaga {
 
     private final CustomerValidationRequestPublisher customerValidationRequestPublisher;
     private final SeatReservationRequestPublisher seatReservationRequestPublisher;
+    private final PaymentOrderRequestPublisher  paymentOrderRequestPublisher;
+    private final PaymentVerifyRequestPublisher paymentVerifyRequestPublisher;
 
     public RegistrationSaga(
             CustomerValidationRequestPublisher customerValidationRequestPublisher,
-            SeatReservationRequestPublisher seatReservationRequestPublisher) {
+            SeatReservationRequestPublisher seatReservationRequestPublisher,
+            PaymentOrderRequestPublisher paymentOrderRequestPublisher,
+            PaymentVerifyRequestPublisher paymentVerifyRequestPublisher) {
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
+        this.paymentOrderRequestPublisher = paymentOrderRequestPublisher;
+        this.paymentVerifyRequestPublisher = paymentVerifyRequestPublisher;
     }
 
     public RegistrationResponse startRegistration(
@@ -52,7 +58,7 @@ public class RegistrationSaga {
 
         if (!response.valid()) {
             // Saga failed
-            //handleRegistrationFailure(response);
+//            handleRegistrationFailure(response);
             return;
         }
 
@@ -67,5 +73,26 @@ public class RegistrationSaga {
         // Start Step 2.
         seatReservationRequestPublisher.publish(seatReservationRequest);
         System.out.println("reserveSeatsForRegistration - "+response.registrationId());
+    }
+
+    public void initiatePaymentOrder(SeatReservationResponse response) {
+        if (!response.success()) {
+            // Saga failed
+            return;
+        }
+
+        PaymentOrderRequest paymentOrderRequest = new  PaymentOrderRequest(
+                response.registrationId(),
+                response.eventId(),
+                new BigDecimal(100),
+                "INR"
+        );
+
+        paymentOrderRequestPublisher.publish(paymentOrderRequest);
+    }
+
+    public void verifyPaymentOrder(PaymentVerifyRequest request) {
+        //
+        paymentVerifyRequestPublisher.publish(request);
     }
 }

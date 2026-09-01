@@ -25,6 +25,14 @@ public class RabbitMQConfig {
             "seat-reservation-response-queue";
     public static final String SEAT_RESERVATION_RESPONSE_ROUTING_KEY =
             "seat.reservation.response";
+    public static final String PAYMENT_ORDER_RESPONSE_QUEUE =
+            "payment-order-response-queue";
+    public static final String PAYMENT_ORDER_RESPONSE_ROUTING_KEY =
+            "payment.order.response";
+    public static final String PAYMENT_VERIFY_RESPONSE_QUEUE =
+            "payment-verify-response-queue";
+    public static final String PAYMENT_VERIFY_RESPONSE_ROUTING_KEY =
+            "payment.verify.response";
 
     //Outgoing commands
     public static final String SAGA_COMMAND_EXCHANGE =
@@ -37,6 +45,14 @@ public class RabbitMQConfig {
             "seat-reservation-request-queue";
     public static final String SEAT_RESERVATION_REQUEST_ROUTING_KEY =
             "seat.reservation.request";
+    public static final String PAYMENT_ORDER_REQUEST_QUEUE =
+            "payment-order-request-queue";
+    public static final String PAYMENT_ORDER_REQUEST_ROUTING_KEY =
+            "payment.order.request";
+    public static final String PAYMENT_VERIFY_REQUEST_QUEUE =
+            "payment-verify-request-queue";
+    public static final String PAYMENT_VERIFY_REQUEST_ROUTING_KEY =
+            "payment.verify.request";
 
 
     @Bean
@@ -51,6 +67,15 @@ public class RabbitMQConfig {
     public Queue seatReservationResponseQueue() {
         return new Queue(SEAT_RESERVATION_RESPONSE_QUEUE);
     }
+    @Bean
+    public Queue paymentOrderResponseQueue() {
+        return new Queue(PAYMENT_ORDER_RESPONSE_QUEUE);
+    }
+    @Bean
+    public Queue paymentVerifyResponseQueue() {
+        return new Queue(PAYMENT_VERIFY_RESPONSE_QUEUE);
+    }
+
 
     @Bean
     public Binding customerValidationResponseBinding(
@@ -69,6 +94,24 @@ public class RabbitMQConfig {
                 .bind(seatReservationResponseQueue)
                 .to(sagaResponseExchange)
                 .with(SEAT_RESERVATION_RESPONSE_ROUTING_KEY);
+    }
+    @Bean
+    public Binding paymentOrderResponseBinding(
+            Queue paymentOrderResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(paymentOrderResponseQueue)
+                .to(sagaResponseExchange)
+                .with(PAYMENT_ORDER_RESPONSE_ROUTING_KEY);
+    }
+    @Bean
+    public Binding paymentVerifyResponseBinding(
+            Queue paymentVerifyResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(paymentVerifyResponseQueue)
+                .to(sagaResponseExchange)
+                .with(PAYMENT_VERIFY_RESPONSE_ROUTING_KEY);
     }
 
     /* Common */
