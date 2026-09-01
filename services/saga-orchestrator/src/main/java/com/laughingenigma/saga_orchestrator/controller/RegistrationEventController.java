@@ -21,13 +21,11 @@ public class RegistrationEventController {
             produces = MediaType.TEXT_EVENT_STREAM_VALUE
     )
     public SseEmitter events(@PathVariable String registrationId) {
-
         return sseService.connect(registrationId);
     }
 
     @PostMapping("/{registrationId}/events/test")
     public void sendTestEvent(@PathVariable String registrationId) {
-
         sseService.sendTestEvent(registrationId);
     }
 }

@@ -27,7 +27,7 @@ public class PaymentOrderResponseConsumer {
 
         //IF payment order is successful then,
         //send SSE event to frontend for payment completion
-        sseService.sendUserPaymentRequestEvent();
+        sseService.sendPaymentRequiredEvent(response.registrationId());
     }
 
 }

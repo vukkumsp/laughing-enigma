@@ -36,9 +36,57 @@ public class SseService {
         return emitter;
     }
 
-    public void sendUserPaymentRequestEvent(){}
+    public void sendPaymentRequiredEvent(String registrationId){
+        SseEmitter emitter = emitters.get(registrationId);
 
-    public void sendPaymentStatusEvent(){}
+        if (emitter == null) {
+            System.out.println("No SSE connection for " + registrationId);
+            return;
+        }
+
+        try {
+            System.out.println("Sending PAYMENT_REQUIRED event to " + registrationId);
+            emitter.send(
+                    SseEmitter.event()
+                            .name(SSE_EVENT.PAYMENT_REQUIRED.name())
+                            .data("""
+                                {
+                                  "message": "SSE is working",
+                                  "registrationId": "%s"
+                                }
+                                """.formatted(registrationId))
+            );
+        } catch (IOException e) {
+            emitters.remove(registrationId);
+            emitter.completeWithError(e);
+        }
+    }
+
+    public void sendPaymentStatusEvent(String registrationId){
+        SseEmitter emitter = emitters.get(registrationId);
+
+        if (emitter == null) {
+            System.out.println("No SSE connection for " + registrationId);
+            return;
+        }
+
+        try {
+            System.out.println("Sending PAYMENT_SUCCESS event to " + registrationId);
+            emitter.send(
+                    SseEmitter.event()
+                            .name(SSE_EVENT.PAYMENT_SUCCESS.name())
+                            .data("""
+                                {
+                                  "message": "SSE is working",
+                                  "registrationId": "%s"
+                                }
+                                """.formatted(registrationId))
+            );
+        } catch (IOException e) {
+            emitters.remove(registrationId);
+            emitter.completeWithError(e);
+        }
+    }
 
     //test event send
     public void sendTestEvent(String registrationId) {
@@ -73,4 +121,10 @@ public class SseService {
             emitter.completeWithError(e);
         }
     }
+}
+
+enum SSE_EVENT {
+    PAYMENT_REQUIRED,
+    PAYMENT_SUCCESS,
+    PAYMENT_FAILED
 }
