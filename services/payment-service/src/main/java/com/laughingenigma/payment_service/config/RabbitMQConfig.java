@@ -17,16 +17,22 @@ public class RabbitMQConfig {
     // Incoming command
     public static final String SAGA_COMMAND_EXCHANGE =
             "saga.command.exchange";
-    public static final String PAYMENT_REQUEST_QUEUE =
-            "payment-request-queue";
-    public static final String PAYMENT_REQUEST_ROUTING_KEY =
-            "payment.request";
+    public static final String PAYMENT_ORDER_REQUEST_QUEUE =
+            "payment-order-request-queue";
+    public static final String PAYMENT_ORDER_REQUEST_ROUTING_KEY =
+            "payment.order.request";
+    public static final String PAYMENT_VERIFY_REQUEST_QUEUE =
+            "payment-verify-request-queue";
+    public static final String PAYMENT_VERIFY_REQUEST_ROUTING_KEY =
+            "payment.verify.request";
 
     // Outgoing response
     public static final String SAGA_RESPONSE_EXCHANGE =
             "saga.response.exchange";
-    public static final String PAYMENT_RESPONSE_ROUTING_KEY =
-            "payment.response";
+    public static final String PAYMENT_ORDER_RESPONSE_ROUTING_KEY =
+            "payment.order.response";
+    public static final String PAYMENT_VERIFY_RESPONSE_ROUTING_KEY =
+            "payment.verify.response";
 
     @Bean
     public TopicExchange sagaCommandExchange() {
@@ -34,19 +40,32 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue paymentRequestQueue() {
-        return new Queue(PAYMENT_REQUEST_QUEUE);
+    public Queue paymentOrderRequestQueue() {
+        return new Queue(PAYMENT_ORDER_REQUEST_QUEUE);
+    }
+    @Bean
+    public Queue paymentVerifyRequestQueue() {
+        return new Queue(PAYMENT_VERIFY_REQUEST_QUEUE);
     }
 
     @Bean
-    public Binding paymentRequestBinding(
-            Queue paymentRequestQueue,
+    public Binding paymentOrderRequestBinding(
+            Queue paymentOrderRequestQueue,
             TopicExchange sagaCommandExchange) {
-
         return BindingBuilder
-                .bind(paymentRequestQueue)
+                .bind(paymentOrderRequestQueue)
                 .to(sagaCommandExchange)
-                .with(PAYMENT_REQUEST_ROUTING_KEY);
+                .with(PAYMENT_ORDER_REQUEST_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding paymentVerifyRequestBinding(
+            Queue paymentVerifyRequestQueue,
+            TopicExchange sagaCommandExchange) {
+        return BindingBuilder
+                .bind(paymentVerifyRequestQueue)
+                .to(sagaCommandExchange)
+                .with(PAYMENT_VERIFY_REQUEST_ROUTING_KEY);
     }
 
     /* Common */

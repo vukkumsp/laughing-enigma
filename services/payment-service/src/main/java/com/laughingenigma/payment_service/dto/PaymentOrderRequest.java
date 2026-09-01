@@ -2,13 +2,12 @@ package com.laughingenigma.payment_service.dto;
 
 import java.math.BigDecimal;
 
-public record PaymentOrderResponse(
+public record PaymentOrderRequest(
         String registrationId,
         Long eventId,
 
         String orderId,
         BigDecimal amount,
-        String currency,
-        String status
+        String currency
 ) {
 }

@@ -6,7 +6,6 @@ public record PaymentOrderResponse(
         String registrationId,
         Long eventId,
 
-        String orderId,
         BigDecimal amount,
         String currency,
         String status
