@@ -19,7 +19,7 @@
 async function startPayment() {
 
     const response = await fetch(
-        'http://localhost:8080/payments/orders',
+        'http://localhost:8085/payments/orders',
         {
             method: 'POST',
             headers: {
@@ -59,7 +59,7 @@ async function startPayment() {
 			console.log("Payment response:", response);
 
 			const verificationResponse = await fetch(
-				'http://localhost:8080/payments/verify',
+				'http://localhost:8085/payments/verify',
 				{
 					method: 'POST',
 
