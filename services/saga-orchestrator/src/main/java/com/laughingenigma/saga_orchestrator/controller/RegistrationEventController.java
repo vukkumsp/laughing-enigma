@@ -21,6 +21,7 @@ public class RegistrationEventController {
             produces = MediaType.TEXT_EVENT_STREAM_VALUE
     )
     public SseEmitter events(@PathVariable String registrationId) {
+        System.out.println("SSE connection with registration id : "  + registrationId);
         return sseService.connect(registrationId);
     }
 

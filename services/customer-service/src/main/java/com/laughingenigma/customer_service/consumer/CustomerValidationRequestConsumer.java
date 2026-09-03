@@ -29,6 +29,8 @@ public class CustomerValidationRequestConsumer {
         CustomerValidationResponse response = new CustomerValidationResponse(
                 request.registrationId(), request.eventId(), valid, request.username());
 
+        System.out.println("CustomerValidationRequestConsumer CustomerValidationRequest - " + request);
+        System.out.println("CustomerValidationRequestConsumer CustomerValidationResponse - " + response);
         System.out.println("handleCustomerValidationRequest - "+request.registrationId());
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,

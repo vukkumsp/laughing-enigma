@@ -77,8 +77,8 @@ public class PaymentService {
 
             // return order details
             return new PaymentOrderResponse(
-                    null,
-                    null,
+                    request.registrationId(),
+                    request.eventId(),
                     order.get("id"),
                     request.amount(),
                     "INR",

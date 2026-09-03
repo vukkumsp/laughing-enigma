@@ -6,7 +6,9 @@ import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PaymentVerifyResponseConsumer {
     private final RegistrationSaga registrationSaga;
     private final SseService sseService;
@@ -28,7 +30,7 @@ public class PaymentVerifyResponseConsumer {
         //IF payment verification is successful then,
         //update status in saga db if needed
         //send SSE event to frontend payment status
-        sseService.sendPaymentStatusEvent(response.registrationId());
+        sseService.sendPaymentStatusEvent(response.registrationId(), response.eventId(), response.status());
 
         //End of SAGA
     }

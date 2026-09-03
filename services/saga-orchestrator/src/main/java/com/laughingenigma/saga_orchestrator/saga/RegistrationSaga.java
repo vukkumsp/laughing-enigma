@@ -30,10 +30,9 @@ public class RegistrationSaga {
     }
 
     public RegistrationResponse startRegistration(
+            String registrationId,
             Long eventId,
             String username) {
-
-        String registrationId = UUID.randomUUID().toString();
 
         //Step 1: Validate Customer
         CustomerValidationRequest customerValidationRequest =

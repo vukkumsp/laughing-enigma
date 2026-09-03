@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -36,7 +37,7 @@ public class SseService {
         return emitter;
     }
 
-    public void sendPaymentRequiredEvent(String registrationId){
+    public void sendPaymentRequiredEvent(String registrationId, Long eventId, String orderId, BigDecimal amount, String currency){
         SseEmitter emitter = emitters.get(registrationId);
 
         if (emitter == null) {
@@ -51,10 +52,14 @@ public class SseService {
                             .name(SSE_EVENT.PAYMENT_REQUIRED.name())
                             .data("""
                                 {
-                                  "message": "SSE is working",
-                                  "registrationId": "%s"
+                                  "message": "Complete the payment",
+                                  "registrationId": "%s",
+                                  "eventId": "%s",
+                                  "orderId": "%s",
+                                  "amount": %s,
+                                  "currency": "%s"
                                 }
-                                """.formatted(registrationId))
+                                """.formatted(registrationId, eventId, orderId, amount, currency))
             );
         } catch (IOException e) {
             emitters.remove(registrationId);
@@ -62,7 +67,7 @@ public class SseService {
         }
     }
 
-    public void sendPaymentStatusEvent(String registrationId){
+    public void sendPaymentStatusEvent(String registrationId, Long eventId, String status){
         SseEmitter emitter = emitters.get(registrationId);
 
         if (emitter == null) {
@@ -78,9 +83,11 @@ public class SseService {
                             .data("""
                                 {
                                   "message": "SSE is working",
-                                  "registrationId": "%s"
+                                  "registrationId": "%s",
+                                  "eventId": "%s",
+                                  "status": "%s"
                                 }
-                                """.formatted(registrationId))
+                                """.formatted(registrationId, eventId, status))
             );
         } catch (IOException e) {
             emitters.remove(registrationId);

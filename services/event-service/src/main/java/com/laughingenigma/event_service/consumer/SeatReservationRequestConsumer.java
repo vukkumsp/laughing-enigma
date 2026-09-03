@@ -27,6 +27,9 @@ public class SeatReservationRequestConsumer {
     public void handleSeatReservationRequest(
             SeatReservationRequest request) {
 
+        System.out.println("SeatReservationRequestConsumer SeatReservationRequest - " + request);
+
+
         boolean success = false;
 
         try{
@@ -43,6 +46,8 @@ public class SeatReservationRequestConsumer {
                 success
         );
         System.out.println("handleSeatReservationRequest - "+request.registrationId());
+
+        System.out.println("SeatReservationRequestConsumer SeatReservationResponse - " + seatReservationResponse);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,
                 RabbitMQConfig.SEAT_RESERVATION_RESPONSE_ROUTING_KEY,

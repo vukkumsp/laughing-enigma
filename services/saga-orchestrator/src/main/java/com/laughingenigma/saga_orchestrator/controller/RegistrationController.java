@@ -25,6 +25,7 @@ public class RegistrationController {
 
         RegistrationResponse response =
                 registrationSaga.startRegistration(
+                        request.registrationId(),
                         request.eventId(),
                         username
                 );
@@ -33,8 +34,15 @@ public class RegistrationController {
     }
 
     @PostMapping("/payment/verify")
-    public ResponseEntity<String> verifyPayment(@RequestBody PaymentVerifyRequest request){
+    public ResponseEntity<RegistrationResponse> verifyPayment(@RequestBody PaymentVerifyRequest request){
         registrationSaga.verifyPaymentOrder(request);
-        return ResponseEntity.ok().build();
+
+        RegistrationResponse response = new RegistrationResponse(
+                request.registrationId(),
+                request.eventId(),
+                "VERIFICATION_STARTED"
+        );
+
+        return ResponseEntity.accepted().body(response);
     }
 }

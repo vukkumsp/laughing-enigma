@@ -6,7 +6,7 @@ public record PaymentOrderRequest(
         String registrationId,
         Long eventId,
 
-        String orderId,
+
         BigDecimal amount,
         String currency
 ) {

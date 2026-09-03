@@ -1,10 +1,11 @@
 package com.laughingenigma.saga_orchestrator.publisher;
 
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
-import com.laughingenigma.saga_orchestrator.dto.PaymentOrderRequest;
 import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyRequest;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PaymentVerifyRequestPublisher {
     private final RabbitTemplate rabbitTemplate;
 

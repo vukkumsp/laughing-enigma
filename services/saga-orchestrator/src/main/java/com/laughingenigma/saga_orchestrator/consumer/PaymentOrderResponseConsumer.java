@@ -6,7 +6,9 @@ import com.laughingenigma.saga_orchestrator.dto.SeatReservationResponse;
 import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PaymentOrderResponseConsumer {
     private final RegistrationSaga registrationSaga;
     private final SseService  sseService;
@@ -27,7 +29,7 @@ public class PaymentOrderResponseConsumer {
 
         //IF payment order is successful then,
         //send SSE event to frontend for payment completion
-        sseService.sendPaymentRequiredEvent(response.registrationId());
+        sseService.sendPaymentRequiredEvent(response.registrationId(), response.eventId(), response.orderId(), response.amount(), response.currency());
     }
 
 }
