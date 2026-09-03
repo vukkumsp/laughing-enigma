@@ -1,5 +1,5 @@
 import { inject, Service } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Auth } from './auth';
@@ -10,13 +10,17 @@ export class RegistrationEventsService {
     private readonly apiUrl = environment.apiUrl;
     private readonly auth = inject(Auth);
     private controller?: AbortController;
+    private readonly eventsSubject = new Subject<SseEvent>();
+
+readonly events$ =
+  this.eventsSubject.asObservable();
 
     connect(registrationId: string): void {
 
         // Close an existing connection if there is one
         this.disconnect();
 
-        const controller = new AbortController();
+        this.controller = new AbortController();
         const token = this.auth.getAccessToken();
 
         fetchEventSource(
@@ -29,7 +33,7 @@ export class RegistrationEventsService {
                     'Accept': 'text/event-stream'
                 },
 
-                signal: controller.signal,
+                signal: this.controller.signal,
 
                 async onopen(response) {
                     console.log(
@@ -38,7 +42,7 @@ export class RegistrationEventsService {
                     );
                 },
 
-                onmessage(event) {
+                onmessage: (event) =>  {
                     console.log(
                         'SSE event:',
                         event.event,
@@ -47,13 +51,28 @@ export class RegistrationEventsService {
                     console.log('SSE event name:', event.event);
                     console.log('SSE data:', event.data);
 
-                    if (event.event === 'TEST') {
-                        const data = JSON.parse(event.data);
+                    const data = JSON.parse(event.data);
+                    
+                    this.eventsSubject.next({
+                        type: event.event,
+                        data
+                    });
+                    switch (event.event) {
+                        case 'PAYMENT_REQUIRED':
+                            console.log('Received PAYMENT_REQUIRED event:', data);
+                            break;
+                        case 'PAYMENT_SUCCESS':
+                            console.log('Received PAYMENT_SUCCESS event:', data);
+                            break;
+                        case 'PAYMENT_FAILED':
+                            console.log('Received PAYMENT_FAILED event:', data);
+                            break;
+                        case 'TEST':
+                            console.log('Received TEST event:', data);
+                            break;
 
-                        console.log(
-                            'Received TEST event:',
-                            data
-                        );
+                        default:
+                            console.warn('Unknown SSE event:', event.event);
                     }
                 },
 
@@ -83,4 +102,9 @@ export class RegistrationEventsService {
             this.controller = undefined;
         }
     }
+}
+
+export interface SseEvent {
+  type: string;
+  data: any;
 }
