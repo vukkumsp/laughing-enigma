@@ -30,7 +30,7 @@ public class PaymentVerifyResponseConsumer {
         //IF payment verification is successful then,
         //update status in saga db if needed
         //send SSE event to frontend payment status
-        sseService.sendPaymentStatusEvent(response.registrationId(), response.eventId(), response.status());
+        sseService.sendPaymentStatusEvent(response);
 
         //End of SAGA
     }

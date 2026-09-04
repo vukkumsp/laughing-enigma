@@ -3,6 +3,8 @@ package com.laughingenigma.customer_service.consumer;
 import com.laughingenigma.customer_service.config.RabbitMQConfig;
 import com.laughingenigma.customer_service.dto.CustomerValidationResponse;
 import com.laughingenigma.customer_service.dto.CustomerValidationRequest;
+import com.laughingenigma.customer_service.entity.Customer;
+import com.laughingenigma.customer_service.publisher.CustomerValidationResponsePublisher;
 import com.laughingenigma.customer_service.service.CustomerService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,11 +14,13 @@ import org.springframework.stereotype.Component;
 public class CustomerValidationRequestConsumer {
 
     private final CustomerService customerService;
-    private final RabbitTemplate rabbitTemplate;
+    private final CustomerValidationResponsePublisher publisher;
 
-    public CustomerValidationRequestConsumer(CustomerService customerService, RabbitTemplate rabbitTemplate) {
+    public CustomerValidationRequestConsumer(
+            CustomerService customerService,
+            CustomerValidationResponsePublisher publisher) {
         this.customerService = customerService;
-        this.rabbitTemplate = rabbitTemplate;
+        this.publisher = publisher;
     }
 
     @RabbitListener(
@@ -24,18 +28,13 @@ public class CustomerValidationRequestConsumer {
     )
     public void handleCustomerValidationRequest(
             CustomerValidationRequest request) {
-
-        boolean valid = customerService.validateCustomer(request.username());
-        CustomerValidationResponse response = new CustomerValidationResponse(
-                request.registrationId(), request.eventId(), valid, request.username());
-
         System.out.println("CustomerValidationRequestConsumer CustomerValidationRequest - " + request);
-        System.out.println("CustomerValidationRequestConsumer CustomerValidationResponse - " + response);
-        System.out.println("handleCustomerValidationRequest - "+request.registrationId());
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,
-                RabbitMQConfig.CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY,
-                response
-        );
+        Customer customer = customerService.validateCustomer(request.username());
+        boolean valid = (customer != null);
+
+        CustomerValidationResponse response = new CustomerValidationResponse(
+                request.registrationId(), request.eventId(), valid, valid ? customer.getId() : 0L, request.username());
+
+        publisher.publish(response);
     }
 }

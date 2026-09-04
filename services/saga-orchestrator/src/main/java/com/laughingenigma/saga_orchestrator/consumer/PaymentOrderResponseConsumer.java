@@ -25,11 +25,10 @@ public class PaymentOrderResponseConsumer {
     )
     public void handlePaymentOrderResponse(PaymentOrderResponse response){
         System.out.println("Payment Order response: "+response);
-        System.out.println("Payment Order Status: "+response.status());
 
         //IF payment order is successful then,
         //send SSE event to frontend for payment completion
-        sseService.sendPaymentRequiredEvent(response.registrationId(), response.eventId(), response.orderId(), response.amount(), response.currency());
+        sseService.sendPaymentRequiredEvent(response);
     }
 
 }

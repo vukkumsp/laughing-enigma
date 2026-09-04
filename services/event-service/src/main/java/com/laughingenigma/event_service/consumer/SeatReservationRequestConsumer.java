@@ -4,21 +4,24 @@ import com.laughingenigma.event_service.config.RabbitMQConfig;
 import com.laughingenigma.event_service.dto.SeatReservationRequest;
 import com.laughingenigma.event_service.dto.SeatReservationResponse;
 import com.laughingenigma.event_service.entity.Event;
+import com.laughingenigma.event_service.publisher.SeatReservationResponsePublisher;
 import com.laughingenigma.event_service.service.EventService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Component
 public class SeatReservationRequestConsumer {
 
     private final EventService eventService;
-    private final RabbitTemplate rabbitTemplate;
+    private final SeatReservationResponsePublisher publisher;
 
     public SeatReservationRequestConsumer(
-            EventService eventService, RabbitTemplate rabbitTemplate) {
+            EventService eventService, SeatReservationResponsePublisher publisher) {
         this.eventService = eventService;
-        this.rabbitTemplate = rabbitTemplate;
+        this.publisher = publisher;
     }
 
     @RabbitListener(
@@ -28,30 +31,25 @@ public class SeatReservationRequestConsumer {
             SeatReservationRequest request) {
 
         System.out.println("SeatReservationRequestConsumer SeatReservationRequest - " + request);
-
-
         boolean success = false;
 
         try{
-            eventService.reserveSeat(request.eventId());
+            Event reservedEvent = eventService.reserveSeat(request.eventId());
             success = true;
+            SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
+                    request.registrationId(),
+                    request.eventId(),
+                    request.customerId(),
+                    reservedEvent.getPrice(),
+                    reservedEvent.getCurrency(),
+                    success
+            );
+            System.out.println("handleSeatReservationRequest - "+request.registrationId());
+
+            publisher.publish(seatReservationResponse);
         }
         catch (Exception e){
             e.printStackTrace();
         }
-
-        SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
-                request.registrationId(),
-                request.eventId(),
-                success
-        );
-        System.out.println("handleSeatReservationRequest - "+request.registrationId());
-
-        System.out.println("SeatReservationRequestConsumer SeatReservationResponse - " + seatReservationResponse);
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,
-                RabbitMQConfig.SEAT_RESERVATION_RESPONSE_ROUTING_KEY,
-                seatReservationResponse
-        );
     }
 }

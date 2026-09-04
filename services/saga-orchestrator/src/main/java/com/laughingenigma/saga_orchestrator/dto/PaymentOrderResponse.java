@@ -8,7 +8,6 @@ public record PaymentOrderResponse(
 
         String orderId,
         BigDecimal amount,
-        String currency,
-        String status
+        String currency
 ) {
 }

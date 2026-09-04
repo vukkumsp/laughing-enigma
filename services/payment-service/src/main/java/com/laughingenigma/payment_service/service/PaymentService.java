@@ -79,9 +79,10 @@ public class PaymentService {
             return new PaymentOrderResponse(
                     request.registrationId(),
                     request.eventId(),
+                    request.customerId(),
                     order.get("id"),
                     request.amount(),
-                    "INR",
+                    request.currency(),
                     order.get("status")
             );
 
@@ -91,7 +92,6 @@ public class PaymentService {
         }
     }
 
-    //verifyPayment()
     public PaymentOrderResponse getOrder(String orderId) {
         try {
             Order order = razorpayClient.orders.fetch(orderId);
@@ -101,6 +101,7 @@ public class PaymentService {
             return new PaymentOrderResponse(
                     null,
                     null,
+                    0L,
                     order.get("id"),
                     BigDecimal.valueOf(amount.longValue())
                             .movePointLeft(2),
@@ -116,7 +117,7 @@ public class PaymentService {
         }
     }
 
-
+    //verifyPayment()
     public PaymentVerificationResponse verifyPayment(
             PaymentVerificationRequest request
     ) {
@@ -139,9 +140,6 @@ public class PaymentService {
                         "Invalid payment signature"
                 );
             }
-
-
-
 
             // We'll update the database here
             Payment payment = paymentRepository

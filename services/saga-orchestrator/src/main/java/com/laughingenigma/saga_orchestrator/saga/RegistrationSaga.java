@@ -65,6 +65,7 @@ public class RegistrationSaga {
                 new SeatReservationRequest(
                         response.registrationId(),
                         response.username(),
+                        response.customerId(),
                         response.eventId()
                 );
 
@@ -83,8 +84,9 @@ public class RegistrationSaga {
         PaymentOrderRequest paymentOrderRequest = new  PaymentOrderRequest(
                 response.registrationId(),
                 response.eventId(),
-                new BigDecimal(100),
-                "INR"
+                response.customerId(),
+                response.price(),
+                response.currency()
         );
 
         paymentOrderRequestPublisher.publish(paymentOrderRequest);

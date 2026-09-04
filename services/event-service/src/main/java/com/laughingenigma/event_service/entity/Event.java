@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,4 +23,12 @@ public class Event {
     private String description;
     private LocalDateTime eventDate;
     private int availableSeats;
+
+
+    @Column(nullable = false, length = 4)
+    @Enumerated(EnumType.STRING)
+    private Currency currency;
+
+    @Column(name = "price", precision = 19, scale = 2, nullable = false)
+    private BigDecimal price;
 }

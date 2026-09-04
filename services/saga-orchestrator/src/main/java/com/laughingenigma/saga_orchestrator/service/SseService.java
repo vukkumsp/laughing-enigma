@@ -1,5 +1,7 @@
 package com.laughingenigma.saga_orchestrator.service;
 
+import com.laughingenigma.saga_orchestrator.dto.PaymentOrderResponse;
+import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -37,16 +39,16 @@ public class SseService {
         return emitter;
     }
 
-    public void sendPaymentRequiredEvent(String registrationId, Long eventId, String orderId, BigDecimal amount, String currency){
-        SseEmitter emitter = emitters.get(registrationId);
+    public void sendPaymentRequiredEvent(PaymentOrderResponse response){
+        SseEmitter emitter = emitters.get(response.registrationId());
 
         if (emitter == null) {
-            System.out.println("No SSE connection for " + registrationId);
+            System.out.println("No SSE connection for " + response.registrationId());
             return;
         }
 
         try {
-            System.out.println("Sending PAYMENT_REQUIRED event to " + registrationId);
+            System.out.println("Sending PAYMENT_REQUIRED event to " + response.registrationId());
             emitter.send(
                     SseEmitter.event()
                             .name(SSE_EVENT.PAYMENT_REQUIRED.name())
@@ -59,24 +61,29 @@ public class SseService {
                                   "amount": %s,
                                   "currency": "%s"
                                 }
-                                """.formatted(registrationId, eventId, orderId, amount, currency))
+                                """.formatted(
+                                    response.registrationId(),
+                                    response.eventId(),
+                                    response.orderId(),
+                                    response.amount(),
+                                    response.currency()))
             );
         } catch (IOException e) {
-            emitters.remove(registrationId);
+            emitters.remove(response.registrationId());
             emitter.completeWithError(e);
         }
     }
 
-    public void sendPaymentStatusEvent(String registrationId, Long eventId, String status){
-        SseEmitter emitter = emitters.get(registrationId);
+    public void sendPaymentStatusEvent(PaymentVerifyResponse response){
+        SseEmitter emitter = emitters.get(response.registrationId());
 
         if (emitter == null) {
-            System.out.println("No SSE connection for " + registrationId);
+            System.out.println("No SSE connection for " + response.registrationId());
             return;
         }
 
         try {
-            System.out.println("Sending PAYMENT_SUCCESS event to " + registrationId);
+            System.out.println("Sending PAYMENT_SUCCESS event to " + response.registrationId());
             emitter.send(
                     SseEmitter.event()
                             .name(SSE_EVENT.PAYMENT_SUCCESS.name())
@@ -87,10 +94,13 @@ public class SseService {
                                   "eventId": "%s",
                                   "status": "%s"
                                 }
-                                """.formatted(registrationId, eventId, status))
+                                """.formatted(
+                                    response.registrationId(),
+                                    response.eventId(),
+                                    response.status()))
             );
         } catch (IOException e) {
-            emitters.remove(registrationId);
+            emitters.remove(response.registrationId());
             emitter.completeWithError(e);
         }
     }

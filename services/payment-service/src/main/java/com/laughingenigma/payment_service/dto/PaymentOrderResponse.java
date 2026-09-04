@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public record PaymentOrderResponse(
         String registrationId,
         Long eventId,
-
+        Long customerId,
         String orderId,
         BigDecimal amount,
         String currency,

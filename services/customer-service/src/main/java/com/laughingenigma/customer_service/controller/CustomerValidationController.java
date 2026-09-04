@@ -3,6 +3,7 @@ package com.laughingenigma.customer_service.controller;
 import com.laughingenigma.customer_service.dto.CustomerValidationRequest;
 import com.laughingenigma.customer_service.dto.CustomerValidationResponse;
 import com.laughingenigma.customer_service.dto.Profile;
+import com.laughingenigma.customer_service.entity.Customer;
 import com.laughingenigma.customer_service.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,11 @@ public class CustomerValidationController {
             @RequestBody CustomerValidationRequest request,
             @RequestHeader("X-Authenticated-User") String username) {
 
-        boolean valid = customerService.validateCustomer(username);
-        CustomerValidationResponse customerValidationResponse
-                = new CustomerValidationResponse(request.registrationId(), request.eventId(), valid, request.username());
+        Customer customer = customerService.validateCustomer(username);
+        boolean valid = customer != null;
+
+        CustomerValidationResponse customerValidationResponse = new CustomerValidationResponse(
+                request.registrationId(), request.eventId(), valid, valid ? customer.getId() : 0L, request.username());
 
         return ResponseEntity
                 .ok(customerValidationResponse);

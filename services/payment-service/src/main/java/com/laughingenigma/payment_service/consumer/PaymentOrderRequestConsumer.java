@@ -36,7 +36,7 @@ public class PaymentOrderRequestConsumer {
                     request.registrationId(),
                     request.eventId(),
                     "paymentEventInPaymentService",
-                    0L,
+                    request.customerId(),
                     request.amount(),
                     request.currency()
             );
@@ -55,15 +55,5 @@ public class PaymentOrderRequestConsumer {
         catch (Exception e){
             e.printStackTrace();
         }
-
-//        PaymentOrderResponse paymentOrderResponse = new PaymentOrderResponse(
-//                request.registrationId(),
-//                request.eventId(),
-//
-//                request.amount(),
-//                request.currency(),
-//                "Update this based on DB or other ops status"
-//        );
-
     }
 }
