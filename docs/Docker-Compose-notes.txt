@@ -42,6 +42,8 @@ docker compose up -d payment-service
 View logs:
 ----------
 docker compose logs -f api-gateway
-docker compose logs -f saga-orchestrator
 docker compose logs -f security-service
+docker compose logs -f saga-orchestrator
+docker compose logs -f customer-service
 docker compose logs -f payment-service
+docker compose logs -f event-service
