@@ -1,9 +1,7 @@
 package com.laughingenigma.saga_orchestrator.consumer;
 
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
-import com.laughingenigma.saga_orchestrator.dto.CustomerValidationResponse;
-import com.laughingenigma.saga_orchestrator.dto.SeatReservationRequest;
-import com.laughingenigma.saga_orchestrator.dto.SeatReservationResponse;
+import com.laughingenigma.saga_orchestrator.dto.SeatUnreserveResponse;
 import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
@@ -13,11 +11,11 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SeatReservationResponseConsumer {
+public class SeatUnreserveResponseConsumer {
     private final RegistrationSaga registrationSaga;
     private final SagaInstanceRepository sagaInstanceRepository;
 
-    public SeatReservationResponseConsumer(
+    public SeatUnreserveResponseConsumer(
             RegistrationSaga registrationSaga,
             SagaInstanceRepository sagaInstanceRepository) {
         this.registrationSaga = registrationSaga;
@@ -25,11 +23,16 @@ public class SeatReservationResponseConsumer {
     }
 
     @RabbitListener(
-            queues = RabbitMQConfig.SEAT_RESERVATION_RESPONSE_QUEUE
+            queues = RabbitMQConfig.SEAT_UNRESERVE_RESPONSE_QUEUE
     )
-    public void handleSeatReservationResponse(SeatReservationResponse response){
-        System.out.println("Reservation response: "+response);
-        System.out.println("Reservation Status: "+response.success());
-        registrationSaga.initiatePaymentOrder(response);
+    public void handleSeatUnreserveResponse(SeatUnreserveResponse response){
+        System.out.println("SeatUnreserveResponse response: "+response);
+        System.out.println("SeatUnreserveResponse Status: "+response.success());
+
+        //End of SAGA
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        sagaI.setCurrentStep(SagaStep.SEAT_UNRESERVED);
+        sagaI.setStatus(SagaStatus.COMPENSATED);
+        sagaInstanceRepository.save(sagaI);
     }
 }

@@ -57,6 +57,7 @@ export class PaymentCheckout {
                     !response.razorpay_signature) {
                     console.error('Razorpay returned an incomplete success response:', response);
                     callbacks?.onPaymentFailed?.();
+                    this.paymentService.paymentFailed(payment.registrationId, payment.eventId);
                     return;
                 }
 
@@ -73,8 +74,10 @@ export class PaymentCheckout {
         const razorpay = new window.Razorpay(options);
 
         razorpay.on('payment.failed', (response: { error: unknown }) => {
+            console.log('🔥 PAYMENT.FAILED EVENT FIRED', response);
             console.error('Razorpay payment failed:', response.error);
             callbacks?.onPaymentFailed?.();
+            this.paymentService.paymentFailed(payment.registrationId, payment.eventId);
         });
 
         razorpay.open();

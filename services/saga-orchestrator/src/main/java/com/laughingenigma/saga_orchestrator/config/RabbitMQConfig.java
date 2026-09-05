@@ -33,6 +33,14 @@ public class RabbitMQConfig {
             "payment-verify-response-queue";
     public static final String PAYMENT_VERIFY_RESPONSE_ROUTING_KEY =
             "payment.verify.response";
+    public static final String PAYMENT_FAILURE_RESPONSE_QUEUE =
+            "payment-failure-response-queue";
+    public static final String PAYMENT_FAILURE_RESPONSE_ROUTING_KEY =
+            "payment.failure.response";
+    public static final String SEAT_UNRESERVE_RESPONSE_QUEUE =
+            "seat-unreserve-response-queue";
+    public static final String SEAT_UNRESERVE_RESPONSE_ROUTING_KEY =
+            "seat.unreserve.response";
 
     //Outgoing commands
     public static final String SAGA_COMMAND_EXCHANGE =
@@ -45,6 +53,8 @@ public class RabbitMQConfig {
             "seat-reservation-request-queue";
     public static final String SEAT_RESERVATION_REQUEST_ROUTING_KEY =
             "seat.reservation.request";
+    public static final String SEAT_UNRESERVE_REQUEST_ROUTING_KEY =
+            "seat.unreserve.request";
     public static final String PAYMENT_ORDER_REQUEST_QUEUE =
             "payment-order-request-queue";
     public static final String PAYMENT_ORDER_REQUEST_ROUTING_KEY =
@@ -68,6 +78,10 @@ public class RabbitMQConfig {
         return new Queue(SEAT_RESERVATION_RESPONSE_QUEUE);
     }
     @Bean
+    public Queue seatUnreserveResponseQueue() {
+        return new Queue(SEAT_UNRESERVE_RESPONSE_QUEUE);
+    }
+    @Bean
     public Queue paymentOrderResponseQueue() {
         return new Queue(PAYMENT_ORDER_RESPONSE_QUEUE);
     }
@@ -75,7 +89,10 @@ public class RabbitMQConfig {
     public Queue paymentVerifyResponseQueue() {
         return new Queue(PAYMENT_VERIFY_RESPONSE_QUEUE);
     }
-
+    @Bean
+    public Queue paymentFailureResponseQueue() {
+        return new Queue(PAYMENT_FAILURE_RESPONSE_QUEUE);
+    }
 
     @Bean
     public Binding customerValidationResponseBinding(
@@ -96,6 +113,15 @@ public class RabbitMQConfig {
                 .with(SEAT_RESERVATION_RESPONSE_ROUTING_KEY);
     }
     @Bean
+    public Binding seatUnreserveResponseBinding(
+            Queue seatUnreserveResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(seatUnreserveResponseQueue)
+                .to(sagaResponseExchange)
+                .with(SEAT_UNRESERVE_RESPONSE_ROUTING_KEY);
+    }
+    @Bean
     public Binding paymentOrderResponseBinding(
             Queue paymentOrderResponseQueue,
             TopicExchange sagaResponseExchange) {
@@ -112,6 +138,15 @@ public class RabbitMQConfig {
                 .bind(paymentVerifyResponseQueue)
                 .to(sagaResponseExchange)
                 .with(PAYMENT_VERIFY_RESPONSE_ROUTING_KEY);
+    }
+    @Bean
+    public Binding paymentFailureResponseBinding(
+            Queue paymentFailureResponseQueue,
+            TopicExchange sagaResponseExchange) {
+        return BindingBuilder
+                .bind(paymentFailureResponseQueue)
+                .to(sagaResponseExchange)
+                .with(PAYMENT_FAILURE_RESPONSE_ROUTING_KEY);
     }
 
     /* Common */

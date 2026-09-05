@@ -1,9 +1,6 @@
 package com.laughingenigma.saga_orchestrator.controller;
 
-import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyRequest;
-import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
-import com.laughingenigma.saga_orchestrator.dto.RegistrationRequest;
-import com.laughingenigma.saga_orchestrator.dto.RegistrationResponse;
+import com.laughingenigma.saga_orchestrator.dto.*;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +33,13 @@ public class RegistrationController {
 
     @PostMapping("/payment/verify")
     public ResponseEntity<PaymentVerifyResponse> verifyPayment(@RequestBody PaymentVerifyRequest request){
+        PaymentVerifyResponse response = registrationSaga.verifyPaymentOrder(request);
+
+        return ResponseEntity.accepted().body(response);
+    }
+
+    @PostMapping("/payment/failed")
+    public ResponseEntity<PaymentVerifyResponse> verifyPayment(@RequestBody PaymentFailureRequest request){
         PaymentVerifyResponse response = registrationSaga.verifyPaymentOrder(request);
 
         return ResponseEntity.accepted().body(response);

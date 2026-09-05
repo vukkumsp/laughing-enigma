@@ -1,26 +1,25 @@
 package com.laughingenigma.saga_orchestrator.publisher;
 
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
-import com.laughingenigma.saga_orchestrator.dto.CustomerValidationRequest;
-import com.laughingenigma.saga_orchestrator.dto.SeatReservationRequest;
+import com.laughingenigma.saga_orchestrator.dto.SeatUnreserveRequest;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SeatReservationRequestPublisher {
+public class SeatUnreserveRequestPublisher {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public SeatReservationRequestPublisher(RabbitTemplate rabbitTemplate) {
+    public SeatUnreserveRequestPublisher(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
-    public void publish(SeatReservationRequest seatReservationRequest) {
-        System.out.println("Publishing SeatReservationRequest - "+seatReservationRequest);
+    public void publish(SeatUnreserveRequest seatUnreserveRequest) {
+        System.out.println("Publishing SeatUnreserveRequest - "+seatUnreserveRequest);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.SAGA_COMMAND_EXCHANGE,
-                RabbitMQConfig.SEAT_RESERVATION_REQUEST_ROUTING_KEY,
-                seatReservationRequest
+                RabbitMQConfig.SEAT_UNRESERVE_REQUEST_ROUTING_KEY,
+                seatUnreserveRequest
         );
     }
 }

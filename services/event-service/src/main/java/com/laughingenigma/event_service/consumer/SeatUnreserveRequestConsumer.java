@@ -3,23 +3,23 @@ package com.laughingenigma.event_service.consumer;
 import com.laughingenigma.event_service.config.RabbitMQConfig;
 import com.laughingenigma.event_service.dto.SeatReservationRequest;
 import com.laughingenigma.event_service.dto.SeatReservationResponse;
+import com.laughingenigma.event_service.dto.SeatUnreserveRequest;
+import com.laughingenigma.event_service.dto.SeatUnreserveResponse;
 import com.laughingenigma.event_service.entity.Event;
 import com.laughingenigma.event_service.publisher.SeatReservationResponsePublisher;
+import com.laughingenigma.event_service.publisher.SeatUnreserveResponsePublisher;
 import com.laughingenigma.event_service.service.EventService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-
 @Component
-public class SeatReservationRequestConsumer {
+public class SeatUnreserveRequestConsumer {
 
     private final EventService eventService;
-    private final SeatReservationResponsePublisher publisher;
+    private final SeatUnreserveResponsePublisher publisher;
 
-    public SeatReservationRequestConsumer(
-            EventService eventService, SeatReservationResponsePublisher publisher) {
+    public SeatUnreserveRequestConsumer(
+            EventService eventService, SeatUnreserveResponsePublisher publisher) {
         this.eventService = eventService;
         this.publisher = publisher;
     }
@@ -27,26 +27,22 @@ public class SeatReservationRequestConsumer {
     @RabbitListener(
             queues = RabbitMQConfig.SEAT_RESERVATION_REQUEST_QUEUE
     )
-    public void handleSeatReservationRequest(
-            SeatReservationRequest request) {
+    public void handleSeatUnreserveRequest(SeatUnreserveRequest request) {
 
-        System.out.println("SeatReservationRequestConsumer SeatReservationRequest - " + request);
+        System.out.println("SeatUnreserveRequestConsumer SeatUnreserveRequest - " + request);
         boolean success = false;
 
         try{
-            Event reservedEvent = eventService.reserveSeat(request.eventId());
+            Event reservedEvent = eventService.releaseSeat(request.eventId());
             success = true;
-            SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
+            SeatUnreserveResponse seatUnreserveResponse = new SeatUnreserveResponse(
                     request.registrationId(),
                     request.eventId(),
-                    request.customerId(),
-                    reservedEvent.getPrice(),
-                    reservedEvent.getCurrency(),
                     success
             );
-            System.out.println("handleSeatReservationRequest - "+request.registrationId());
+            System.out.println("handleSeatUnreserveRequest - "+request.registrationId());
 
-            publisher.publish(seatReservationResponse);
+            publisher.publish(seatUnreserveResponse);
         }
         catch (Exception e){
             e.printStackTrace();

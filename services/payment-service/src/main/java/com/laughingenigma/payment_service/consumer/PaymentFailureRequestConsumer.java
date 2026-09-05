@@ -1,23 +1,24 @@
 package com.laughingenigma.payment_service.consumer;
 
 import com.laughingenigma.payment_service.config.RabbitMQConfig;
-import com.laughingenigma.payment_service.dto.*;
+import com.laughingenigma.payment_service.dto.PaymentOrderRequest;
+import com.laughingenigma.payment_service.dto.PaymentOrderResponse;
+import com.laughingenigma.payment_service.dto.PaymentRequest;
+import com.laughingenigma.payment_service.publisher.PaymentFailureResponsePublisher;
 import com.laughingenigma.payment_service.publisher.PaymentOrderResponsePublisher;
 import com.laughingenigma.payment_service.service.PaymentService;
-import com.razorpay.Order;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PaymentOrderRequestConsumer {
+public class PaymentFailureRequestConsumer {
 
     private final PaymentService paymentService;
-    private final PaymentOrderResponsePublisher publisher;
+    private final PaymentFailureResponsePublisher publisher;
 
-    public PaymentOrderRequestConsumer(
+    public PaymentFailureRequestConsumer(
             PaymentService paymentService,
-            PaymentOrderResponsePublisher publisher) {
+            PaymentFailureResponsePublisher publisher) {
         this.paymentService = paymentService;
         this.publisher = publisher;
     }

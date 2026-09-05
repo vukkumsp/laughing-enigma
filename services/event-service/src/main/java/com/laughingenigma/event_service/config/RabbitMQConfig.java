@@ -21,6 +21,10 @@ public class RabbitMQConfig {
             "seat-reservation-request-queue";
     public static final String SEAT_RESERVATION_REQUEST_ROUTING_KEY =
             "seat.reservation.request";
+    public static final String SEAT_UNRESERVE_REQUEST_QUEUE =
+            "seat-unreserve-request-queue";
+    public static final String SEAT_UNRESERVE_REQUEST_ROUTING_KEY =
+            "seat.unreserve.request";
 
     // Outgoing response
     public static final String SAGA_RESPONSE_EXCHANGE =
@@ -37,6 +41,11 @@ public class RabbitMQConfig {
     public Queue seatReservationRequestQueue() {
         return new Queue(SEAT_RESERVATION_REQUEST_QUEUE);
     }
+    @Bean
+    public Queue seatUnreserveRequestQueue() {
+        return new Queue(SEAT_UNRESERVE_REQUEST_QUEUE);
+    }
+
 
     @Bean
     public Binding seatReservationRequestBinding(
@@ -47,6 +56,16 @@ public class RabbitMQConfig {
                 .bind(seatReservationRequestQueue)
                 .to(sagaCommandExchange)
                 .with(SEAT_RESERVATION_REQUEST_ROUTING_KEY);
+    }
+    @Bean
+    public Binding seatUnreserveRequestBinding(
+            Queue seatUnreserveRequestQueue,
+            TopicExchange sagaCommandExchange) {
+
+        return BindingBuilder
+                .bind(seatUnreserveRequestQueue)
+                .to(sagaCommandExchange)
+                .with(SEAT_UNRESERVE_REQUEST_ROUTING_KEY);
     }
 
     /* Common */

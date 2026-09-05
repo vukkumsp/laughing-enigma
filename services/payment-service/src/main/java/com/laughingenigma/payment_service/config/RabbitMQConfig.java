@@ -25,6 +25,10 @@ public class RabbitMQConfig {
             "payment-verify-request-queue";
     public static final String PAYMENT_VERIFY_REQUEST_ROUTING_KEY =
             "payment.verify.request";
+    public static final String PAYMENT_FAILURE_REQUEST_QUEUE =
+            "payment-failure-request-queue";
+    public static final String PAYMENT_FAILURE_REQUEST_ROUTING_KEY =
+            "payment.failure.request";
 
     // Outgoing response
     public static final String SAGA_RESPONSE_EXCHANGE =
@@ -33,6 +37,8 @@ public class RabbitMQConfig {
             "payment.order.response";
     public static final String PAYMENT_VERIFY_RESPONSE_ROUTING_KEY =
             "payment.verify.response";
+    public static final String PAYMENT_FAILURE_RESPONSE_ROUTING_KEY =
+            "payment.failure.response";
 
     @Bean
     public TopicExchange sagaCommandExchange() {
@@ -47,6 +53,10 @@ public class RabbitMQConfig {
     public Queue paymentVerifyRequestQueue() {
         return new Queue(PAYMENT_VERIFY_REQUEST_QUEUE);
     }
+    @Bean
+    public Queue paymentFailureRequestQueue() {
+        return new Queue(PAYMENT_FAILURE_REQUEST_QUEUE);
+    }
 
     @Bean
     public Binding paymentOrderRequestBinding(
@@ -57,7 +67,6 @@ public class RabbitMQConfig {
                 .to(sagaCommandExchange)
                 .with(PAYMENT_ORDER_REQUEST_ROUTING_KEY);
     }
-
     @Bean
     public Binding paymentVerifyRequestBinding(
             Queue paymentVerifyRequestQueue,
@@ -66,6 +75,15 @@ public class RabbitMQConfig {
                 .bind(paymentVerifyRequestQueue)
                 .to(sagaCommandExchange)
                 .with(PAYMENT_VERIFY_REQUEST_ROUTING_KEY);
+    }
+    @Bean
+    public Binding paymentFailureRequestBinding(
+            Queue paymentFailureRequestQueue,
+            TopicExchange sagaCommandExchange) {
+        return BindingBuilder
+                .bind(paymentFailureRequestQueue)
+                .to(sagaCommandExchange)
+                .with(PAYMENT_FAILURE_REQUEST_ROUTING_KEY);
     }
 
     /* Common */

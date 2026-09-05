@@ -5,10 +5,7 @@ import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.entity.SagaType;
-import com.laughingenigma.saga_orchestrator.publisher.CustomerValidationRequestPublisher;
-import com.laughingenigma.saga_orchestrator.publisher.PaymentOrderRequestPublisher;
-import com.laughingenigma.saga_orchestrator.publisher.PaymentVerifyRequestPublisher;
-import com.laughingenigma.saga_orchestrator.publisher.SeatReservationRequestPublisher;
+import com.laughingenigma.saga_orchestrator.publisher.*;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +14,7 @@ public class RegistrationSaga {
 
     private final CustomerValidationRequestPublisher customerValidationRequestPublisher;
     private final SeatReservationRequestPublisher seatReservationRequestPublisher;
+    private final SeatUnreserveRequestPublisher seatUnreserveRequestPublisher;
     private final PaymentOrderRequestPublisher  paymentOrderRequestPublisher;
     private final PaymentVerifyRequestPublisher paymentVerifyRequestPublisher;
 
@@ -25,11 +23,13 @@ public class RegistrationSaga {
     public RegistrationSaga(
             CustomerValidationRequestPublisher customerValidationRequestPublisher,
             SeatReservationRequestPublisher seatReservationRequestPublisher,
+            SeatUnreserveRequestPublisher seatUnreserveRequestPublisher,
             PaymentOrderRequestPublisher paymentOrderRequestPublisher,
             PaymentVerifyRequestPublisher paymentVerifyRequestPublisher,
             SagaInstanceRepository sagaInstanceRepository) {
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
+        this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
         this.paymentOrderRequestPublisher = paymentOrderRequestPublisher;
         this.paymentVerifyRequestPublisher = paymentVerifyRequestPublisher;
         this.sagaInstanceRepository = sagaInstanceRepository;
@@ -129,7 +129,6 @@ public class RegistrationSaga {
     }
 
     public PaymentVerifyResponse verifyPaymentOrder(PaymentVerifyRequest request) {
-        //
         paymentVerifyRequestPublisher.publish(request);
 
         return new PaymentVerifyResponse(
@@ -137,5 +136,23 @@ public class RegistrationSaga {
                 request.eventId(),
                 SagaStep.PAYMENT_VERIFICATION_STARTED.name()
         );
+    }
+
+    public void unreserveSeatsAsCompensation(PaymentFailureResponse response) {
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+
+        SeatUnreserveRequest seatUnreserveRequest =
+                new SeatUnreserveRequest(
+                        response.registrationId(),
+                        response.eventId()
+                );
+
+        seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
+
+        sagaI.setCurrentStep(SagaStep.SEAT_RELEASING);
+        sagaI.setStatus(SagaStatus.COMPENSATING);
+        sagaInstanceRepository.save(sagaI);
+
+        System.out.println("reserveSeatsForRegistration - "+response.registrationId());
     }
 }

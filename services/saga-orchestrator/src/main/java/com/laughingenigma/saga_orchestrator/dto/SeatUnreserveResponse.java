@@ -1,8 +1,4 @@
-package com.laughingenigma.event_service.dto;
-
-import com.laughingenigma.event_service.entity.Currency;
-
-import java.math.BigDecimal;
+package com.laughingenigma.saga_orchestrator.dto;
 
 public record SeatUnreserveResponse(
         String registrationId,

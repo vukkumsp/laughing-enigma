@@ -2,6 +2,7 @@ package com.laughingenigma.payment_service.consumer;
 
 import com.laughingenigma.payment_service.config.RabbitMQConfig;
 import com.laughingenigma.payment_service.dto.*;
+import com.laughingenigma.payment_service.publisher.PaymentOrderResponsePublisher;
 import com.laughingenigma.payment_service.service.PaymentService;
 import com.razorpay.Order;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -12,13 +13,13 @@ import org.springframework.stereotype.Component;
 public class PaymentOrderRequestConsumer {
 
     private final PaymentService paymentService;
-    private final RabbitTemplate rabbitTemplate;
+    private final PaymentOrderResponsePublisher publisher;
 
     public PaymentOrderRequestConsumer(
             PaymentService paymentService,
-            RabbitTemplate rabbitTemplate) {
+            PaymentOrderResponsePublisher publisher) {
         this.paymentService = paymentService;
-        this.rabbitTemplate = rabbitTemplate;
+        this.publisher = publisher;
     }
 
     @RabbitListener(
@@ -45,12 +46,7 @@ public class PaymentOrderRequestConsumer {
 
             System.out.println("handlePaymentOrderRequest - "+request.registrationId());
 
-            System.out.println("PaymentOrderRequestConsumer PaymentOrderResponse - " + paymentOrderResponse);
-            rabbitTemplate.convertAndSend(
-                    RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,
-                    RabbitMQConfig.PAYMENT_ORDER_RESPONSE_ROUTING_KEY,
-                    paymentOrderResponse
-            );
+            publisher.publish(paymentOrderResponse);
         }
         catch (Exception e){
             e.printStackTrace();
