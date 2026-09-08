@@ -19,7 +19,7 @@ public class SeatUnreserveResponsePublisher {
         System.out.println("SeatUnreserveResponsePublisher SeatUnreserveResponse - " + seatUnreserveResponse);
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.SAGA_RESPONSE_EXCHANGE,
-                RabbitMQConfig.SEAT_RESERVATION_RESPONSE_ROUTING_KEY,
+                RabbitMQConfig.SEAT_UNRESERVE_RESPONSE_ROUTING_KEY,
                 seatUnreserveResponse
         );
     }

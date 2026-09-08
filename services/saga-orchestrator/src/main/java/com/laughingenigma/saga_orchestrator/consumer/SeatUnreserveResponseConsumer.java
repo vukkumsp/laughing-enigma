@@ -31,8 +31,10 @@ public class SeatUnreserveResponseConsumer {
 
         //End of SAGA
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
-        sagaI.setCurrentStep(SagaStep.SEAT_UNRESERVED);
+        sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPENSATED);
         sagaI.setStatus(SagaStatus.COMPENSATED);
         sagaInstanceRepository.save(sagaI);
+
+        //SAGA COMPENSATED
     }
 }

@@ -39,8 +39,10 @@ public class RegistrationController {
     }
 
     @PostMapping("/payment/failed")
-    public ResponseEntity<PaymentVerifyResponse> verifyPayment(@RequestBody PaymentFailureRequest request){
-        PaymentVerifyResponse response = registrationSaga.verifyPaymentOrder(request);
+    public ResponseEntity<PaymentFailureResponse> verifyPayment(@RequestBody PaymentFailureRequest request){
+        PaymentFailureResponse response
+                = new PaymentFailureResponse(request.registrationId(), request.eventId());
+        registrationSaga.unreserveSeatsAsCompensation(response);
 
         return ResponseEntity.accepted().body(response);
     }

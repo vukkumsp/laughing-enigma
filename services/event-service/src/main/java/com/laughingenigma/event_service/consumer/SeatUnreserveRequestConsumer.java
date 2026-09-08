@@ -25,7 +25,7 @@ public class SeatUnreserveRequestConsumer {
     }
 
     @RabbitListener(
-            queues = RabbitMQConfig.SEAT_RESERVATION_REQUEST_QUEUE
+            queues = RabbitMQConfig.SEAT_UNRESERVE_REQUEST_QUEUE
     )
     public void handleSeatUnreserveRequest(SeatUnreserveRequest request) {
 

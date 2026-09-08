@@ -31,6 +31,8 @@ public class RabbitMQConfig {
             "saga.response.exchange";
     public static final String SEAT_RESERVATION_RESPONSE_ROUTING_KEY =
             "seat.reservation.response";
+    public static final String SEAT_UNRESERVE_RESPONSE_ROUTING_KEY =
+            "seat.unreserve.response";
 
     @Bean
     public TopicExchange sagaCommandExchange() {

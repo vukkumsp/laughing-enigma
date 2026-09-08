@@ -153,6 +153,6 @@ public class RegistrationSaga {
         sagaI.setStatus(SagaStatus.COMPENSATING);
         sagaInstanceRepository.save(sagaI);
 
-        System.out.println("reserveSeatsForRegistration - "+response.registrationId());
+        System.out.println("unreserveSeatsAsCompensation - "+response.registrationId());
     }
 }

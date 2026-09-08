@@ -2,6 +2,8 @@ package com.laughingenigma.payment_service.consumer;
 
 import com.laughingenigma.payment_service.config.RabbitMQConfig;
 import com.laughingenigma.payment_service.dto.*;
+import com.laughingenigma.payment_service.dto.event.PaymentFailureResponse;
+import com.laughingenigma.payment_service.publisher.PaymentFailureResponsePublisher;
 import com.laughingenigma.payment_service.publisher.PaymentVerifyResponsePublisher;
 import com.laughingenigma.payment_service.service.PaymentService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -13,12 +15,15 @@ public class PaymentVerifyRequestConsumer {
 
     private final PaymentService paymentService;
     private final PaymentVerifyResponsePublisher publisher;
+    private final PaymentFailureResponsePublisher failurePublisher;
 
     public PaymentVerifyRequestConsumer(
             PaymentService paymentService,
-            PaymentVerifyResponsePublisher publisher) {
+            PaymentVerifyResponsePublisher publisher,
+            PaymentFailureResponsePublisher failurePublisher) {
         this.paymentService = paymentService;
         this.publisher = publisher;
+        this.failurePublisher = failurePublisher;
     }
 
     @RabbitListener(
@@ -44,6 +49,13 @@ public class PaymentVerifyRequestConsumer {
             publisher.publish(paymentVerifyResponse);
         }
         catch (Exception e){
+            //payment failed start compensation
+            PaymentFailureResponse paymentFailureResponse = new PaymentFailureResponse(
+                    request.registrationId(),
+                    request.eventId()
+            );
+            failurePublisher.publish(paymentFailureResponse);
+
             e.printStackTrace();
         }
 
