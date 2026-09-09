@@ -4,6 +4,7 @@ import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
 import com.laughingenigma.saga_orchestrator.kafka.producer.RegistrationEventProducer;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,8 +22,8 @@ public class KafkaTestController {
         this.producer = producer;
     }
 
-    @PostMapping("/registration-completed")
-    public void publish() {
+    @PostMapping("/registration-status/{state}")
+    public void publishCompleted(@PathVariable int state) {
 
         EventDetails eventDetails = new EventDetails(
                 UUID.randomUUID().toString(),
@@ -41,7 +42,7 @@ public class KafkaTestController {
 
         RegistrationEvent event = new RegistrationEvent(
                 UUID.randomUUID(),
-                "RegistrationCompleted",
+                state == 1 ? "RegistrationCompleted":"RegistrationFailed",
                 1,
                 Instant.now(),
                 "saga-orchestrator",
