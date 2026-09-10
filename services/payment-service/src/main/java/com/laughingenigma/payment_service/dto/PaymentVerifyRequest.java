@@ -2,15 +2,22 @@ package com.laughingenigma.payment_service.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+
 public record PaymentVerifyRequest (
         String registrationId,
         Long eventId,
-
-//        @JsonProperty("razorpay_order_id")
+//---------------------------------------
+        Long customerId,
+        String username,
+        String email,
+        String firstName,
+        String lastName,
+//---------------------------------------
+        String eventName,
+        LocalDateTime eventDate,
         String razorpayOrderId,
-//        @JsonProperty("razorpay_payment_id")
         String razorpayPaymentId,
-//        @JsonProperty("razorpay_signature")
         String razorpaySignature
 ) {
 }

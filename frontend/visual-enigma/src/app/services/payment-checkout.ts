@@ -15,9 +15,18 @@ export class PaymentCheckout {
     openCheckout(payment: {
         registrationId: string;
         eventId: string;
-        orderId: string;
+
+        customerId: number;
+        username: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        
+        eventName: string;
+        eventDate: string;
         amount: number;
         currency: string;
+        orderId: string;
     }, callbacks?: {
         onPaymentFailed?: () => void;
     }): void {
@@ -57,11 +66,19 @@ export class PaymentCheckout {
                     !response.razorpay_signature) {
                     console.error('Razorpay returned an incomplete success response:', response);
                     callbacks?.onPaymentFailed?.();
-                    this.paymentService.paymentFailed(payment.registrationId, payment.eventId);
+                    this.paymentService.paymentFailed(
+                        payment.registrationId, payment.eventId,
+                        payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
+                        payment.eventName, payment.eventDate
+                    );
                     return;
                 }
 
-                this.paymentService.verifyPayment(payment.registrationId, payment.eventId, response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+                this.paymentService.verifyPayment(
+                    payment.registrationId, payment.eventId, 
+                    payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
+                    payment.eventName, payment.eventDate,
+                    response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
             }
             ,
             modal: {
@@ -77,7 +94,11 @@ export class PaymentCheckout {
             console.log('🔥 PAYMENT.FAILED EVENT FIRED', response);
             console.error('Razorpay payment failed:', response.error);
             callbacks?.onPaymentFailed?.();
-            this.paymentService.paymentFailed(payment.registrationId, payment.eventId);
+            this.paymentService.paymentFailed(
+                payment.registrationId, payment.eventId,
+                payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
+                payment.eventName, payment.eventDate
+            );
         });
 
         razorpay.open();

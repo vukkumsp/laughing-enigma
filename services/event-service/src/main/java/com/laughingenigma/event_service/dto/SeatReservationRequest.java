@@ -2,8 +2,12 @@ package com.laughingenigma.event_service.dto;
 
 public record SeatReservationRequest (
         String registrationId,
-        String username,
+        Long eventId,
+//---------------------------------
         Long customerId,
-        Long eventId
+        String username,
+        String email,
+        String firstName,
+        String lastName
 ) {
 }

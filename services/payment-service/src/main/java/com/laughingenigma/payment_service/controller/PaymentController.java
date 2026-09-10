@@ -1,9 +1,6 @@
 package com.laughingenigma.payment_service.controller;
 
-import com.laughingenigma.payment_service.dto.PaymentOrderResponse;
-import com.laughingenigma.payment_service.dto.PaymentRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerificationRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerificationResponse;
+import com.laughingenigma.payment_service.dto.*;
 import com.laughingenigma.payment_service.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +18,7 @@ public class PaymentController {
 
     @PostMapping("/orders")
     public ResponseEntity<PaymentOrderResponse> createOrder(
-            @Valid @RequestBody PaymentRequest request) {
+            @Valid @RequestBody PaymentOrderRequest request) {
 
         return ResponseEntity.ok(
                 paymentService.createOrder(request)

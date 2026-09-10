@@ -38,11 +38,11 @@ public class PaymentOrderRequestConsumer {
                     request.eventId(),
                     "paymentEventInPaymentService",
                     request.customerId(),
-                    request.amount(),
+                    request.price(),
                     request.currency()
             );
 
-            PaymentOrderResponse paymentOrderResponse = paymentService.createOrder(paymentRequest);
+            PaymentOrderResponse paymentOrderResponse = paymentService.createOrder(request);
 
             System.out.println("handlePaymentOrderRequest - "+request.registrationId());
 

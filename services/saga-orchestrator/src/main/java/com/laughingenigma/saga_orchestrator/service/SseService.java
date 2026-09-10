@@ -57,16 +57,32 @@ public class SseService {
                                   "message": "Complete the payment",
                                   "registrationId": "%s",
                                   "eventId": "%s",
-                                  "orderId": "%s",
+                                  "customerId": %s,
+                                  "username": "%s",
+                                  "email": "%s",
+                                  "firstName": "%s",
+                                  "lastName": "%s",
+                                  "eventName": "%s",
+                                  "eventDate": "%s",
                                   "amount": %s,
-                                  "currency": "%s"
+                                  "currency": "%s",
+                                  "orderId": "%s"
                                 }
                                 """.formatted(
                                     response.registrationId(),
                                     response.eventId(),
-                                    response.orderId(),
-                                    response.amount(),
-                                    response.currency()))
+
+                                    response.customerId(),
+                                    response.username(),
+                                    response.email(),
+                                    response.firstName(),
+                                    response.lastName(),
+
+                                    response.eventName(),
+                                    response.eventDate(),
+                                    response.price(),
+                                    response.currency(),
+                                    response.orderId()))
             );
         } catch (IOException e) {
             emitters.remove(response.registrationId());
@@ -89,7 +105,7 @@ public class SseService {
                             .name(SSE_EVENT.PAYMENT_SUCCESS.name())
                             .data("""
                                 {
-                                  "message": "SSE is working",
+                                  "message": "Payment Verified",
                                   "registrationId": "%s",
                                   "eventId": "%s",
                                   "status": "%s"

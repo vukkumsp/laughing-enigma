@@ -18,6 +18,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Component
@@ -66,22 +67,22 @@ public class PaymentVerifyResponseConsumer {
         sagaInstanceRepository.save(sagaI);
 
         //send email notification
-        UUID eventId = UUID.randomUUID();
+        UUID kafkaEventId = UUID.randomUUID();
         EventDetails eventDetails = new EventDetails(
                 response.eventId(),
-                "Event Name",
-                Instant.now(),
+                response.eventName(),
+                response.eventDate().toInstant(ZoneOffset.UTC),
                 Instant.now()
         );
         RegistrationEventPayload payload = new RegistrationCompletedPayload(
                 response.registrationId(),
-                "test123",
-                "test123@test.com",
+                response.username(),
+                response.email(),
                 eventDetails
         );
         RegistrationEvent event = new RegistrationEvent(
-                eventId,
-                "RegistrationCompleted",
+                kafkaEventId,
+                KafkaConfig.REGISTRATION_COMPLETED,
                 1,
                 Instant.now(),
                 KafkaConfig.APPLICATION_NAME,

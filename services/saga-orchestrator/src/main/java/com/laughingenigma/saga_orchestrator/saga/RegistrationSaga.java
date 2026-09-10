@@ -6,16 +6,15 @@ import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.entity.SagaType;
-import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
-import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
-import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
-import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload;
+import com.laughingenigma.saga_orchestrator.kafka.event.*;
 import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
 import com.laughingenigma.saga_orchestrator.publisher.*;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Service
@@ -99,9 +98,12 @@ public class RegistrationSaga {
         SeatReservationRequest seatReservationRequest =
                 new SeatReservationRequest(
                         response.registrationId(),
-                        response.username(),
+                        response.eventId(),
                         response.customerId(),
-                        response.eventId()
+                        response.username(),
+                        response.email(),
+                        response.firstName(),
+                        response.lastName()
                 );
 
         // Customer validation succeeded.
@@ -132,7 +134,15 @@ public class RegistrationSaga {
         PaymentOrderRequest paymentOrderRequest = new  PaymentOrderRequest(
                 response.registrationId(),
                 response.eventId(),
+
                 response.customerId(),
+                response.username(),
+                response.email(),
+                response.firstName(),
+                response.lastName(),
+
+                response.eventName(),
+                response.eventDate(),
                 response.price(),
                 response.currency()
         );
@@ -146,6 +156,15 @@ public class RegistrationSaga {
         return new PaymentVerifyResponse(
                 request.registrationId(),
                 request.eventId(),
+                request.customerId(),
+                request.username(),
+                request.email(),
+                request.firstName(),
+                request.lastName(),
+                request.eventName(),
+                request.eventDate(),
+                request.razorpayOrderId(),
+                request.razorpayPaymentId(),
                 SagaStep.PAYMENT_VERIFICATION_STARTED.name()
         );
     }
@@ -156,7 +175,16 @@ public class RegistrationSaga {
         SeatUnreserveRequest seatUnreserveRequest =
                 new SeatUnreserveRequest(
                         response.registrationId(),
-                        response.eventId()
+                        response.eventId(),
+
+                        response.customerId(),
+                        response.username(),
+                        response.email(),
+                        response.firstName(),
+                        response.lastName(),
+
+                        response.eventName(),
+                        response.eventDate()
                 );
 
         seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
@@ -168,22 +196,23 @@ public class RegistrationSaga {
         System.out.println("unreserveSeatsAsCompensation - "+response.registrationId());
 
         //send email notification
-        UUID eventId = UUID.randomUUID();
+        UUID kafkaEventId = UUID.randomUUID();
         EventDetails eventDetails = new EventDetails(
                 response.eventId(),
-                "Event Name",
-                Instant.now(),
+                response.eventName(),
+                response.eventDate().toInstant(ZoneOffset.UTC),
                 Instant.now()
         );
-        RegistrationEventPayload payload = new RegistrationCompletedPayload(
+        RegistrationEventPayload payload = new RegistrationFailedPayload(
                 response.registrationId(),
-                "test456",
-                "test456@test.com",
-                eventDetails
+                response.username(),
+                response.email(),
+                eventDetails,
+                "Payment Failed"
         );
         RegistrationEvent event = new RegistrationEvent(
-                eventId,
-                "RegistrationFailed",
+                kafkaEventId,
+                KafkaConfig.REGISTRATION_FAILED,
                 1,
                 Instant.now(),
                 KafkaConfig.APPLICATION_NAME,

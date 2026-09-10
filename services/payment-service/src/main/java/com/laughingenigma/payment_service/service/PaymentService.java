@@ -1,9 +1,6 @@
 package com.laughingenigma.payment_service.service;
 
-import com.laughingenigma.payment_service.dto.PaymentOrderResponse;
-import com.laughingenigma.payment_service.dto.PaymentRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerificationRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerificationResponse;
+import com.laughingenigma.payment_service.dto.*;
 import com.laughingenigma.payment_service.entity.Payment;
 import com.laughingenigma.payment_service.entity.PaymentStatus;
 import com.laughingenigma.payment_service.repository.PaymentRepository;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 import com.razorpay.Utils;
@@ -44,10 +42,10 @@ public class PaymentService {
         this.paymentRepository = paymentRepository;
     }
 
-    public PaymentOrderResponse createOrder(PaymentRequest request) {
+    public PaymentOrderResponse createOrder(PaymentOrderRequest request) {
 
         try {
-            long amountInPaise = request.amount()
+            long amountInPaise = request.price()
                     .movePointRight(2)
                     .longValueExact();
 
@@ -65,7 +63,7 @@ public class PaymentService {
             // persist payment record
             Payment payment = Payment.builder()
                     .customerId(request.customerId())
-                    .amount(request.amount())
+                    .amount(request.price())
                     .currency("INR")
                     .razorpayOrderId(order.get("id"))
                     .status(PaymentStatus.CREATED)
@@ -79,10 +77,18 @@ public class PaymentService {
             return new PaymentOrderResponse(
                     request.registrationId(),
                     request.eventId(),
+
                     request.customerId(),
-                    order.get("id"),
-                    request.amount(),
+                    request.username(),
+                    request.email(),
+                    request.firstName(),
+                    request.lastName(),
+
+                    request.eventName(),
+                    request.eventDate(),
+                    request.price(),
                     request.currency(),
+                    order.get("id"),
                     order.get("status")
             );
 
@@ -101,11 +107,19 @@ public class PaymentService {
             return new PaymentOrderResponse(
                     null,
                     null,
+
                     0L,
-                    order.get("id"),
+                    "",
+                    "",
+                    "",
+                    "",
+
+                    "",
+                    LocalDateTime.now(),
                     BigDecimal.valueOf(amount.longValue())
                             .movePointLeft(2),
                     order.get("currency"),
+                    order.get("id"),
                     order.get("status")
             );
 

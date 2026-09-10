@@ -29,8 +29,7 @@ public class PaymentVerifyRequestConsumer {
     @RabbitListener(
             queues = RabbitMQConfig.PAYMENT_VERIFY_REQUEST_QUEUE
     )
-    public void handlePaymentVerifyRequest(
-            PaymentVerifyRequest request) {
+    public void handlePaymentVerifyRequest(PaymentVerifyRequest request) {
         System.out.println("PaymentVerifyRequestConsumer PaymentVerifyRequest - " + request);
 
         try{
@@ -41,6 +40,8 @@ public class PaymentVerifyRequestConsumer {
 
             PaymentVerifyResponse paymentVerifyResponse = new PaymentVerifyResponse(
                 request.registrationId(), request.eventId(),
+                request.customerId(), request.username(), request.email(), request.firstName(), request.lastName(),
+                request.eventName(), request.eventDate(),
                 response.orderId(), response.paymentId(), response.status()
             );
 

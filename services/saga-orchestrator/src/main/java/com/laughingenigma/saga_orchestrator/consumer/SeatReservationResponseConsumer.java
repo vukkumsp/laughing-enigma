@@ -15,13 +15,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SeatReservationResponseConsumer {
     private final RegistrationSaga registrationSaga;
-    private final SagaInstanceRepository sagaInstanceRepository;
 
     public SeatReservationResponseConsumer(
             RegistrationSaga registrationSaga,
             SagaInstanceRepository sagaInstanceRepository) {
         this.registrationSaga = registrationSaga;
-        this.sagaInstanceRepository = sagaInstanceRepository;
     }
 
     @RabbitListener(

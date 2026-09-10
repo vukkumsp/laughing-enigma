@@ -8,4 +8,7 @@ public class KafkaConfig {
     @Value("${spring.application.name")
     public static final String APPLICATION_NAME = "saga_orchestrator";
     public static final String REGISTRATION_EVENTS_TOPIC = "registration-events";
+
+    public static final String REGISTRATION_COMPLETED = "RegistrationCompleted";
+    public static final String REGISTRATION_FAILED = "RegistrationFailed";
 }

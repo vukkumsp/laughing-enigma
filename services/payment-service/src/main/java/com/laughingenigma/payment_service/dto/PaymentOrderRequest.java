@@ -1,12 +1,22 @@
 package com.laughingenigma.payment_service.dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record PaymentOrderRequest(
         String registrationId,
         Long eventId,
+//---------------------------------
         Long customerId,
-        BigDecimal amount,
+        String username,
+        String email,
+        String firstName,
+        String lastName,
+//---------------------------------
+        String eventName,
+        LocalDateTime eventDate,
+        BigDecimal price,
         String currency
 ) {
 }

@@ -1,7 +1,6 @@
 package com.laughingenigma.event_service.publisher;
 
 import com.laughingenigma.event_service.config.RabbitMQConfig;
-import com.laughingenigma.event_service.dto.SeatReservationResponse;
 import com.laughingenigma.event_service.dto.SeatUnreserveResponse;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;

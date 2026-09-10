@@ -10,10 +10,26 @@ export class Payment {
     private readonly auth = inject(Auth);
     private readonly http = inject(HttpClient);
 
-    verifyPayment(registrationId: string, eventId: string, 
+    verifyPayment(
+      registrationId: string, eventId: string,
+      customerId: number,
+      username: string,
+      email: string,
+      firstName: string,
+      lastName: string,
+      eventName: string,
+      eventDate: string,
       razorpayOrderId: string, razorpayPaymentId: string, razorpaySignature: string): void {
       this.http.post(`${this.apiUrl}/registrations/payment/verify`, 
-            { registrationId, eventId, razorpayOrderId, razorpayPaymentId, razorpaySignature }).subscribe({
+            { 
+              registrationId, eventId, 
+              customerId,
+              username,
+              email,
+              firstName,
+              lastName,
+              eventName, eventDate,
+              razorpayOrderId, razorpayPaymentId, razorpaySignature }).subscribe({
         next: (response: any) => {
           console.log('Verification started successfully:', response);
         },
@@ -23,9 +39,25 @@ export class Payment {
       });
     }
 
-    paymentFailed(registrationId: string, eventId: string): void {
+    paymentFailed(
+      registrationId: string, eventId: string,
+      customerId: number,
+      username: string,
+      email: string,
+      firstName: string,
+      lastName: string,
+      eventName: string,
+      eventDate: string
+    ): void {
       this.http.post(`${this.apiUrl}/registrations/payment/failed`, 
-            { registrationId, eventId }).subscribe({
+            { registrationId, eventId,
+              customerId,
+              username,
+              email,
+              firstName,
+              lastName,
+              eventName, eventDate
+             }).subscribe({
         next: (response: any) => {
           console.log('Payment failed notification sent successfully:', response);
         },

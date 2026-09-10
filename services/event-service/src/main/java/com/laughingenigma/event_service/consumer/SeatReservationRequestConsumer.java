@@ -39,7 +39,15 @@ public class SeatReservationRequestConsumer {
             SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
                     request.registrationId(),
                     request.eventId(),
+
                     request.customerId(),
+                    request.username(),
+                    request.email(),
+                    request.firstName(),
+                    request.lastName(),
+
+                    reservedEvent.getName(),
+                    reservedEvent.getEventDate(),
                     reservedEvent.getPrice(),
                     reservedEvent.getCurrency(),
                     success

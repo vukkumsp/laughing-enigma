@@ -27,7 +27,14 @@ public class CustomerValidationController {
         boolean valid = customer != null;
 
         CustomerValidationResponse customerValidationResponse = new CustomerValidationResponse(
-                request.registrationId(), request.eventId(), valid, valid ? customer.getId() : 0L, request.username());
+                request.registrationId(),
+                request.eventId(),
+                valid,
+                valid ? customer.getId() : 0L,
+                valid ? customer.getUsername() : "",
+                valid ? customer.getEmail() : "",
+                valid ? customer.getFirstName() : "",
+                valid ? customer.getLastName() : "");
 
         return ResponseEntity
                 .ok(customerValidationResponse);
