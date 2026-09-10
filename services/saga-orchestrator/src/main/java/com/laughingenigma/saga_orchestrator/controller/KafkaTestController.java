@@ -26,7 +26,7 @@ public class KafkaTestController {
     public void publishCompleted(@PathVariable int state) {
 
         EventDetails eventDetails = new EventDetails(
-                UUID.randomUUID().toString(),
+                1L,
                 "Java Conference 2026",
                 Instant.parse("2026-10-10T10:00:00Z"),
                 Instant.parse("2026-10-10T17:00:00Z")

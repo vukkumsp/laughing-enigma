@@ -33,7 +33,7 @@ public class EmailTestController {
                                 "postmanUser",
                                 "test@example.com",
                                 new EventDetails(
-                                        "event1",
+                                        1L,
                                         "eventName",
                                         Instant.now(),
                                         Instant.now()
@@ -48,7 +48,7 @@ public class EmailTestController {
                                 "postmanUser",
                                 "test@example.com",
                                 new EventDetails(
-                                        "event1",
+                                        2L,
                                         "eventName",
                                         Instant.now(),
                                         Instant.now()

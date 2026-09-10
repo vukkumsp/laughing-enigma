@@ -1,18 +1,24 @@
 package com.laughingenigma.notification_service.kafka.dispatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laughingenigma.notification_service.email.EmailSender;
 import com.laughingenigma.notification_service.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.notification_service.kafka.event.RegistrationEvent;
 import com.laughingenigma.notification_service.kafka.event.RegistrationFailedPayload;
+import com.laughingenigma.notification_service.service.EmailNotificationService;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RegistrationEventDispatcher {
 
     private final ObjectMapper objectMapper;
+    private final EmailNotificationService emailNotificationService;
 
-    public RegistrationEventDispatcher(ObjectMapper objectMapper) {
+    public RegistrationEventDispatcher(
+            ObjectMapper objectMapper,
+            EmailNotificationService emailNotificationService) {
         this.objectMapper = objectMapper;
+        this.emailNotificationService = emailNotificationService;
     }
 
     public void dispatch(RegistrationEvent event) {
@@ -53,6 +59,8 @@ public class RegistrationEventDispatcher {
                 "Registration completed: " +
                         payload.registrationId()
         );
+
+        emailNotificationService.sendRegistrationCompleted(payload);
     }
 
     private void handleFailed(
@@ -63,5 +71,7 @@ public class RegistrationEventDispatcher {
                 "Registration failed: " +
                         payload.registrationId()
         );
+
+        emailNotificationService.sendRegistrationFailed(payload);
     }
 }

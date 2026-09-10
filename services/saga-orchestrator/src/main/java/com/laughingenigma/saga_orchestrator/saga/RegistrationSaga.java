@@ -1,13 +1,22 @@
 package com.laughingenigma.saga_orchestrator.saga;
 
+import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
 import com.laughingenigma.saga_orchestrator.dto.*;
 import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.entity.SagaType;
+import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload;
+import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
 import com.laughingenigma.saga_orchestrator.publisher.*;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class RegistrationSaga {
@@ -17,6 +26,7 @@ public class RegistrationSaga {
     private final SeatUnreserveRequestPublisher seatUnreserveRequestPublisher;
     private final PaymentOrderRequestPublisher  paymentOrderRequestPublisher;
     private final PaymentVerifyRequestPublisher paymentVerifyRequestPublisher;
+    private final KafkaRegistrationEventProducer kafkaRegistrationEventProducer;
 
     private final SagaInstanceRepository sagaInstanceRepository;
 
@@ -26,13 +36,15 @@ public class RegistrationSaga {
             SeatUnreserveRequestPublisher seatUnreserveRequestPublisher,
             PaymentOrderRequestPublisher paymentOrderRequestPublisher,
             PaymentVerifyRequestPublisher paymentVerifyRequestPublisher,
-            SagaInstanceRepository sagaInstanceRepository) {
+            SagaInstanceRepository sagaInstanceRepository,
+            KafkaRegistrationEventProducer kafkaRegistrationEventProducer) {
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
         this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
         this.paymentOrderRequestPublisher = paymentOrderRequestPublisher;
         this.paymentVerifyRequestPublisher = paymentVerifyRequestPublisher;
         this.sagaInstanceRepository = sagaInstanceRepository;
+        this.kafkaRegistrationEventProducer = kafkaRegistrationEventProducer;
     }
 
     public RegistrationResponse startRegistration(
@@ -154,5 +166,33 @@ public class RegistrationSaga {
         sagaInstanceRepository.save(sagaI);
 
         System.out.println("unreserveSeatsAsCompensation - "+response.registrationId());
+
+        //send email notification
+        UUID eventId = UUID.randomUUID();
+        EventDetails eventDetails = new EventDetails(
+                response.eventId(),
+                "Event Name",
+                Instant.now(),
+                Instant.now()
+        );
+        RegistrationEventPayload payload = new RegistrationCompletedPayload(
+                response.registrationId(),
+                "test456",
+                "test456@test.com",
+                eventDetails
+        );
+        RegistrationEvent event = new RegistrationEvent(
+                eventId,
+                "RegistrationFailed",
+                1,
+                Instant.now(),
+                KafkaConfig.APPLICATION_NAME,
+                payload
+        );
+        sendEmailNotification(event);
+    }
+
+    public void sendEmailNotification(RegistrationEvent event){
+        kafkaRegistrationEventProducer.publish(event);
     }
 }

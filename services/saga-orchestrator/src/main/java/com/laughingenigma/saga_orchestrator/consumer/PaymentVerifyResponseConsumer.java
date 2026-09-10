@@ -1,16 +1,24 @@
 package com.laughingenigma.saga_orchestrator.consumer;
 
+import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.PaymentOrderResponse;
 import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
+import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Component
 public class PaymentVerifyResponseConsumer {
@@ -56,5 +64,29 @@ public class PaymentVerifyResponseConsumer {
         sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPLETED);
         sagaI.setStatus(SagaStatus.COMPLETED);
         sagaInstanceRepository.save(sagaI);
+
+        //send email notification
+        UUID eventId = UUID.randomUUID();
+        EventDetails eventDetails = new EventDetails(
+                response.eventId(),
+                "Event Name",
+                Instant.now(),
+                Instant.now()
+        );
+        RegistrationEventPayload payload = new RegistrationCompletedPayload(
+                response.registrationId(),
+                "test123",
+                "test123@test.com",
+                eventDetails
+        );
+        RegistrationEvent event = new RegistrationEvent(
+                eventId,
+                "RegistrationCompleted",
+                1,
+                Instant.now(),
+                KafkaConfig.APPLICATION_NAME,
+                payload
+        );
+        registrationSaga.sendEmailNotification(event);
     }
 }
