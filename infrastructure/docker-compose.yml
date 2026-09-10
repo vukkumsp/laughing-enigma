@@ -71,9 +71,26 @@ services:
       - ../services/notification-service/secrets:/app/secrets:ro
     ports:
       - "8086:8080"
+    depends_on:
+      mailpit:
+        condition: service_healthy
     networks:
       - app-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "8025:8025" # Web UI & API
+      - "1025:1025" # SMTP Server
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8025/api/v1/info"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+      
 networks:
   app-network:
     driver: bridge
