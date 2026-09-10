@@ -25,6 +25,8 @@ services:
       context: ../services/saga-orchestrator
     env_file:
       - ../services/saga-orchestrator/.env
+    volumes:
+      - ../services/saga-orchestrator/secrets:/app/secrets:ro
     ports:
       - "8082:8080"
     networks:
@@ -57,6 +59,18 @@ services:
       - ../services/payment-service/.env
     ports:
       - "8085:8080"
+    networks:
+      - app-network
+
+  notification-service:
+    build:
+      context: ../services/notification-service
+    env_file:
+      - ../services/notification-service/.env
+    volumes:
+      - ../services/notification-service/secrets:/app/secrets:ro
+    ports:
+      - "8086:8080"
     networks:
       - app-network
 
