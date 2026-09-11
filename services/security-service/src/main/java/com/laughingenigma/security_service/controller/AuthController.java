@@ -70,8 +70,7 @@ public class AuthController {
 
         String username = jwtService.getUsernameFromToken(refreshToken);
 
-        User user = userService.getUser(username)
-                .orElse(null);
+        User user = userService.getUser(username);
 
         if (user == null) {
             return ResponseEntity

@@ -1,6 +1,7 @@
 package com.laughingenigma.event_service.service;
 
 import com.laughingenigma.event_service.entity.Event;
+import com.laughingenigma.event_service.error.exception.ResourceNotFoundException;
 import com.laughingenigma.event_service.repository.EventRepository;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,11 @@ public class EventService {
     public Event reserveSeat(Long eventId) {
 
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with eventId " + eventId + " was not found"
+                        )
+                );
 
         if (event.getAvailableSeats() <= 0) {
             throw new RuntimeException("No seats available");

@@ -3,6 +3,7 @@ package com.laughingenigma.security_service.service;
 
 import com.laughingenigma.security_service.entity.Role;
 import com.laughingenigma.security_service.entity.User;
+import com.laughingenigma.security_service.error.exception.ResourceNotFoundException;
 import com.laughingenigma.security_service.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,13 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public Optional<User> getUser(String username) {
-        return userRepository.findByUsername(username);
+    public User getUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with username " + username + " was not found"
+                        )
+                );
     }
 
     public User authenticate(String username, String rawPassword) {

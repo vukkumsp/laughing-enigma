@@ -6,6 +6,7 @@ import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.entity.SagaType;
+import com.laughingenigma.saga_orchestrator.error.exception.ResourceNotFoundException;
 import com.laughingenigma.saga_orchestrator.kafka.event.*;
 import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
 import com.laughingenigma.saga_orchestrator.publisher.*;
@@ -68,7 +69,12 @@ public class RegistrationSaga {
 
         customerValidationRequestPublisher.publish(customerValidationRequest);
 
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(registrationId).orElseThrow();
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(registrationId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with username " + username + " was not found"
+                        )
+                );
         sagaI.setCurrentStep(SagaStep.CUSTOMER_VALIDATION);
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
         sagaInstanceRepository.save(sagaI);
@@ -83,12 +89,16 @@ public class RegistrationSaga {
 
     public void reserveSeatsForRegistration(
             CustomerValidationResponse response) {
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with response.registrationId() " + response.registrationId() + " was not found"
+                        )
+                );
 
         if (!response.valid()) {
             // Saga failed
 //            handleRegistrationFailure(response);
-            sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
             sagaI.setCurrentStep(SagaStep.CUSTOMER_VALIDATION_FAILED);
             sagaI.setStatus(SagaStatus.IN_PROGRESS);
             sagaInstanceRepository.save(sagaI);
@@ -118,7 +128,12 @@ public class RegistrationSaga {
     }
 
     public void initiatePaymentOrder(SeatReservationResponse response) {
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with response.registrationId() " + response.registrationId() + " was not found"
+                        )
+                );
         if (!response.success()) {
             // Saga failed
             sagaI.setCurrentStep(SagaStep.SEAT_RESERVATION_FAILED);
@@ -170,7 +185,12 @@ public class RegistrationSaga {
     }
 
     public void unreserveSeatsAsCompensation(PaymentFailureResponse response) {
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User with response.registrationId() " + response.registrationId() + " was not found"
+                        )
+                );
 
         SeatUnreserveRequest seatUnreserveRequest =
                 new SeatUnreserveRequest(

@@ -3,6 +3,7 @@ package com.laughingenigma.payment_service.service;
 import com.laughingenigma.payment_service.dto.*;
 import com.laughingenigma.payment_service.entity.Payment;
 import com.laughingenigma.payment_service.entity.PaymentStatus;
+import com.laughingenigma.payment_service.error.exception.ResourceNotFoundException;
 import com.laughingenigma.payment_service.repository.PaymentRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -161,8 +162,8 @@ public class PaymentService {
                             request.razorpayOrderId()
                     )
                     .orElseThrow(() ->
-                            new RuntimeException(
-                                    "Payment order not found"
+                            new ResourceNotFoundException(
+                                    "User with request.razorpayOrderId() " + request.razorpayOrderId() + " was not found"
                             )
                     );
 

@@ -3,6 +3,7 @@ package com.laughingenigma.customer_service.service;
 import com.laughingenigma.customer_service.dto.CustomerValidationResponse;
 import com.laughingenigma.customer_service.entity.Customer;
 import com.laughingenigma.customer_service.entity.CustomerStatus;
+import com.laughingenigma.customer_service.error.exception.ResourceNotFoundException;
 import com.laughingenigma.customer_service.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +27,11 @@ public class CustomerService {
 
         //check 2
         Optional<Customer> customerOpt = customerRepository.findByUsername(username);
-        Customer customer = customerOpt.orElse(null);
+        Customer customer = customerRepository.findByUsername(username).orElseThrow(() ->
+                new ResourceNotFoundException(
+                        "User with username " + username + " was not found"
+                )
+        );
         if(customerOpt.isPresent()) {
 
             //check 3
