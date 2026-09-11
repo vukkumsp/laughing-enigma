@@ -1,7 +1,7 @@
 package com.laughingenigma.saga_orchestrator.error.handler;
 
-import com.laughingenigma.security_service.error.dto.ErrorResponse;
-import com.laughingenigma.security_service.error.exception.ResourceNotFoundException;
+import com.laughingenigma.saga_orchestrator.error.dto.ErrorResponse;
+import com.laughingenigma.saga_orchestrator.error.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
