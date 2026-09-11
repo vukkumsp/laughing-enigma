@@ -1,22 +1,28 @@
-INSERT INTO events (name, description, event_date, available_seats, currency, price)
+INSERT INTO events (name, description, event_date, available_seats, currency, price, created_at, updated_at)
 VALUES
-    ('Spring Boot Workshop',
-     'Hands-on Spring Boot microservices workshop',
-     '2026-09-10 10:00:00',
+    ('Claypot Making Workshop',
+     'Hands-on experience and guidance on making claypot workshop',
+     '2027-09-10 10:00:00Z',
      50,
      'INR',
-     100),
+     100,
+     CURRENT_TIMESTAMP,
+     CURRENT_TIMESTAMP),
 
-    ('Java Architecture Meetup',
-     'Discussion on designing scalable Java systems',
-     '2026-09-15 18:00:00',
+    ('Public Speaking Meetup',
+     'Discussion on how to begin public speaking',
+     '2027-09-15 18:00:00Z',
      30,
      'INR',
-     200),
+     200,
+     CURRENT_TIMESTAMP,
+     CURRENT_TIMESTAMP),
 
-    ('Backend Engineering Conference',
-     'Microservices, messaging and distributed systems',
-     '2026-09-25 09:00:00',
+    ('Startup Conference',
+     'New Innovations and Products introduced by new Startups',
+     '2027-09-25 09:00:00Z',
      100,
      'INR',
-     50);
+     50,
+     CURRENT_TIMESTAMP,
+     CURRENT_TIMESTAMP);

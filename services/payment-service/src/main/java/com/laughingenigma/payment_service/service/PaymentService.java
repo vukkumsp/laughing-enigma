@@ -67,8 +67,8 @@ public class PaymentService {
                     .currency("INR")
                     .razorpayOrderId(order.get("id"))
                     .status(PaymentStatus.CREATED)
-                    .createdAt(LocalDateTime.now())
-                    .updatedAt(LocalDateTime.now())
+//                    .createdAt(LocalDateTime.now()) //JPA will update created column
+//                    .updatedAt(LocalDateTime.now()) //JPA will update updated column
                     .build();
 
             paymentRepository.save(payment);
@@ -186,8 +186,8 @@ public class PaymentService {
                     request.razorpayPaymentId()
             );
             payment.setStatus(PaymentStatus.SUCCESS);
-            payment.setPaidAt(LocalDateTime.now());
-            payment.setUpdatedAt(LocalDateTime.now());
+            payment.setPaidAt(Instant.now());
+//            payment.setUpdatedAt(LocalDateTime.now()); //JPA will update updated column
 
             paymentRepository.save(payment);
 

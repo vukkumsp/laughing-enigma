@@ -62,8 +62,8 @@ public class RegistrationSaga {
         CustomerValidationRequest customerValidationRequest =
                 new CustomerValidationRequest(
                         registrationId,
-                        username,
-                        eventId
+                        eventId,
+                        username
                 );
 
         customerValidationRequestPublisher.publish(customerValidationRequest);
