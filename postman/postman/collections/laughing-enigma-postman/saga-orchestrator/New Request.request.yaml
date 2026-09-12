@@ -1,0 +1,12 @@
+$kind: http-request
+url: http://localhost:8999/test/kafka/registration-status/2
+method: POST
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ0ZXN0dXNlciIsInJvbGUiOiJVU0VSIiwiaWF0IjoxNzg4MDA1NDA5LCJleHAiOjE3ODgwMDYzMDl9.LrbcywDEi0to-pdHK5Jzdwj_1tBk_C8WUiRHPXdIu93RT_wmlWxQKgOeXFPlVysFhrcDREPox21EA7ic0HrTLLJTDlL0q2vj75GChGR6vwTF-_spQCHvmVlbbJDQGv4JMoXqX8NXaRG3STXJFGf6OOXDqMvnmKjVr41JJa0qvMhYY4QFJo_Qh62bq2Ysg8vAy89DYdpsxbCmbVtu_ms9TstgNgzkYrN7Y2z5evscnqTy01Fo9pTHSJDu5iSxPJjlKbB0-BKne8Tvj5QbBWabKjPBU6Jn0xXpJKj5YoGKrbSobP29SiLnVN7ccfBSljdLFwcdK3QDJoPStRzJg5G1ng
+settings: {}
+order: 2000

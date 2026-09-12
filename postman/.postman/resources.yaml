@@ -1,0 +1,5 @@
+workspace:
+  id: abbe9066-9cdc-4d2e-854e-28493a39c952
+cloudResources:
+  collections:
+    ../postman/collections/laughing-enigma-postman: 31245611-78fa7bf5-031d-4168-acc1-20b6382c3966

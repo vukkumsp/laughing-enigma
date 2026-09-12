@@ -1,0 +1,5 @@
+$kind: http-request
+url: http://localhost:8080/payments/orders/order_TV0RAVdcquzdX5
+method: GET
+settings: {}
+order: 2000

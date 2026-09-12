@@ -1,0 +1,14 @@
+$kind: http-request
+url: http://localhost:8081/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\": \"test\",\r
+
+    \    \"password\": \"test\"\r
+
+    }"
+settings: {}
+order: 1000

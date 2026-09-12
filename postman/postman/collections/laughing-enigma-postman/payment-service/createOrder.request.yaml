@@ -1,0 +1,32 @@
+$kind: http-request
+url: http://localhost:8080/payments/orders
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"registrationId\": \"\",\r
+
+    \    \"eventId\": 0,\r
+
+    \r
+
+    \    \"customerId\": 101,\r
+
+    \    \"username\": \"\",\r
+
+    \    \"email\": \"test@test.com\",\r
+
+    \    \"firstName\": \"Test\",\r
+
+    \    \"lastName\": \"User\",\r
+
+    \r
+
+    \    \"price\": 500,\r
+
+    \    \"currency\": \"INR\"\r
+
+    }"
+settings: {}
+order: 1000

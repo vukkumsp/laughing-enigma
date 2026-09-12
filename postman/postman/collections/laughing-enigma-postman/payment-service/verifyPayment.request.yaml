@@ -1,0 +1,16 @@
+$kind: http-request
+url: http://localhost:8080/payments/verify
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"razorpayOrderId\": \"order_TV2t1qBgfpUoy7\",\r
+
+    \    \"razorpayPaymentId\": \"pay_TV2tH6xnrz9FAH\",\r
+
+    \    \"razorpaySignature\": \"5cbe009328600cdeae1d98c99ad84cfb2c2d30f5b313885d19797a93d6f9c2bb\"\r
+
+    }"
+settings: {}
+order: 3000
