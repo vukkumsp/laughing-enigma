@@ -16,6 +16,7 @@ docker compose down
 docker compose down saga-orchestrator
 docker compose down payment-service
 docker compose down event-service
+docker compose down notification-service
 
 Rebuild a single service: (code changes)
 -------------------------
