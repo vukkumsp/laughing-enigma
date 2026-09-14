@@ -9,6 +9,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Entity
 @Table(name = "saga_instances")
@@ -36,6 +37,10 @@ public class SagaInstance {
 
     @Enumerated(EnumType.STRING)
     private SagaStatus status;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> context;
 
     @CreationTimestamp
     @JdbcTypeCode(SqlTypes.TIMESTAMP_WITH_TIMEZONE)

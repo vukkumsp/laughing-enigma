@@ -1,5 +1,7 @@
 package com.laughingenigma.saga_orchestrator.dto;
 
+import com.laughingenigma.saga_orchestrator.saga.registration_saga.dto.RegistrationContextDto;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,5 +22,5 @@ public record PaymentOrderResponse(
         String currency,
         String orderId,
         String status
-) {
+) implements RegistrationContextDto {
 }

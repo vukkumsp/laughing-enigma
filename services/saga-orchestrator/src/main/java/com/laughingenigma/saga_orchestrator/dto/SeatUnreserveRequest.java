@@ -1,5 +1,7 @@
 package com.laughingenigma.saga_orchestrator.dto;
 
+import com.laughingenigma.saga_orchestrator.saga.registration_saga.dto.RegistrationContextDto;
+
 import java.time.LocalDateTime;
 
 public record SeatUnreserveRequest (
@@ -14,5 +16,5 @@ public record SeatUnreserveRequest (
 //---------------------------------------
         String eventName,
         LocalDateTime eventDate
-){
+) implements RegistrationContextDto {
 }

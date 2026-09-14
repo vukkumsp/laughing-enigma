@@ -1,8 +1,7 @@
 package com.laughingenigma.saga_orchestrator.controller;
 
 import com.laughingenigma.saga_orchestrator.dto.*;
-import com.laughingenigma.saga_orchestrator.entity.SagaStep;
-import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
+import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

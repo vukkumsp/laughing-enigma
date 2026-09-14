@@ -2,13 +2,11 @@ package com.laughingenigma.saga_orchestrator.consumer;
 
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.PaymentFailureResponse;
-import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
-import com.laughingenigma.saga_orchestrator.saga.RegistrationSaga;
-import com.laughingenigma.saga_orchestrator.service.SseService;
+import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
