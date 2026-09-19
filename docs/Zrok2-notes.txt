@@ -1,0 +1,20 @@
+
+Create and reserve a named zrok url for saga-orchestrator so Razorpay can this as a webhook while testing.
+
+zrok2 overview
+
+zrok2 create share --share-token enigma-saga-webhook
+
+zrok2 create name enigma-saga-webhook
+
+zrok2 share public localhost:8082 -n public:enigma-saga-webhook
+
+create name enigma-payment-service-webhook
+
+zrok2 share public localhost:8085 -n public:enigma-payment-service-webhook
+
+zrok2 list shares
+
+
+
+https://enigma-saga-webhook.shares.zrok.io/test

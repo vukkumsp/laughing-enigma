@@ -1,8 +1,7 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # sensitive files
-sensitive-db-creds.txt
-sensitive-zrok-creds.txt
+.env
 
 # System files
 .DS_Store

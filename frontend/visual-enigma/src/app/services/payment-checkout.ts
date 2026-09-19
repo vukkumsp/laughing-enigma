@@ -66,19 +66,8 @@ export class PaymentCheckout {
                     !response.razorpay_signature) {
                     console.error('Razorpay returned an incomplete success response:', response);
                     callbacks?.onPaymentFailed?.();
-                    this.paymentService.paymentFailed(
-                        payment.registrationId, payment.eventId,
-                        payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
-                        payment.eventName, payment.eventDate
-                    );
                     return;
                 }
-
-                this.paymentService.verifyPayment(
-                    payment.registrationId, payment.eventId, 
-                    payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
-                    payment.eventName, payment.eventDate,
-                    response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
             }
             ,
             modal: {
@@ -94,11 +83,6 @@ export class PaymentCheckout {
             console.log('🔥 PAYMENT.FAILED EVENT FIRED', response);
             console.error('Razorpay payment failed:', response.error);
             callbacks?.onPaymentFailed?.();
-            this.paymentService.paymentFailed(
-                payment.registrationId, payment.eventId,
-                payment.customerId, payment.username, payment.email, payment.firstName, payment.lastName,
-                payment.eventName, payment.eventDate
-            );
         });
 
         razorpay.open();

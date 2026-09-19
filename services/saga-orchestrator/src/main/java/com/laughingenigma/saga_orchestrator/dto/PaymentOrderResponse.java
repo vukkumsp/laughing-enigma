@@ -5,6 +5,8 @@ import com.laughingenigma.saga_orchestrator.saga.registration_saga.dto.Registrat
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 public record PaymentOrderResponse(
         String registrationId,

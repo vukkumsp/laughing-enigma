@@ -30,31 +30,31 @@ public class RegistrationController {
         return ResponseEntity.accepted().body(response);
     }
 
-    @PostMapping("/payment/verify")
-    public ResponseEntity<PaymentVerifyResponse> verifyPayment(@RequestBody PaymentVerifyRequest request){
-        PaymentVerifyResponse response = registrationSaga.verifyPaymentOrder(request);
-
-        return ResponseEntity.accepted().body(response);
-    }
-
-    @PostMapping("/payment/failed")
-    public ResponseEntity<PaymentFailureResponse> verifyPayment(@RequestBody PaymentFailureRequest request){
-        PaymentFailureResponse response
-                = new PaymentFailureResponse(
-                        request.registrationId(),
-                        request.eventId(),
-
-                        request.customerId(),
-                        request.username(),
-                        request.email(),
-                        request.firstName(),
-                        request.lastName(),
-
-                        request.eventName(),
-                        request.eventDate()
-        );
-        registrationSaga.unreserveSeatsAsCompensation(response);
-
-        return ResponseEntity.accepted().body(response);
-    }
+//    @PostMapping("/payment/verify")
+//    public ResponseEntity<PaymentVerifyResponse> verifyPayment(@RequestBody PaymentVerifyRequest request){
+//        PaymentVerifyResponse response = registrationSaga.verifyPaymentOrder(request);
+//
+//        return ResponseEntity.accepted().body(response);
+//    }
+//
+//    @PostMapping("/payment/failed")
+//    public ResponseEntity<PaymentFailureResponse> verifyPayment(@RequestBody PaymentFailureRequest request){
+//        PaymentFailureResponse response
+//                = new PaymentFailureResponse(
+//                        request.registrationId(),
+//                        request.eventId(),
+//
+//                        request.customerId(),
+//                        request.username(),
+//                        request.email(),
+//                        request.firstName(),
+//                        request.lastName(),
+//
+//                        request.eventName(),
+//                        request.eventDate()
+//        );
+//        registrationSaga.unreserveSeatsAsCompensation(response);
+//
+//        return ResponseEntity.accepted().body(response);
+//    }
 }

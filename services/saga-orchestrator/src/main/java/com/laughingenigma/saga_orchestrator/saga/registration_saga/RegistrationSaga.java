@@ -169,21 +169,21 @@ public class RegistrationSaga {
 
         return new PaymentVerifyResponse(
                 request.registrationId(),
-                request.eventId(),
+//                request.eventId(),
                 request.customerId(),
-                request.username(),
-                request.email(),
-                request.firstName(),
-                request.lastName(),
-                request.eventName(),
-                request.eventDate(),
+//                request.username(),
+//                request.email(),
+//                request.firstName(),
+//                request.lastName(),
+//                request.eventName(),
+//                request.eventDate(),
                 request.razorpayOrderId(),
                 request.razorpayPaymentId(),
                 SagaStep.PAYMENT_VERIFICATION_STARTED.name()
         );
     }
 
-    public void unreserveSeatsAsCompensation(PaymentFailureResponse response) {
+    public void unreserveSeatsAsCompensation(PaymentOrderResponse response) {
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(

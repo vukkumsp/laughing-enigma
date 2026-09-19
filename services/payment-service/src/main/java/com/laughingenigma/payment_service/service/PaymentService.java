@@ -63,6 +63,7 @@ public class PaymentService {
 
             // persist payment record
             Payment payment = Payment.builder()
+                    .registrationId(request.registrationId())
                     .customerId(request.customerId())
                     .amount(request.price())
                     .currency("INR")

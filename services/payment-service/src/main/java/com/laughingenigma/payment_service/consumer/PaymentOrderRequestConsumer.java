@@ -33,15 +33,6 @@ public class PaymentOrderRequestConsumer {
 
         try{
             //create payment order
-            PaymentRequest paymentRequest = new PaymentRequest(
-                    request.registrationId(),
-                    request.eventId(),
-                    "paymentEventInPaymentService",
-                    request.customerId(),
-                    request.price(),
-                    request.currency()
-            );
-
             PaymentOrderResponse paymentOrderResponse = paymentService.createOrder(request);
 
             System.out.println("handlePaymentOrderRequest - "+request.registrationId());

@@ -6,10 +6,16 @@ import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
 import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
 import com.laughingenigma.saga_orchestrator.entity.SagaStep;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
+import com.laughingenigma.saga_orchestrator.saga.registration_saga.ContextFactory;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class PaymentOrderResponseConsumer {
@@ -32,13 +38,12 @@ public class PaymentOrderResponseConsumer {
     public void handlePaymentOrderResponse(PaymentOrderResponse response){
         System.out.println("Payment Order response: "+response);
 
-        //IF payment order is successful then,
-        //send SSE event to frontend for payment completion
         sseService.sendPaymentRequiredEvent(response);
 
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
         sagaI.setCurrentStep(SagaStep.PAYMENT_REQUIRED);
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
+        sagaI.setContext(ContextFactory.buildPaymentOrderResponseContext(response));
         sagaInstanceRepository.save(sagaI);
     }
 

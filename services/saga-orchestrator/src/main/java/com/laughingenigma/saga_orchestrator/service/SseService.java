@@ -90,7 +90,7 @@ public class SseService {
         }
     }
 
-    public void sendPaymentStatusEvent(PaymentVerifyResponse response){
+    public void sendPaymentStatusEvent(PaymentOrderResponse response){
         SseEmitter emitter = emitters.get(response.registrationId());
 
         if (emitter == null) {
@@ -99,13 +99,17 @@ public class SseService {
         }
 
         try {
-            System.out.println("Sending PAYMENT_SUCCESS event to " + response.registrationId());
+            String paymentStatus = response.status()
+                    .equalsIgnoreCase("success") ?
+                        SSE_EVENT.PAYMENT_SUCCESS.name() :
+                        SSE_EVENT.PAYMENT_FAILED.name();
+            System.out.println("Sending "+paymentStatus+" event to " + response.registrationId());
             emitter.send(
                     SseEmitter.event()
-                            .name(SSE_EVENT.PAYMENT_SUCCESS.name())
+                            .name(paymentStatus)
                             .data("""
                                 {
-                                  "message": "Payment Verified",
+                                  "message": "Payment Verification Event",
                                   "registrationId": "%s",
                                   "eventId": "%s",
                                   "status": "%s"

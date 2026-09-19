@@ -43,6 +43,10 @@ If only .env is changed, which is run time config: (rebuild is not needed)
 docker compose up -d payment-service
 
 
+
+docker compose restart zrok-share
+
+
 View logs:
 ----------
 docker compose logs -f api-gateway
@@ -53,3 +57,4 @@ docker compose logs -f event-service
 docker compose logs -f payment-service
 docker compose logs -f mailpit
 docker compose logs -f notification-service
+docker compose logs zrok-share

@@ -9,7 +9,6 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
@@ -24,6 +23,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String registrationId;
     private Long customerId;
 
     @Column(nullable = false, precision = 12, scale = 2)
