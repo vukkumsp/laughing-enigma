@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api-gateway-egdv.onrender.com'
+  apiUrl: 'https://api-gateway-egdv.onrender.com/api/v1'
 };
