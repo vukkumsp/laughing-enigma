@@ -33,10 +33,6 @@ public class RabbitMQConfig {
             "payment-verify-response-queue";
     public static final String PAYMENT_VERIFY_RESPONSE_ROUTING_KEY =
             "payment.verify.response";
-//    public static final String PAYMENT_FAILURE_RESPONSE_QUEUE =
-//            "payment-failure-response-queue";
-//    public static final String PAYMENT_FAILURE_RESPONSE_ROUTING_KEY =
-//            "payment.failure.response";
     public static final String SEAT_UNRESERVE_RESPONSE_QUEUE =
             "seat-unreserve-response-queue";
     public static final String SEAT_UNRESERVE_RESPONSE_ROUTING_KEY =
@@ -89,10 +85,6 @@ public class RabbitMQConfig {
     public Queue paymentVerifyResponseQueue() {
         return new Queue(PAYMENT_VERIFY_RESPONSE_QUEUE);
     }
-//    @Bean
-//    public Queue paymentFailureResponseQueue() {
-//        return new Queue(PAYMENT_FAILURE_RESPONSE_QUEUE);
-//    }
 
     @Bean
     public Binding customerValidationResponseBinding(
@@ -139,15 +131,6 @@ public class RabbitMQConfig {
                 .to(sagaResponseExchange)
                 .with(PAYMENT_VERIFY_RESPONSE_ROUTING_KEY);
     }
-//    @Bean
-//    public Binding paymentFailureResponseBinding(
-//            Queue paymentFailureResponseQueue,
-//            TopicExchange sagaResponseExchange) {
-//        return BindingBuilder
-//                .bind(paymentFailureResponseQueue)
-//                .to(sagaResponseExchange)
-//                .with(PAYMENT_FAILURE_RESPONSE_ROUTING_KEY);
-//    }
 
     /* Common */
     @Bean

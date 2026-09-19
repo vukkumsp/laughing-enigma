@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 public class PaymentVerifyResponsePublisher {
     private final RabbitTemplate rabbitTemplate;
 
-
     public PaymentVerifyResponsePublisher(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }

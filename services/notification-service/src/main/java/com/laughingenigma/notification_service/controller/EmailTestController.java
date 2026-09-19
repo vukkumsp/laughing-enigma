@@ -5,6 +5,7 @@ import com.laughingenigma.notification_service.kafka.event.EventDetails;
 import com.laughingenigma.notification_service.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.notification_service.kafka.event.RegistrationFailedPayload;
 import com.laughingenigma.notification_service.service.EmailNotificationService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import java.time.Instant;
 
 @RestController
 @RequestMapping("/test/email")
+@Profile("dev")
 public class EmailTestController {
     private final EmailNotificationService emailNotificationService;
 

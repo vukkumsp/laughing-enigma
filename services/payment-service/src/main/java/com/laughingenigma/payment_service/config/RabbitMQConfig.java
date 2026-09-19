@@ -21,14 +21,6 @@ public class RabbitMQConfig {
             "payment-order-request-queue";
     public static final String PAYMENT_ORDER_REQUEST_ROUTING_KEY =
             "payment.order.request";
-//    public static final String PAYMENT_VERIFY_REQUEST_QUEUE =
-//            "payment-verify-request-queue";
-//    public static final String PAYMENT_VERIFY_REQUEST_ROUTING_KEY =
-//            "payment.verify.request";
-//    public static final String PAYMENT_FAILURE_REQUEST_QUEUE =
-//            "payment-failure-request-queue";
-//    public static final String PAYMENT_FAILURE_REQUEST_ROUTING_KEY =
-//            "payment.failure.request";
 
     // Outgoing response
     public static final String SAGA_RESPONSE_EXCHANGE =
@@ -49,14 +41,6 @@ public class RabbitMQConfig {
     public Queue paymentOrderRequestQueue() {
         return new Queue(PAYMENT_ORDER_REQUEST_QUEUE);
     }
-//    @Bean
-//    public Queue paymentVerifyRequestQueue() {
-//        return new Queue(PAYMENT_VERIFY_REQUEST_QUEUE);
-//    }
-//    @Bean
-//    public Queue paymentFailureRequestQueue() {
-//        return new Queue(PAYMENT_FAILURE_REQUEST_QUEUE);
-//    }
 
     @Bean
     public Binding paymentOrderRequestBinding(
@@ -67,24 +51,6 @@ public class RabbitMQConfig {
                 .to(sagaCommandExchange)
                 .with(PAYMENT_ORDER_REQUEST_ROUTING_KEY);
     }
-//    @Bean
-//    public Binding paymentVerifyRequestBinding(
-//            Queue paymentVerifyRequestQueue,
-//            TopicExchange sagaCommandExchange) {
-//        return BindingBuilder
-//                .bind(paymentVerifyRequestQueue)
-//                .to(sagaCommandExchange)
-//                .with(PAYMENT_VERIFY_REQUEST_ROUTING_KEY);
-//    }
-//    @Bean
-//    public Binding paymentFailureRequestBinding(
-//            Queue paymentFailureRequestQueue,
-//            TopicExchange sagaCommandExchange) {
-//        return BindingBuilder
-//                .bind(paymentFailureRequestQueue)
-//                .to(sagaCommandExchange)
-//                .with(PAYMENT_FAILURE_REQUEST_ROUTING_KEY);
-//    }
 
     /* Common */
     @Bean

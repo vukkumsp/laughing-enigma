@@ -14,7 +14,6 @@ import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.DtoFactory;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
-import com.laughingenigma.saga_orchestrator.saga.registration_saga.dto.RegistrationContextDto;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;

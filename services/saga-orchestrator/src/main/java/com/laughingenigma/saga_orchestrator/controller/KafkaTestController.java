@@ -4,6 +4,7 @@ import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
 import com.laughingenigma.saga_orchestrator.kafka.producer.RegistrationEventProducer;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/test/kafka")
+@Profile("dev")
 public class KafkaTestController {
 
     private final RegistrationEventProducer producer;

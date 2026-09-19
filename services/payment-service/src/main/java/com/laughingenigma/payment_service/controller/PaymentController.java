@@ -3,6 +3,7 @@ package com.laughingenigma.payment_service.controller;
 import com.laughingenigma.payment_service.dto.*;
 import com.laughingenigma.payment_service.service.PaymentService;
 import jakarta.validation.Valid;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,15 +32,6 @@ public class PaymentController {
 
         return ResponseEntity.ok(
                 paymentService.getOrder(orderId)
-        );
-    }
-
-    @PostMapping("/verify")
-    public ResponseEntity<PaymentVerificationResponse> verifyPayment(
-            @RequestBody PaymentVerificationRequest request
-    ) {
-        return ResponseEntity.ok(
-                paymentService.verifyPayment(request)
         );
     }
 }

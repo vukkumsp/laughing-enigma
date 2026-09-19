@@ -69,8 +69,6 @@ public class PaymentService {
                     .currency("INR")
                     .razorpayOrderId(order.get("id"))
                     .status(PaymentStatus.CREATED)
-//                    .createdAt(LocalDateTime.now()) //JPA will update created column
-//                    .updatedAt(LocalDateTime.now()) //JPA will update updated column
                     .build();
 
             paymentRepository.save(payment);

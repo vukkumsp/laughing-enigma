@@ -11,7 +11,6 @@ public record RegistrationEvent (
         int eventVersion,
         Instant occurredAt,
         String source,
-//        RegistrationEventPayload payload
         JsonNode payload
 ) {
 }

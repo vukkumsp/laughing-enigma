@@ -12,10 +12,4 @@ public class Profile {
         this.firstName = customer.getFirstName();
         this.lastName = customer.getLastName();
     }
-
-    public Profile(String username, String firstName, String lastName) {
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
 }

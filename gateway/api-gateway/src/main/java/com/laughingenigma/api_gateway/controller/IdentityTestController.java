@@ -1,5 +1,6 @@
 package com.laughingenigma.api_gateway.controller;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -10,6 +11,7 @@ import reactor.core.publisher.Mono;
 import java.security.Principal;
 
 @RestController
+@Profile("dev")
 public class IdentityTestController {
 
     @GetMapping("/test/identity")
