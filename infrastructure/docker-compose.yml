@@ -82,6 +82,16 @@ services:
         condition: service_healthy
     networks:
       - app-network
+      
+  aggregator-service:
+    build:
+      context: ../services/aggregator-service
+    env_file:
+      - ../services/aggregator-service/.env
+    ports:
+      - "8087:8080"
+    networks:
+      - app-network
 
   mailpit:
     image: axllent/mailpit:latest

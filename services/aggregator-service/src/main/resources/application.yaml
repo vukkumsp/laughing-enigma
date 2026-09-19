@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: aggregator-service
+
+customer:
+  service: ${CUSTOMER_SERVICE_URL}
+event:
+  service: ${EVENT_SERVICE_URL}
+payment:
+  service: ${PAYMENT_SERVICE_URL}
