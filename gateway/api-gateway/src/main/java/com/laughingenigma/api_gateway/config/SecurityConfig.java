@@ -30,9 +30,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(exchange -> exchange
-                        .pathMatchers("/auth/**").permitAll()
+                        .pathMatchers("/api/v1/auth/**").permitAll()
                         .pathMatchers("/actuator/health").permitAll()
-                        .pathMatchers("/customers/**").hasRole("USER")
+                        .pathMatchers("/api/v1/customers/**").hasRole("USER")
                         .anyExchange().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 ->
