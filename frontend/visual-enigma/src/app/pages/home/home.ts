@@ -3,6 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 export interface CurrentUser {
+  customerId: number;
   firstName: string;
   lastName: string;
   username: string;

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.razorpay.Utils;
 
@@ -96,6 +97,10 @@ public class PaymentService {
             throw new RuntimeException("Failed to create Razorpay order",
                     e);
         }
+    }
+
+    public List<Payment> getOrders(Long customerId, String status){
+        return paymentRepository.findByCustomerIdAndStatus(customerId,  status);
     }
 
     public PaymentOrderResponse getOrder(String orderId) {
