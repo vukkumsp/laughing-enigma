@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/webhooks/razorpay")
+@RequestMapping("/api/v1/webhooks/razorpay")
 public class RazorpayWebhookController {
 
     private final RazorpayWebhookService razorpayWebhookService;

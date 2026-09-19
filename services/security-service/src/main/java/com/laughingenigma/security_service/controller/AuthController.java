@@ -16,7 +16,7 @@ import java.security.PublicKey;
 import java.util.Base64;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 
 @RestController
-@RequestMapping("/test/email")
+@RequestMapping("/api/v1/test/email")
 @Profile("dev")
 public class EmailTestController {
     private final EmailNotificationService emailNotificationService;

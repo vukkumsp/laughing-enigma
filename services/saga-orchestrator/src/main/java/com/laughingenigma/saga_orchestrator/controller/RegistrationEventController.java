@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping("/registrations")
+@RequestMapping("/api/v1/registrations")
 public class RegistrationEventController {
 
     private final SseService sseService;

@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/test/kafka")
+@RequestMapping("/api/v1/test/kafka")
 @Profile("dev")
 public class KafkaTestController {
 
