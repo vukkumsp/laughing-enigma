@@ -100,7 +100,10 @@
                 <h3>{{ event.name }}</h3>
                 <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
               </div>
-              <span class="status status-pending">{{ event.status }}</span>
+              <div class="event-actions">
+                <span class="status status-pending">{{ event.status }}</span>
+                <button type="button" class="pay-now">Pay now</button>
+              </div>
             </article>
           }
         </div>

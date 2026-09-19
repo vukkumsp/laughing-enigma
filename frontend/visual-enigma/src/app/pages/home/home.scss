@@ -109,6 +109,10 @@ h1 {
 .status { padding: 6px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
 .status-confirmed { background: #e5f3ed; color: #217a68; }
 .status-pending { background: #fff1dc; color: #a86c1d; }
+.event-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.pay-now { padding: 8px 13px; border: 0; border-radius: 5px; background: #217a68; color: #fff; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
+.pay-now:hover { background: #185c4f; }
+.pay-now:focus-visible { outline: 3px solid rgba(33, 122, 104, .3); outline-offset: 2px; }
 
 @media (max-width: 700px) {
   .home-container { padding: 18px 16px 48px; }
@@ -118,4 +122,5 @@ h1 {
   .events-panel { padding: 22px 18px 8px; }
   .event-row { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
   .status { margin-left: 60px; }
+  .event-actions { width: calc(100% - 60px); justify-content: space-between; }
 }
