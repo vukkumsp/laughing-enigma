@@ -1,0 +1,110 @@
+<main class="home-container">
+  <section class="home-content" aria-labelledby="home-title">
+    <header class="welcome-header">
+      <div>
+        <p class="home-eyebrow">Your event desk</p>
+        
+        <h1 id="home-title">
+          @if (userLoading()) {
+            Welcome back
+          } @else if (currentUser(); as user) {
+            Welcome back, {{ user.firstName }}
+          } @else {
+            Welcome back
+          }
+        </h1>
+        <p class="welcome-copy">Keep track of your experiences and finish setting up your next one.</p>
+      </div>
+      <div class="user-summary" aria-label="Account details">
+        @if (userLoading()) {
+          <span class="user-loading" role="status">Loading account details...</span>
+        } @else if (currentUser(); as user) {
+          <div class="user-avatar" aria-hidden="true">
+            {{ user.firstName.charAt(0) }}{{ user.lastName.charAt(0) }}
+          </div>
+          <dl class="user-details">
+            <div>
+              <dt>First name</dt>
+              <dd>{{ user.firstName }}</dd>
+            </div>
+            <div>
+              <dt>Last name</dt>
+              <dd>{{ user.lastName }}</dd>
+            </div>
+            <div>
+              <dt>Username</dt>
+              <dd>{{ user.username }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <span class="user-error" role="alert">{{ userError() }}</span>
+        }
+      </div>
+    </header>
+
+    <section class="events-panel" aria-labelledby="events-title">
+      <div class="panel-heading">
+        <div>
+          <p class="home-eyebrow">Your schedule</p>
+          <h2 id="events-title">Events at a glance</h2>
+        </div>
+        <span class="event-count">
+          {{ activeTab() === 'registered' ? registeredEvents.length : paymentPendingEvents.length }} events
+        </span>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Event status">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'registered'"
+          [class.active]="activeTab() === 'registered'"
+          (click)="selectTab('registered')">
+          Registered events
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'payment-pending'"
+          [class.active]="activeTab() === 'payment-pending'"
+          (click)="selectTab('payment-pending')">
+          Payment pending
+        </button>
+      </div>
+
+      @if (activeTab() === 'registered') {
+        <div class="event-list" role="tabpanel">
+          @for (event of registeredEvents; track event.id) {
+            <article class="event-row">
+              <div class="event-date" aria-hidden="true">
+                <span>{{ event.month }}</span>
+                <strong>{{ event.day }}</strong>
+              </div>
+              <div class="event-info">
+                <h3>{{ event.name }}</h3>
+                <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+              </div>
+              <span class="status status-confirmed">{{ event.status }}</span>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="event-list" role="tabpanel">
+          @for (event of paymentPendingEvents; track event.id) {
+            <article class="event-row">
+              <div class="event-date event-date-pending" aria-hidden="true">
+                <span>{{ event.month }}</span>
+                <strong>{{ event.day }}</strong>
+              </div>
+              <div class="event-info">
+                <h3>{{ event.name }}</h3>
+                <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+              </div>
+              <span class="status status-pending">{{ event.status }}</span>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </section>
+</main>

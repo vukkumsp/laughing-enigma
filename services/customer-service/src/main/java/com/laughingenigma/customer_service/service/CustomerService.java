@@ -17,6 +17,11 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
+    public Customer getCustomer(String username){
+        return customerRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+    }
+
     public Customer validateCustomer(String username) {
         //check 1
         boolean valid = (username != null && !username.isBlank());
@@ -43,4 +48,6 @@ public class CustomerService {
 
         return valid ? customer : null;
     }
+
+
 }

@@ -1,22 +1,21 @@
 package com.laughingenigma.customer_service.dto;
 
+import com.laughingenigma.customer_service.entity.Customer;
+
 public class Profile {
     public String username;
-    public String firstname;
-    public String lastname;
-    public boolean valid;
-    public Profile(String username, String firstname, String lastname, boolean valid) {
-        this.username = username;
-        this.valid = valid;
+    public String firstName;
+    public String lastName;
+
+    public Profile(Customer customer) {
+        this.username = customer.getUsername();
+        this.firstName = customer.getFirstName();
+        this.lastName = customer.getLastName();
     }
 
-    public Profile() {
-        this.valid = false;
-    }
-    public Profile(String username, String firstname, String lastname) {
+    public Profile(String username, String firstName, String lastName) {
         this.username = username;
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.valid = true;
+        this.firstName = firstName;
+        this.lastName = lastName;
     }
 }
