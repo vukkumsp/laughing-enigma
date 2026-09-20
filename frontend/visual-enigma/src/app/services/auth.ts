@@ -11,7 +11,6 @@ export interface LoginRequest {
 export interface LoginResponse {
   message: string;
   accessToken: string | null;
-  refreshToken: string | null;
 }
 
 export interface RefreshResponse {
@@ -29,7 +28,13 @@ export class Auth {
     login(request: LoginRequest): Observable<LoginResponse> {
         return this.http.post<LoginResponse>(
         `${this.apiUrl}/auth/login`,
-        request
+        request,
+        {
+            headers: {
+                'X-Skip-Auth': 'true'
+            },
+            withCredentials: true
+        }
         );
     }
 
@@ -59,49 +64,34 @@ export class Auth {
     }
 
     refreshAccessToken(): Observable<RefreshResponse> {
-    const refreshToken = this.getRefreshToken();
-
         return this.http.post<RefreshResponse>(
             `${this.apiUrl}/auth/refresh`,
-            { refreshToken },
+            {},
             {
                 headers: {
                     'X-Skip-Auth': 'true'
-                }
+                },
+                withCredentials: true
             }
         );
     }
 
     // Token management methods
-    private readonly accessTokenKey = 'access_token';
-    private readonly refreshTokenKey = 'refresh_token';
+    private accessToken: string | null = null;
 
     storeAccessToken(accessToken: string): void {
-        localStorage.setItem(this.accessTokenKey, accessToken);
+        this.accessToken = accessToken;
     }
 
     getAccessToken(): string | null {
-        return localStorage.getItem(this.accessTokenKey);
+        return this.accessToken;
     }
 
     private clearAccessToken(): void {
-        localStorage.removeItem(this.accessTokenKey);
-    }
-
-    storeRefreshToken(refreshToken: string): void {
-        localStorage.setItem(this.refreshTokenKey, refreshToken);
-    }
-
-    getRefreshToken(): string | null {
-        return localStorage.getItem(this.refreshTokenKey);
-    }
-
-    private clearRefreshToken(): void {
-        localStorage.removeItem(this.refreshTokenKey);
+        this.accessToken = null;
     }
 
     private clearTokens(): void {
         this.clearAccessToken();
-        this.clearRefreshToken();
     }
 }

@@ -1,4 +1,4 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { Auth } from '../services/auth';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
@@ -8,14 +8,40 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const auth = inject(Auth);
 
-  if (req.headers.has('X-Skip-Auth')) {
+  const isAuthEndpoint = req.url.endsWith('/auth/login') ||
+    req.url.endsWith('/auth/refresh');
+
+  if (req.headers.has('X-Skip-Auth') || isAuthEndpoint) {
     return next(req);
   }
+
+  const refreshAndRetry = (request: HttpRequest<unknown>, originalError?: unknown) =>
+    auth.refreshAccessToken().pipe(
+      switchMap(response => {
+        if (!response.accessToken) {
+          return throwError(() => originalError ?? new Error('Unable to refresh access token'));
+        }
+
+        auth.storeAccessToken(response.accessToken);
+
+        return next(request.clone({
+          setHeaders: {
+            Authorization: `Bearer ${response.accessToken}`
+          }
+        }));
+      }),
+      catchError(refreshError => {
+        auth.logout();
+        router.navigate(['/login']);
+
+        return throwError(() => refreshError);
+      })
+    );
 
   const token = auth.getAccessToken();
 
   if (!token) {
-    return next(req);
+    return refreshAndRetry(req);
   }
 
   const authReq = req.clone({
@@ -31,54 +57,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         return throwError(() => error);
       }
 
-      // Don't attempt to refresh the refresh request itself
-      if (req.url.endsWith('/auth/refresh')) {
-        auth.logout();
-        router.navigate(['/login']);
-
-        return throwError(() => error);
-      }
-
-      const refreshToken = auth.getRefreshToken();
-
-      if (!refreshToken) {
-        auth.logout();
-        router.navigate(['/login']);
-
-        return throwError(() => error);
-      }
-
-      return auth.refreshAccessToken().pipe(
-        switchMap(response => {
-
-          if (!response.accessToken) {
-            auth.logout();
-            router.navigate(['/login']);
-
-            return throwError(() => error);
-          }
-
-          auth.storeAccessToken(response.accessToken);
-
-          const retryRequest = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${response.accessToken}`
-            }
-          });
-
-
-          console.log('Retrying request with new access token:', retryRequest);
-
-          return next(retryRequest);
-        }),
-        catchError(refreshError => {
-
-          auth.logout();
-          router.navigate(['/login']);
-
-          return throwError(() => refreshError);
-        })
-      );
+      return refreshAndRetry(req, error);
     })
   );
 };

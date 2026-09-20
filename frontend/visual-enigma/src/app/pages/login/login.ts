@@ -49,9 +49,8 @@ export class Login {
       password: this.loginForm.value.password!
     }).subscribe({
       next: (response) => {
-        if (response.accessToken && response.refreshToken) {
+        if (response.accessToken) {
           this.auth.storeAccessToken(response.accessToken);
-          this.auth.storeRefreshToken(response.refreshToken);
           this.router.navigate(['/events']);
         } else {
           this.router.navigate(['/unauthorized']);

@@ -21,7 +21,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(
-                List.of(visualEnigma, "http://localhost:4200/")
+                List.of(visualEnigma, "http://localhost:4200")
         );
 
         configuration.setAllowedMethods(
@@ -31,6 +31,9 @@ public class CorsConfig {
         configuration.setAllowedHeaders(
                 List.of("*")
         );
+
+        // Required for HttpOnly refresh-token cookies
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

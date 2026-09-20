@@ -3,12 +3,12 @@ package com.laughingenigma.security_service.dto;
 public class LoginResponse {
     private String message;
     private String accessToken;
-    private String refreshToken;
+//    private String refreshToken;
 
-    public LoginResponse(String message,  String accessToken, String  refreshToken) {
+    public LoginResponse(String message,  String accessToken) {
         this.message = message;
         this.accessToken = accessToken;
-        this.refreshToken = refreshToken;
+//        this.refreshToken = refreshToken;
     }
 
     public String getMessage() {
@@ -26,11 +26,11 @@ public class LoginResponse {
         this.accessToken = accessToken;
     }
 
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
+//    public String getRefreshToken() {
+//        return refreshToken;
+//    }
+//
+//    public void setRefreshToken(String refreshToken) {
+//        this.refreshToken = refreshToken;
+//    }
 }
