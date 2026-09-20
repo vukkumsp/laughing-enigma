@@ -9,7 +9,11 @@ zrok2 create name enigma-saga-webhook
 
 zrok2 share public localhost:8082 -n public:enigma-saga-webhook
 
+To Create Webhook namespace first time:
+
 create name enigma-payment-service-webhook
+
+To Run Webhook:
 
 zrok2 share public localhost:8085 -n public:enigma-payment-service-webhook
 
