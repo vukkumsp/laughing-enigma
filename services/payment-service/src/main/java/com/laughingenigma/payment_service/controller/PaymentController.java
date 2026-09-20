@@ -30,7 +30,7 @@ public class PaymentController {
     }
 
     @GetMapping("/ordersPending")
-    public ResponseEntity<List<Payment>> getAllOrdersPending(Long customerId){
+    public ResponseEntity<List<Payment>> getAllOrdersPending(@RequestParam Long customerId){
         List<Payment> orders = paymentService.getOrders(customerId, "CREATED");
         return orders.isEmpty() ?
                 ResponseEntity.notFound().build() :

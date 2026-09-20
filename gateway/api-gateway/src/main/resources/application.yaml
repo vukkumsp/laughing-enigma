@@ -34,24 +34,82 @@ spring:
           predicates:
             - Path=/api/v1/auth/**
 # http://localhost:8082
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: securityServiceCircuitBreaker
+                fallbackUri: forward:/fallback/security
+
         - id: customer-service
           uri: ${CUSTOMER_SERVICE_URL}
           predicates:
             - Path=/api/v1/customers/**
 # http://localhost:8083
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: customerServiceCircuitBreaker
+                fallbackUri: forward:/fallback/customer
+
         - id: event-service
           uri: ${EVENT_SERVICE_URL}
           predicates:
             - Path=/api/v1/events/**
 # http://localhost:8085
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: eventServiceCircuitBreaker
+                fallbackUri: forward:/fallback/event
+
         - id: saga-orchestrator
           uri: ${SAGA_ORCHESTRATOR_URL}
           predicates:
             - Path=/api/v1/registrations/**
 # http://localhost:8086
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: sagaServiceCircuitBreaker
+                fallbackUri: forward:/fallback/saga
 
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
 
 visual:
   enigma: ${VISUAL_ENGIMA_URL}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      securityServiceCircuitBreaker:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+      customerServiceCircuitBreaker:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+      eventServiceCircuitBreaker:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+
+      sagaServiceCircuitBreaker:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3

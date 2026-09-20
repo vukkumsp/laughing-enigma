@@ -1,8 +1,12 @@
 package com.laughingenigma.aggregator_service.client;
 
+import com.laughingenigma.aggregator_service.dto.PaymentSummary;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Component
 public class PaymentServiceClient {
@@ -17,11 +21,10 @@ public class PaymentServiceClient {
                 .build();
     }
 
-    public String getPayment(String username) {
+    public List<PaymentSummary> getAllOrdersPending(Long customerId) {
         return restClient.get()
-                .uri("/customers/me")
-                .header("X-Authenticated-User", username)
+                .uri("/api/v1/payments/ordersPending?customerId={customerId}", customerId)
                 .retrieve()
-                .body(String.class);
+                .body(new ParameterizedTypeReference<List<PaymentSummary>>() {});
     }
 }
