@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: 8080
 
 management:
   endpoints:
@@ -26,52 +26,97 @@ spring:
   application:
     name: api-gateway
 
+  data:
+    redis:
+      host: ${VALKEY_HOST}
+      port: ${VALKEY_PORT}
+      username: ${VALKEY_USERNAME}
+      password: ${VALKEY_PASSWORD}
+      ssl:
+        enabled: true
+
   cloud:
     gateway.server.webflux:
       routes:
+        # =========================
+        # SECURITY
+        # =========================
         - id: security-service
           uri: ${SECURITY_SERVICE_URL}
           predicates:
             - Path=/api/v1/auth/**
-# http://localhost:8082
           filters:
             - name: CircuitBreaker
               args:
                 name: securityServiceCircuitBreaker
                 fallbackUri: forward:/fallback/security
 
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # =========================
+        # CUSTOMER
+        # =========================
         - id: customer-service
           uri: ${CUSTOMER_SERVICE_URL}
           predicates:
             - Path=/api/v1/customers/**
-# http://localhost:8083
           filters:
             - name: CircuitBreaker
               args:
                 name: customerServiceCircuitBreaker
                 fallbackUri: forward:/fallback/customer
 
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # =========================
+        # EVENTS
+        # =========================
         - id: event-service
           uri: ${EVENT_SERVICE_URL}
           predicates:
             - Path=/api/v1/events/**
-# http://localhost:8085
           filters:
             - name: CircuitBreaker
               args:
                 name: eventServiceCircuitBreaker
                 fallbackUri: forward:/fallback/event
 
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 20
+                redis-rate-limiter.burstCapacity: 40
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+
+        # =========================
+        # REGISTRATION / SAGA
+        # =========================
         - id: saga-orchestrator
           uri: ${SAGA_ORCHESTRATOR_URL}
           predicates:
             - Path=/api/v1/registrations/**
-# http://localhost:8086
           filters:
             - name: CircuitBreaker
               args:
                 name: sagaServiceCircuitBreaker
                 fallbackUri: forward:/fallback/saga
+
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
 
 jwt:
   public-key: ${JWT_PUBLIC_KEY}
@@ -113,3 +158,8 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 3
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.filter.ratelimit: DEBUG

@@ -31,7 +31,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers("/api/v1/auth/**").permitAll()
-                        .pathMatchers("/actuator/health").permitAll()
+                        .pathMatchers("/actuator/health" , "/rate-limit-test").permitAll()
                         .pathMatchers("/api/v1/customers/**").hasRole("USER")
                         .anyExchange().authenticated()
                 )
