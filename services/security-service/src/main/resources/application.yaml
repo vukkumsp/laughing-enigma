@@ -13,6 +13,16 @@ spring:
     hikari:
       maximum-pool-size: 3
       minimum-idle: 1
+      # 1. Test connections before handing them out
+      connection-test-query: SELECT 1
+      # 2. Maximum time to wait for connection validation check (ms)
+      validation-timeout: 3000
+      # 3. Maximum time a thread waits to get a connection from the pool (ms)
+      connection-timeout: 10000
+      # 4. Retire connections before the network/firewall silently drops them (ms)
+      max-lifetime: 600000 # 10 minutes
+      # 5. Evict idle connections faster (ms)
+      idle-timeout: 300000 # 5 minutes
   jpa:
     hibernate:
       ddl-auto: update

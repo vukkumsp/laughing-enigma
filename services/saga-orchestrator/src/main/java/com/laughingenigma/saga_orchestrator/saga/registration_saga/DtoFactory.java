@@ -99,8 +99,6 @@ public class DtoFactory {
                         mapper.convertValue(context.get("orderId"), String.class),
                         mapper.convertValue(context.get("status"), String.class)
                 );
-            case PAYMENT_VERIFICATION_STARTED:
-                return null; // NOT REQUIRED
             case PAYMENT_SUCCESS:
                 return new PaymentOrderResponse(
                         mapper.convertValue(context.get("registrationId"), String.class),

@@ -132,11 +132,57 @@ public class RegistrationSaga {
                                 "User with response.registrationId() " + response.registrationId() + " was not found"
                         )
                 );
+
+        if (sagaI.getCurrentStep() == SagaStep.SEAT_RESERVED) {
+            System.out.println(
+                    "IDEMPOTENCY: Duplicate seat reservation response ignored. "
+                            + "registrationId=" + response.registrationId()
+            );
+            return;
+        }
+
         if (!response.success()) {
             // Saga failed
+            if (sagaI.getCurrentStep() == SagaStep.SEAT_RESERVATION_FAILED) {
+                // Duplicate failure response
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate seat reservation failed response ignored. "
+                                + "registrationId=" + response.registrationId()
+                );
+                return;
+            }
+            if (!sagaI.getCurrentStep()
+                    .canTransitionTo(SagaStep.SEAT_RESERVATION_FAILED)) {
+                // Duplicate / stale / invalid response
+                System.out.println(
+                        "SAGA TRANSITION REJECTED: Cannot transition from " +
+                                sagaI.getCurrentStep() +
+                                " -> " +
+                                SagaStep.SEAT_RESERVATION_FAILED +
+                                ", registrationId=" +
+                                response.registrationId()
+                );
+                return;
+            }
             sagaI.setCurrentStep(SagaStep.SEAT_RESERVATION_FAILED);
             sagaI.setStatus(SagaStatus.IN_PROGRESS);
             sagaInstanceRepository.save(sagaI);
+            return;
+        }
+
+        // Validate that current state is one in which
+        // SEAT_RESERVED is a valid transition.
+        if (!sagaI.getCurrentStep()
+                .canTransitionTo(SagaStep.SEAT_RESERVED)) {
+            // Duplicate / stale / invalid response
+            System.out.println(
+                    "SAGA TRANSITION REJECTED: Cannot transition from " +
+                            sagaI.getCurrentStep() +
+                            " -> " +
+                            SagaStep.SEAT_RESERVED +
+                            ", registrationId=" +
+                            response.registrationId()
+            );
             return;
         }
 
@@ -160,19 +206,10 @@ public class RegistrationSaga {
                 response.currency()
         );
 
+        // TODO: Outbox - reliably coordinate saga state change
+        // with PaymentOrderRequest publication.
+
         paymentOrderRequestPublisher.publish(paymentOrderRequest);
-    }
-
-    public PaymentVerifyResponse verifyPaymentOrder(PaymentVerifyRequest request) {
-        paymentVerifyRequestPublisher.publish(request);
-
-        return new PaymentVerifyResponse(
-                request.registrationId(),
-                request.customerId(),
-                request.razorpayOrderId(),
-                request.razorpayPaymentId(),
-                SagaStep.PAYMENT_VERIFICATION_STARTED.name()
-        );
     }
 
     public void unreserveSeatsAsCompensation(PaymentOrderResponse response) {
@@ -198,11 +235,13 @@ public class RegistrationSaga {
                         response.eventDate()
                 );
 
-        seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
-
         sagaI.setCurrentStep(SagaStep.SEAT_RELEASING);
         sagaI.setStatus(SagaStatus.COMPENSATING);
         sagaInstanceRepository.save(sagaI);
+
+        // TODO: Outbox - reliably coordinate saga state change
+        // with SeatUnreserveRequest publication.
+        seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
 
         System.out.println("unreserveSeatsAsCompensation - "+response.registrationId());
 
@@ -229,6 +268,9 @@ public class RegistrationSaga {
                 KafkaConfig.APPLICATION_NAME,
                 payload
         );
+
+        // TODO: Introduce Outbox Pattern to reliably coordinate
+        // compensation state change and REGISTRATION_FAILED Kafka publication.
         sendEmailNotification(event);
     }
 

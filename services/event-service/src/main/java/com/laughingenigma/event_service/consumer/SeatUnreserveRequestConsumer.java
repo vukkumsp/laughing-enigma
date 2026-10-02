@@ -33,7 +33,10 @@ public class SeatUnreserveRequestConsumer {
         boolean success = false;
 
         try{
-            Event reservedEvent = eventService.releaseSeat(request.eventId());
+            Event reservedEvent = eventService.releaseSeat(
+                    request.registrationId(),
+                    request.eventId()
+            );
             success = true;
             SeatUnreserveResponse seatUnreserveResponse = new SeatUnreserveResponse(
                     request.registrationId(),

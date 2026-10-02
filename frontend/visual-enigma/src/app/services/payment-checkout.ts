@@ -73,6 +73,7 @@ export class PaymentCheckout {
             modal: {
                 ondismiss: () => {
                     console.log('Razorpay checkout dismissed');
+                    callbacks?.onPaymentFailed?.();
                 }
             }
         };

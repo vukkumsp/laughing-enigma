@@ -98,12 +98,16 @@ export class Events implements OnInit, OnDestroy {
               this.registrationError.set(true);
               this.registrationMessage.set('Payment failed. Please try again.');
               this.registeringEventId.set(null);
+              // Close the SSE connection after either payment success or failure
+              this.registrationEventsService.disconnect();
             }
           });
         } else if (event.type === 'PAYMENT_FAILED') {
           this.registrationError.set(true);
           this.registrationMessage.set('Payment failed. Please try again.');
           this.registeringEventId.set(null);
+          // Close the SSE connection after either payment success or failure
+          this.registrationEventsService.disconnect();
         } else if (event.type === 'PAYMENT_SUCCESS') {
           this.events.update(events => events.map(event =>
             event.id === eventId
@@ -114,8 +118,7 @@ export class Events implements OnInit, OnDestroy {
           this.registrationMessage.set('You registered for this event.');
           this.registeringEventId.set(null);
           this.registrationError.set(false);
-
-          // Close the SSE connection after successful payment
+          // Close the SSE connection after either payment success or failure
           this.registrationEventsService.disconnect();
         }
       });

@@ -18,12 +18,12 @@ public class RazorpayWebhookController {
     @PostMapping
     public ResponseEntity<Void> handleWebhook(
             @RequestHeader("X-Razorpay-Signature") String signature,
-            @RequestHeader("x-razorpay-event-id") String eventId,
+            @RequestHeader("x-razorpay-event-id") String razorpayEventId,
             @RequestBody String rawBody) {
 
         System.out.println("===== RAZORPAY WEBHOOK =====");
         System.out.println("Signature header: " + signature);
-        System.out.println("Event ID: " + eventId);
+        System.out.println("Event ID: " + razorpayEventId);
         System.out.println("Raw body: " + rawBody);
         System.out.println("============================");
 
@@ -38,7 +38,7 @@ public class RazorpayWebhookController {
         }
 
         // process event
-        this.razorpayWebhookService.updateSaga(rawBody);
+        this.razorpayWebhookService.updateSaga(rawBody, razorpayEventId);
 
         System.out.println("handleWebhook before returning ResponseEntity.ok().build()");
         return ResponseEntity.ok().build();

@@ -12,8 +12,7 @@ public class SeatReservationResponseConsumer {
     private final RegistrationSaga registrationSaga;
 
     public SeatReservationResponseConsumer(
-            RegistrationSaga registrationSaga,
-            SagaInstanceRepository sagaInstanceRepository) {
+            RegistrationSaga registrationSaga) {
         this.registrationSaga = registrationSaga;
     }
 

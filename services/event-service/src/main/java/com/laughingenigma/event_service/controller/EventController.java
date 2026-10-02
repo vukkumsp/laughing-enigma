@@ -23,15 +23,15 @@ public class EventController {
     }
 
     @PostMapping("/{eventId}/reserve")
-    public ResponseEntity<Event> reserveSeat(@PathVariable Long eventId) {
-        Event event = eventService.reserveSeat(eventId);
+    public ResponseEntity<Event> reserveSeat(@PathVariable Long eventId, @RequestParam String registrationId) {
+        Event event = eventService.reserveSeat(registrationId, eventId);
 
         return ResponseEntity.ok(event);
     }
 
     @PostMapping("/{eventId}/release")
-    public ResponseEntity<Event> releaseSeat(@PathVariable Long eventId) {
-        Event event = eventService.releaseSeat(eventId);
+    public ResponseEntity<Event> releaseSeat(@PathVariable Long eventId, @RequestParam String registrationId) {
+        Event event = eventService.releaseSeat(registrationId, eventId);
         return ResponseEntity.ok(event);
     }
 }

@@ -36,7 +36,20 @@ spring:
         enabled: true
 
   cloud:
+    circuitbreaker:
+      resilience4j:
+        # Enable Resilience4j TimeLimiter.
+        # TimeLimiter controls individual request duration
+        # CircuitBreaker controls whether calls should continue to be attempted.
+        disable-time-limiter: false
     gateway.server.webflux:
+      filter:
+        # This will removes these filter beans from adding into container
+        # We use DisabledFilterStripper to remove these references as well at runtime.
+        circuit-breaker:
+          enabled: ${GATEWAY_CB_ENABLED:true}
+        request-rate-limiter:
+          enabled: ${GATEWAY_RATELIMIT_ENABLED:true}
       routes:
         # =========================
         # SECURITY
@@ -104,13 +117,30 @@ spring:
         - id: saga-orchestrator
           uri: ${SAGA_ORCHESTRATOR_URL}
           predicates:
-            - Path=/api/v1/registrations/**
+            - Path=/api/v1/registrations
+            - Method=POST
           filters:
             - name: CircuitBreaker
               args:
                 name: sagaServiceCircuitBreaker
                 fallbackUri: forward:/fallback/saga
 
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+        # =========================
+        # SSE CONNECTION FOR SAGA REGISTRATION
+        # =========================
+        - id: saga-orchestrator-sse
+          uri: ${SAGA_ORCHESTRATOR_URL}
+          predicates:
+            - Path=/api/v1/registrations/*/events
+            - Method=GET
+          filters:
+            # Don't add circuit breaker as SSE is long lived connection
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 2
@@ -125,6 +155,11 @@ visual:
   enigma: ${VISUAL_ENGIMA_URL}
 
 resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+        cancelRunningFuture: true
   circuitbreaker:
     instances:
       securityServiceCircuitBreaker:

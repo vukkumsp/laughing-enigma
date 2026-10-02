@@ -11,4 +11,5 @@ public interface PaymentRepository
 
     Optional<Payment> findByRazorpayOrderId(String razorpayOrderId);
     List<Payment> findByCustomerIdAndStatus(Long customerId,  String status);
+    Optional<Payment> findByRegistrationId(String registrationId);
 }

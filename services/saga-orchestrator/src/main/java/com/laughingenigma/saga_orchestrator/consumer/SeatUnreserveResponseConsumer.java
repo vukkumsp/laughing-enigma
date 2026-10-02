@@ -30,12 +30,41 @@ public class SeatUnreserveResponseConsumer {
         System.out.println("SeatUnreserveResponse Status: "+response.success());
 
         //End of SAGA
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
+
+        if (sagaI.getCurrentStep() == SagaStep.REGISTRATION_COMPENSATED) {
+            System.out.println(
+                    "IDEMPOTENCY: Duplicate seat unreserve response ignored. "
+                            + "registrationId=" + response.registrationId()
+            );
+            return;
+        }
+
+        if (!sagaI.getCurrentStep()
+                .canTransitionTo(SagaStep.REGISTRATION_COMPENSATED)) {
+            // Duplicate / stale / invalid response
+            System.out.println(
+                    "SAGA TRANSITION REJECTED: " +
+                            sagaI.getCurrentStep() +
+                            " -> " +
+                            SagaStep.REGISTRATION_COMPENSATED +
+                            ", registrationId=" +
+                            response.registrationId()
+            );
+            return;
+        }
+
+
         sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPENSATED);
         sagaI.setStatus(SagaStatus.COMPENSATED);
         sagaInstanceRepository.save(sagaI);
 
         //SAGA COMPENSATED
-
+        System.out.println(
+                "SAGA COMPENSATED: registrationId="
+                        + response.registrationId()
+        );
     }
 }

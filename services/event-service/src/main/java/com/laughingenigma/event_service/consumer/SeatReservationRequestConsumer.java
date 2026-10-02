@@ -34,7 +34,10 @@ public class SeatReservationRequestConsumer {
         boolean success = false;
 
         try{
-            Event reservedEvent = eventService.reserveSeat(request.eventId());
+            Event reservedEvent = eventService.reserveSeat(
+                    request.registrationId(),
+                    request.eventId()
+            );
             success = true;
             SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
                     request.registrationId(),
@@ -57,6 +60,9 @@ public class SeatReservationRequestConsumer {
             publisher.publish(seatReservationResponse);
         }
         catch (Exception e){
+            // TODO: Configure proper RabbitMQ retry/DLQ handling.
+            // Because if we are not throwing any exception out,
+            // then RabbitMQ will ACK thinking it processed the messgae
             e.printStackTrace();
         }
     }

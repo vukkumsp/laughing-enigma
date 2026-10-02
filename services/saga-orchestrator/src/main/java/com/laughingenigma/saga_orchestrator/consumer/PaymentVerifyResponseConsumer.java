@@ -44,17 +44,73 @@ public class PaymentVerifyResponseConsumer {
             queues = RabbitMQConfig.PAYMENT_VERIFY_RESPONSE_QUEUE
     )
     public void handlePaymentVerifyResponse(PaymentVerifyResponse response){
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+        System.out.println("========== PAYMENT VERIFY RESPONSE ==========");
+        System.out.println("response = " + response);
+        System.out.println("registrationId = [" + response.registrationId() + "]");
+
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
 
         System.out.println("Payment Verify response: "+response);
-        System.out.println("Payment Verify Status: "+response);
         System.out.println("sagaI.getCurrentStep(): " + sagaI.getCurrentStep());
         System.out.println("sagaI.getContext(): "+ sagaI.getContext());
 
         // PaymentOrderResponse
         PaymentOrderResponse paymentOrderResponse;
 
+        if (response.status().equalsIgnoreCase("success")) {
+            //success but duplicated
+            if (sagaI.getCurrentStep() == SagaStep.REGISTRATION_COMPLETED) {
+                // duplicate
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate payment success response ignored. "
+                                + "registrationId=" + response.registrationId()
+                );
+                return;
+            }
+
+            if (!sagaI.getCurrentStep()
+                    .canTransitionTo(SagaStep.PAYMENT_SUCCESS)) {
+                // stale/invalid response
+                System.out.println(
+                        "SAGA TRANSITION REJECTED: "
+                                + sagaI.getCurrentStep()
+                                + " -> "
+                                + SagaStep.PAYMENT_SUCCESS
+                                + ", registrationId="
+                                + response.registrationId()
+                );
+                return;
+            }
+            // process success
+        }
+
         if(!response.status().equalsIgnoreCase("success")) {
+            //failure flow
+            if (sagaI.getCurrentStep() == SagaStep.PAYMENT_FAILED
+                    || sagaI.getCurrentStep() == SagaStep.REGISTRATION_COMPENSATED) {
+
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate payment failure response ignored. "
+                                + "registrationId=" + response.registrationId()
+                );
+                return;
+            }
+
+            if (!sagaI.getCurrentStep()
+                    .canTransitionTo(SagaStep.PAYMENT_FAILED)) {
+                // Duplicate / stale / invalid response
+                System.out.println(
+                        "SAGA TRANSITION REJECTED: " +
+                                sagaI.getCurrentStep() +
+                                " -> " +
+                                SagaStep.PAYMENT_FAILED +
+                                ", registrationId=" +
+                                response.registrationId()
+                );
+                return;
+            }
 
             paymentOrderResponse
                     = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
@@ -114,6 +170,9 @@ public class PaymentVerifyResponseConsumer {
                 KafkaConfig.APPLICATION_NAME,
                 payload
         );
+
+        // TODO: Introduce Outbox Pattern to reliably coordinate
+        // saga completion and REGISTRATION_COMPLETED Kafka publication.
         registrationSaga.sendEmailNotification(event);
     }
 }

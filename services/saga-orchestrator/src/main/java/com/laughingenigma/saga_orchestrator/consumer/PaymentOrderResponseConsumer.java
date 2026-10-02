@@ -31,15 +31,43 @@ public class PaymentOrderResponseConsumer {
             queues = RabbitMQConfig.PAYMENT_ORDER_RESPONSE_QUEUE
     )
     public void handlePaymentOrderResponse(PaymentOrderResponse response){
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
+
+        if (sagaI.getCurrentStep() == SagaStep.PAYMENT_REQUIRED) {
+            System.out.println(
+                    "IDEMPOTENCY: Duplicate payment order response ignored. "
+                            + "registrationId=" + response.registrationId()
+            );
+            return;
+        }
+
+        if (!sagaI.getCurrentStep()
+                .canTransitionTo(SagaStep.PAYMENT_REQUIRED)) {
+            // Duplicate / stale / invalid response
+            System.out.println(
+                    "SAGA TRANSITION REJECTED: "
+                            + sagaI.getCurrentStep()
+                            + " -> "
+                            + SagaStep.PAYMENT_REQUIRED
+                            + ", registrationId="
+                            + response.registrationId()
+            );
+            return;
+        }
+
         System.out.println("Payment Order response: "+response);
 
-        sseService.sendPaymentRequiredEvent(response);
-
-        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
         sagaI.setCurrentStep(SagaStep.PAYMENT_REQUIRED);
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
         sagaI.setContext(ContextFactory.buildPaymentOrderResponseContext(response));
         sagaInstanceRepository.save(sagaI);
+
+        // TODO: Later revisit reliable delivery of the
+        // PAYMENT_REQUIRED notification.
+
+        sseService.sendPaymentRequiredEvent(response);
     }
 
 }

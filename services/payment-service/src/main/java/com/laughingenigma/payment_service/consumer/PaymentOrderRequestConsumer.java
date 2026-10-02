@@ -40,6 +40,7 @@ public class PaymentOrderRequestConsumer {
             publisher.publish(paymentOrderResponse);
         }
         catch (Exception e){
+            // TODO: Retry/DLQ handling
             e.printStackTrace();
         }
     }

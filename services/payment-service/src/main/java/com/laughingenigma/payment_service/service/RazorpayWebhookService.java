@@ -3,12 +3,15 @@ package com.laughingenigma.payment_service.service;
 import com.laughingenigma.payment_service.dto.PaymentVerifyResponse;
 import com.laughingenigma.payment_service.entity.Payment;
 import com.laughingenigma.payment_service.entity.PaymentStatus;
+import com.laughingenigma.payment_service.entity.ProcessedWebhookEvent;
 import com.laughingenigma.payment_service.publisher.PaymentVerifyResponsePublisher;
 import com.laughingenigma.payment_service.repository.PaymentRepository;
+import com.laughingenigma.payment_service.repository.ProcessedWebhookEventRepository;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -21,12 +24,15 @@ public class RazorpayWebhookService {
     private String webhookSecret;
 
     private final PaymentRepository paymentRepository;
+    private final ProcessedWebhookEventRepository processedWebhookEventRepository;
     private final PaymentVerifyResponsePublisher publisher;
 
     public RazorpayWebhookService(
             PaymentRepository paymentRepository,
+            ProcessedWebhookEventRepository processedWebhookEventRepository,
             PaymentVerifyResponsePublisher publisher) {
         this.paymentRepository = paymentRepository;
+        this.processedWebhookEventRepository = processedWebhookEventRepository;
         this.publisher = publisher;
     }
 
@@ -48,7 +54,8 @@ public class RazorpayWebhookService {
         }
     }
 
-    public void updateSaga(String rawBody) {
+    @Transactional
+    public void updateSaga(String rawBody, String razorpayEventId) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         JsonNode root = objectMapper.readTree(rawBody);
@@ -60,6 +67,14 @@ public class RazorpayWebhookService {
             // only allow payment.captured or payment.failed events
             // to publish as verified.
             // others are ignored for now
+            return;
+        }
+
+        if (processedWebhookEventRepository.existsByRazorpayEventId(razorpayEventId)) {
+            System.out.println(
+                    "IDEMPOTENCY: Duplicate Razorpay webhook ignored. "
+                            + "eventId=" + razorpayEventId
+            );
             return;
         }
 
@@ -81,13 +96,13 @@ public class RazorpayWebhookService {
                 .orElseThrow();
 
         payment.setRazorpayPaymentId(paymentId);
-        payment.setPaidAt(Instant.now());
 
         System.out.println("status obtained from rawBody is " + status);
 
         switch (status){
             case "captured":
                 payment.setStatus(PaymentStatus.SUCCESS);
+                payment.setPaidAt(Instant.now());
                 break;
             case "failed":
                 payment.setStatus(PaymentStatus.FAILED);
@@ -97,6 +112,11 @@ public class RazorpayWebhookService {
         //save db status
         this.paymentRepository.save(payment);
 
+        ProcessedWebhookEvent processedEvent = new ProcessedWebhookEvent();
+        processedEvent.setRazorpayEventId(razorpayEventId);
+        processedEvent.setProcessedAt(Instant.now());
+        processedWebhookEventRepository.save(processedEvent);
+
         PaymentVerifyResponse paymentVerifyResponse = new PaymentVerifyResponse(
                 payment.getRegistrationId(),
                 payment.getCustomerId(),
@@ -105,6 +125,8 @@ public class RazorpayWebhookService {
                 payment.getStatus().name()
         );
 
+        // TODO: Introduce Outbox Pattern to reliably coordinate
+        // payment status update and PaymentVerifyResponse publication.
         //resuming saga flow
         publisher.publish(paymentVerifyResponse);
     }

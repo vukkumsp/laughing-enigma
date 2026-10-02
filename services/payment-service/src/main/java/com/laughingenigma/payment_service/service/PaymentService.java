@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.razorpay.Utils;
 
@@ -47,6 +48,23 @@ public class PaymentService {
     public PaymentOrderResponse createOrder(PaymentOrderRequest request) {
 
         try {
+            Optional<Payment> existingPayment =
+                    paymentRepository.findByRegistrationId(
+                            request.registrationId()
+                    );
+
+            if (existingPayment.isPresent()) {
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate payment order request ignored. "
+                                + "registrationId=" + request.registrationId()
+                );
+
+                return createResponseFromExistingPayment(
+                        existingPayment.get(),
+                        request
+                );
+            }
+
             long amountInPaise = request.price()
                     .movePointRight(2)
                     .longValueExact();
@@ -62,6 +80,8 @@ public class PaymentService {
             // create Razorpay order
             Order order = razorpayClient.orders.create(orderRequest);
 
+            PaymentStatus status = getStatusFromRazorpayOrder(order);
+
             // persist payment record
             Payment payment = Payment.builder()
                     .registrationId(request.registrationId())
@@ -69,7 +89,7 @@ public class PaymentService {
                     .amount(request.price())
                     .currency("INR")
                     .razorpayOrderId(order.get("id"))
-                    .status(PaymentStatus.CREATED)
+                    .status(status)
                     .build();
 
             paymentRepository.save(payment);
@@ -90,13 +110,44 @@ public class PaymentService {
                     request.price(),
                     request.currency(),
                     order.get("id"),
-                    order.get("status")
+                    status.toString()
             );
 
         } catch (RazorpayException e) {
             throw new RuntimeException("Failed to create Razorpay order",
                     e);
         }
+    }
+
+    private PaymentOrderResponse createResponseFromExistingPayment(Payment existingPayment, PaymentOrderRequest request) {
+        return new PaymentOrderResponse(
+                request.registrationId(),
+                request.eventId(),
+
+                request.customerId(),
+                request.username(),
+                request.email(),
+                request.firstName(),
+                request.lastName(),
+
+                request.eventName(),
+                request.eventDate(),
+                request.price(),
+                request.currency(),
+                existingPayment.getRazorpayOrderId(),
+                existingPayment.getStatus().toString()
+        );
+    }
+
+    private PaymentStatus getStatusFromRazorpayOrder(Order order) {
+        String status = order.get("status");
+
+        return switch (status) {
+            case "created" -> PaymentStatus.CREATED;
+            case "attempted" -> PaymentStatus.PENDING;
+            case "paid" -> PaymentStatus.SUCCESS;
+            default ->  PaymentStatus.FAILED;
+        };
     }
 
     public List<Payment> getOrders(Long customerId, String status){

@@ -27,13 +27,43 @@ public class CustomerValidationResponseConsumer {
             queues = RabbitMQConfig.CUSTOMER_VALIDATION_RESPONSE_QUEUE
     )
     public void handleCustomerValidationResponse(CustomerValidationResponse response){
+        SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
+
+        System.out.println("Customer Validation response: "+response);
+
+        if (sagaI.getCurrentStep() == SagaStep.CUSTOMER_VALIDATED) {
+            //Idempotency Check
+            //This saga's customer validation is already done, so we might be reading a duplicate response
+            //So, Ignore this.
+            System.out.println(
+                    "IDEMPOTENCY CHECK: Duplicate customer validation response ignored. "
+                            + "registrationId=" + response.registrationId()
+            );
+            return;
+        }
+
+        if (!sagaI.getCurrentStep()
+                .canTransitionTo(SagaStep.CUSTOMER_VALIDATED)) {
+            // Duplicate / stale / invalid response
+            System.out.println(
+                    "SAGA TRANSITION REJECTED: "
+                            + sagaI.getCurrentStep()
+                            + " -> "
+                            + SagaStep.CUSTOMER_VALIDATED
+                            + ", registrationId="
+                            + response.registrationId()
+            );
+            return;
+        }
+
         if(response.valid()){
-            SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId()).orElseThrow();
             sagaI.setCurrentStep(SagaStep.CUSTOMER_VALIDATED);
             sagaI.setStatus(SagaStatus.IN_PROGRESS);
             sagaInstanceRepository.save(sagaI);
-        }
 
-        registrationSaga.reserveSeatsForRegistration(response);
+            // TODO: Introduce Outbox Pattern to atomically coordinate
+            // SagaInstance state change and RabbitMQ message publishing.
+            registrationSaga.reserveSeatsForRegistration(response);
+        }
     }
 }

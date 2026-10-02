@@ -1,0 +1,100 @@
+Working Notes:-
+---------------
+
+RabbitMQ
+	Idempotency at consumer side
+	Retry
+	DLQ
+	Backpressure
+	
+	
+	Transient Errors - need retry
+	Business Errors - NO Retry
+	Malformed/unprocessed messages - direct to DLQ
+	
+	spring.rabbitmq.listener.simple.concurrency: 1
+	spring.rabbitmq.listener.simple.prefetch: 1
+	spring.rabbitmq.listener.simple.missing-queues-fatal: false
+	
+spring:
+  rabbitmq:
+    listener:
+      simple:
+        concurrency: 1
+        max-concurrency: 1
+        prefetch: 1
+		
+Suggested implementation sequence:
+
+Phase 1 — Idempotency
+
+Implement this first.
+messageId / registrationId
+        ↓
+deduplication
+        ↓
+business operation
+
+Phase 2 — Retry
+
+Add:
+3–4 attempts
+exponential backoff
+
+and classify retryable vs non-retryable exceptions.
+
+Phase 3 — DLQ
+
+Create dedicated DLQs and make sure failed messages retain enough information for investigation/reprocessing.
+
+Phase 4 — Backpressure
+
+Tune:
+concurrency
+max-concurrency
+prefetch
+
+based on the capacity of each service/database.
+
+Phase 5 — Observability
+
+Add metrics such as:
+rabbitmq_messages_consumed
+rabbitmq_messages_failed
+rabbitmq_retry_count
+rabbitmq_dlq_messages
+rabbitmq_consumer_latency
+rabbitmq_unacked_messages
+
+Then you can actually demonstrate:
+"The system retries transient failures, isolates poison messages in DLQs, and limits consumer pressure through controlled concurrency and prefetch."
+
+That would make a very solid production-engineering addition to your registration saga, rather than merely adding RabbitMQ features for the sake of it.
+
+To be tested - checklist :-
+[ ] Normal success flow
+[ ] Normal failure flow + compensation
+[ ] Duplicate Reservation
+[ ] Duplicate Release
+[ ] Concurrent Reservation requests
+[ ] Concurrent Release requests
+
+TODO:
+- Frontend recovery when SSE connection is lost
+- API to retrieve current registration/payment state
+- Possibly reconnect/replay mechanism for SSE\
+
+To Test sending duplicate messages with delay:
+
+// TODO Remove below code after testing the duplicate publish scenario
+try {
+    long delayInMs = 5000;
+    System.out.println("delaying 5000ms");
+    // Pause execution (similar to sleep in JS)
+    Thread.sleep(delayInMs);
+} catch (InterruptedException e) {
+    // Restore interrupted state
+    Thread.currentThread().interrupt();
+    throw new RuntimeException("Thread was interrupted while delaying duplicate message", e);
+}
+System.out.println("publishing duplicate message #");
