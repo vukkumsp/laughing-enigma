@@ -1,10 +1,10 @@
 package com.laughingenigma.payment_service.service;
 
+import com.laughingenigma.payment_service.config.RabbitMQConfig;
 import com.laughingenigma.payment_service.dto.PaymentVerifyResponse;
-import com.laughingenigma.payment_service.entity.Payment;
-import com.laughingenigma.payment_service.entity.PaymentStatus;
-import com.laughingenigma.payment_service.entity.ProcessedWebhookEvent;
+import com.laughingenigma.payment_service.entity.*;
 import com.laughingenigma.payment_service.publisher.PaymentVerifyResponsePublisher;
+import com.laughingenigma.payment_service.repository.OutboxMessageRepository;
 import com.laughingenigma.payment_service.repository.PaymentRepository;
 import com.laughingenigma.payment_service.repository.ProcessedWebhookEventRepository;
 import com.razorpay.RazorpayException;
@@ -16,6 +16,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Service
 public class RazorpayWebhookService {
@@ -25,14 +26,21 @@ public class RazorpayWebhookService {
 
     private final PaymentRepository paymentRepository;
     private final ProcessedWebhookEventRepository processedWebhookEventRepository;
+    private final OutboxMessageRepository outboxMessageRepository;
+    private final ObjectMapper objectMapper;
+
     private final PaymentVerifyResponsePublisher publisher;
 
     public RazorpayWebhookService(
             PaymentRepository paymentRepository,
             ProcessedWebhookEventRepository processedWebhookEventRepository,
+            OutboxMessageRepository outboxMessageRepository,
+            ObjectMapper objectMapper,
             PaymentVerifyResponsePublisher publisher) {
         this.paymentRepository = paymentRepository;
         this.processedWebhookEventRepository = processedWebhookEventRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
+        this.objectMapper = objectMapper;
         this.publisher = publisher;
     }
 
@@ -56,8 +64,6 @@ public class RazorpayWebhookService {
 
     @Transactional
     public void updateSaga(String rawBody, String razorpayEventId) {
-        ObjectMapper objectMapper = new ObjectMapper();
-
         JsonNode root = objectMapper.readTree(rawBody);
 
         String event = root.get("event").asText();
@@ -125,9 +131,19 @@ public class RazorpayWebhookService {
                 payment.getStatus().name()
         );
 
-        // TODO: Introduce Outbox Pattern to reliably coordinate
-        // payment status update and PaymentVerifyResponse publication.
-        //resuming saga flow
-        publisher.publish(paymentVerifyResponse);
+        String payload = objectMapper.writeValueAsString(paymentVerifyResponse);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .messageType(OutboxMessageType.PAYMENT_VERIFY_RESPONSE)
+                .exchange(RabbitMQConfig.SAGA_RESPONSE_EXCHANGE)
+                .routingKey(RabbitMQConfig.PAYMENT_VERIFY_RESPONSE_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
     }
 }

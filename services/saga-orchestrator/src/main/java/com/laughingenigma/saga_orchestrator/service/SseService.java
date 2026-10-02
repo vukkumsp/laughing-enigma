@@ -119,6 +119,9 @@ public class SseService {
                                     response.eventId(),
                                     response.status()))
             );
+
+            emitter.complete();
+            emitters.remove(response.registrationId());
         } catch (IOException e) {
             emitters.remove(response.registrationId());
             emitter.completeWithError(e);
@@ -158,6 +161,26 @@ public class SseService {
             emitter.completeWithError(e);
         }
     }
+
+    //test remove sse connection
+    public void closeSseConnection(String registrationId) {
+        SseEmitter emitter =
+                emitters.get(registrationId);
+
+        if (emitter == null) {
+            System.out.println(
+                    "No SSE connection for "
+                            + registrationId
+            );
+            return;
+        }
+        System.out.println(
+                "Closing TEST event to " + registrationId
+        );
+        emitter.complete();
+        emitters.remove(registrationId);
+    }
+
 }
 
 enum SSE_EVENT {

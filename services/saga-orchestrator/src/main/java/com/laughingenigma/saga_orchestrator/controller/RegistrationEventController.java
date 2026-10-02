@@ -29,4 +29,9 @@ public class RegistrationEventController {
     public void sendTestEvent(@PathVariable String registrationId) {
         sseService.sendTestEvent(registrationId);
     }
+
+    @PostMapping("/{registrationId}/events/test/close")
+    public void closeTestEvent(@PathVariable String registrationId) {
+        sseService.closeSseConnection(registrationId);
+    }
 }
