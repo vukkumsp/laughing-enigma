@@ -30,7 +30,7 @@ public class OutboxMessagePublisher {
         this.objectMapper = objectMapper;
     }
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelayString = "${outbox.publisher.fixed-delay}")
     public void publishPendingMessages() {
 
         System.out.println("STARTED publishPendingMessages");

@@ -36,6 +36,10 @@ razorpay:
   key-secret: ${RAZORPAY_KEY_SECRET}
   webhook-secret: ${RAZORPAY_WEBHOOK_SECRET}
 
+outbox:
+  publisher:
+    fixed-delay: ${OUTBOX_PUBLISHER_FIXED_DELAY:5000}
+
 logging:
   level:
     org.springframework.security: DEBUG
