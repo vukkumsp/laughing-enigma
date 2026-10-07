@@ -57,4 +57,11 @@ public class OutboxMessage {
     private int retryCount;
 
     private Instant nextRetryAt;
+
+    private String failureType;
+
+    @Column(columnDefinition = "TEXT")
+    private String failureReason;
+
+    private Instant failedAt;
 }

@@ -10,3 +10,5 @@ ALTER DATABASE "event-db" OWNER TO "event-user";
 ALTER DATABASE "payment-db" OWNER TO "payment-user";
 ALTER DATABASE "customer-db" OWNER TO "customer-user";
 ALTER DATABASE "saga-db" OWNER TO "saga-user";
+
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U payment-user -d payment-db --schema-only --no-owner --no-privileges -f payment-schema.sql
