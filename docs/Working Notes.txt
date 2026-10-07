@@ -98,3 +98,10 @@ try {
     throw new RuntimeException("Thread was interrupted while delaying duplicate message", e);
 }
 System.out.println("publishing duplicate message #");
+
+Attempt     retryCount before attempt     Delay before attempt
+--------------------------------------------------------------
+1           0                             immediate
+2           1                             1 second
+3           2                             2 seconds
+4           3                             4 seconds

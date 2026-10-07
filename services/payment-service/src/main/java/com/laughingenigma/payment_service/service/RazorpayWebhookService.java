@@ -142,6 +142,7 @@ public class RazorpayWebhookService {
                 .status(OutboxStatus.PENDING)
                 .createdAt(Instant.now())
                 .retryCount(0)
+                .nextRetryAt(null)
                 .build();
 
         outboxMessageRepository.save(outboxMessage);

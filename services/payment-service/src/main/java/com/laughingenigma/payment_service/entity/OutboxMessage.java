@@ -52,6 +52,9 @@ public class OutboxMessage {
 
     private Instant publishedAt;
 
+    // retryCount represents failed attempts, not the current attempt number.
     @Column(nullable = false)
     private int retryCount;
+
+    private Instant nextRetryAt;
 }
