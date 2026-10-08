@@ -12,3 +12,23 @@ ALTER DATABASE "customer-db" OWNER TO "customer-user";
 ALTER DATABASE "saga-db" OWNER TO "saga-user";
 
 pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U payment-user -d payment-db --schema-only --no-owner --no-privileges -f payment-schema.sql
+
+
+To connect to local postgreSQL running in a docker container:
+=============================================================
+
+docker run --name payment-postgres-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=payment-db-test -p 55432:5432 -d postgres:18
+
+psql -h localhost -p 55432 -U postgres -d payment-db-test
+
+To dump data schema in postgreSQL:
+==================================
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U payment-user -d payment-db --schema-only --no-owner --no-privileges -f payment-schema.sql
+
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U customer-user -d customer-db --schema-only --no-owner --no-privileges -f customer-schema.sql
+
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U security-user -d security-db --schema-only --no-owner --no-privileges -f security-schema.sql
+
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U event-user -d event-db --schema-only --no-owner --no-privileges -f event-schema.sql
+
+pg_dump -h pg-11835880-project-enigma.e.aivencloud.com -p 13359 -U saga-user -d saga-db --schema-only --no-owner --no-privileges -f saga-schema.sql

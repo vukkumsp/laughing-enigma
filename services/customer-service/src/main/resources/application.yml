@@ -24,7 +24,7 @@ spring:
       idle-timeout: 300000 # 5 minutes
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT:5672}

@@ -105,3 +105,15 @@ Attempt     retryCount before attempt     Delay before attempt
 2           1                             1 second
 3           2                             2 seconds
 4           3                             4 seconds
+
+
+
+Flyway naming conventions:
+
+V1__create_payment_schema.sql
+V2__add_outbox_failure_metadata.sql
+
+
+V1__create_event_schema.sql
+
+V1__create_saga_schema.sql
