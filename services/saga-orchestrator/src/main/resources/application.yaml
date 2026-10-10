@@ -50,7 +50,6 @@ spring:
         enable.idempotence: true
         spring.json.add.type.headers: false
 
-customer:
-  service: ${CUSTOMER_SERVICE_URL}
-event:
-  service: ${EVENT_SERVICE_URL}
+outbox:
+  publisher:
+    fixed-delay: ${OUTBOX_PUBLISHER_FIXED_DELAY:5000}

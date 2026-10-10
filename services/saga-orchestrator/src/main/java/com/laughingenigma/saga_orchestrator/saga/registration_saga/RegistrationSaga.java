@@ -1,17 +1,18 @@
 package com.laughingenigma.saga_orchestrator.saga.registration_saga;
 
 import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
+import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.*;
-import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
-import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
-import com.laughingenigma.saga_orchestrator.entity.SagaStep;
-import com.laughingenigma.saga_orchestrator.entity.SagaType;
+import com.laughingenigma.saga_orchestrator.entity.*;
 import com.laughingenigma.saga_orchestrator.error.exception.ResourceNotFoundException;
 import com.laughingenigma.saga_orchestrator.kafka.event.*;
 import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
 import com.laughingenigma.saga_orchestrator.publisher.*;
+import com.laughingenigma.saga_orchestrator.repository.OutboxMessageRepository;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -27,6 +28,9 @@ public class RegistrationSaga {
     private final PaymentVerifyRequestPublisher paymentVerifyRequestPublisher;
     private final KafkaRegistrationEventProducer kafkaRegistrationEventProducer;
 
+    private final OutboxMessageRepository outboxMessageRepository;
+    private final ObjectMapper objectMapper;
+
     private final SagaInstanceRepository sagaInstanceRepository;
 
     public RegistrationSaga(
@@ -36,7 +40,10 @@ public class RegistrationSaga {
             PaymentOrderRequestPublisher paymentOrderRequestPublisher,
             PaymentVerifyRequestPublisher paymentVerifyRequestPublisher,
             SagaInstanceRepository sagaInstanceRepository,
-            KafkaRegistrationEventProducer kafkaRegistrationEventProducer) {
+            KafkaRegistrationEventProducer kafkaRegistrationEventProducer,
+
+            OutboxMessageRepository outboxMessageRepository,
+            ObjectMapper objectMapper) {
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
         this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
@@ -44,8 +51,12 @@ public class RegistrationSaga {
         this.paymentVerifyRequestPublisher = paymentVerifyRequestPublisher;
         this.sagaInstanceRepository = sagaInstanceRepository;
         this.kafkaRegistrationEventProducer = kafkaRegistrationEventProducer;
+
+        this.outboxMessageRepository = outboxMessageRepository;
+        this.objectMapper = objectMapper;
     }
 
+    @Transactional
     public RegistrationResponse startRegistration(
             String registrationId,
             Long eventId,
@@ -66,7 +77,24 @@ public class RegistrationSaga {
                         username
                 );
 
-        customerValidationRequestPublisher.publish(customerValidationRequest);
+        //customerValidationRequestPublisher.publish(customerValidationRequest);
+
+        String payload = objectMapper.writeValueAsString(customerValidationRequest);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.CUSTOMER_VALIDATION_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.CUSTOMER_VALIDATION_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
 
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(registrationId)
                 .orElseThrow(() ->
@@ -74,6 +102,7 @@ public class RegistrationSaga {
                                 "User with username " + username + " was not found"
                         )
                 );
+
         sagaI.setCurrentStep(SagaStep.CUSTOMER_VALIDATION);
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
         sagaInstanceRepository.save(sagaI);
@@ -86,6 +115,7 @@ public class RegistrationSaga {
         );
     }
 
+    @Transactional
     public void reserveSeatsForRegistration(
             CustomerValidationResponse response) {
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
@@ -116,7 +146,24 @@ public class RegistrationSaga {
 
         // Customer validation succeeded.
         // Start Step 2.
-        seatReservationRequestPublisher.publish(seatReservationRequest);
+        //seatReservationRequestPublisher.publish(seatReservationRequest);
+
+        String payload = objectMapper.writeValueAsString(seatReservationRequest);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.SEAT_RESERVATION_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.SEAT_RESERVATION_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
 
         sagaI.setCurrentStep(SagaStep.SEAT_RESERVATION);
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
@@ -125,6 +172,7 @@ public class RegistrationSaga {
         System.out.println("reserveSeatsForRegistration - "+response.registrationId());
     }
 
+    @Transactional
     public void initiatePaymentOrder(SeatReservationResponse response) {
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
                 .orElseThrow(() ->
@@ -206,12 +254,29 @@ public class RegistrationSaga {
                 response.currency()
         );
 
-        // TODO: Outbox - reliably coordinate saga state change
         // with PaymentOrderRequest publication.
 
-        paymentOrderRequestPublisher.publish(paymentOrderRequest);
+        //paymentOrderRequestPublisher.publish(paymentOrderRequest);
+
+        String payload = objectMapper.writeValueAsString(paymentOrderRequest);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.PAYMENT_ORDER_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.PAYMENT_ORDER_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
     }
 
+    @Transactional
     public void unreserveSeatsAsCompensation(PaymentOrderResponse response) {
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
                 .orElseThrow(() ->
@@ -239,9 +304,25 @@ public class RegistrationSaga {
         sagaI.setStatus(SagaStatus.COMPENSATING);
         sagaInstanceRepository.save(sagaI);
 
-        // TODO: Outbox - reliably coordinate saga state change
         // with SeatUnreserveRequest publication.
-        seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
+        //seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
+
+        String payload = objectMapper.writeValueAsString(seatUnreserveRequest);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.SEAT_UNRESERVE_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.SEAT_UNRESERVE_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
 
         System.out.println("unreserveSeatsAsCompensation - "+response.registrationId());
 
@@ -253,7 +334,7 @@ public class RegistrationSaga {
                 response.eventDate().toInstant(ZoneOffset.UTC),
                 Instant.now()
         );
-        RegistrationEventPayload payload = new RegistrationFailedPayload(
+        RegistrationEventPayload KafkaPayload = new RegistrationFailedPayload(
                 response.registrationId(),
                 response.username(),
                 response.email(),
@@ -266,12 +347,29 @@ public class RegistrationSaga {
                 1,
                 Instant.now(),
                 KafkaConfig.APPLICATION_NAME,
-                payload
+                KafkaPayload
         );
 
         // TODO: Introduce Outbox Pattern to reliably coordinate
         // compensation state change and REGISTRATION_FAILED Kafka publication.
-        sendEmailNotification(event);
+        //sendEmailNotification(event);
+
+        String kafkaEventPayload = objectMapper.writeValueAsString(event);
+
+        OutboxMessage kafkaOutboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.KAFKA)
+                .messageType(OutboxMessageType.REGISTRATION_FAILED)
+                .destinationName(KafkaConfig.REGISTRATION_EVENTS_TOPIC)
+                .routingKey(null)
+                .payload(kafkaEventPayload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(kafkaOutboxMessage);
     }
 
     public void sendEmailNotification(RegistrationEvent event){

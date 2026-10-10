@@ -1,6 +1,7 @@
 package com.laughingenigma.notification_service.kafka.dispatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laughingenigma.notification_service.config.KafkaConfig;
 import com.laughingenigma.notification_service.email.EmailSender;
 import com.laughingenigma.notification_service.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.notification_service.kafka.event.RegistrationEvent;
@@ -25,7 +26,7 @@ public class RegistrationEventDispatcher {
 
         switch (event.eventType()) {
 
-            case "RegistrationCompleted" -> {
+            case KafkaConfig.REGISTRATION_COMPLETED -> {
                 RegistrationCompletedPayload payload =
                         objectMapper.convertValue(
                                 event.payload(),
@@ -35,7 +36,7 @@ public class RegistrationEventDispatcher {
                 handleCompleted(event, payload);
             }
 
-            case "RegistrationFailed" -> {
+            case KafkaConfig.REGISTRATION_FAILED -> {
                 RegistrationFailedPayload payload =
                         objectMapper.convertValue(
                                 event.payload(),

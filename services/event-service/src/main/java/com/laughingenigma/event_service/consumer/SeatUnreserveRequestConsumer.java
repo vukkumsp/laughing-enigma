@@ -9,6 +9,7 @@ import com.laughingenigma.event_service.entity.Event;
 import com.laughingenigma.event_service.publisher.SeatReservationResponsePublisher;
 import com.laughingenigma.event_service.publisher.SeatUnreserveResponsePublisher;
 import com.laughingenigma.event_service.service.EventService;
+import com.laughingenigma.event_service.service.SeatUnreserveApplicationService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
@@ -17,38 +18,21 @@ public class SeatUnreserveRequestConsumer {
 
     private final EventService eventService;
     private final SeatUnreserveResponsePublisher publisher;
+    private final SeatUnreserveApplicationService  seatUnreserveApplicationService;
 
     public SeatUnreserveRequestConsumer(
-            EventService eventService, SeatUnreserveResponsePublisher publisher) {
+            EventService eventService, SeatUnreserveResponsePublisher publisher,
+            SeatUnreserveApplicationService seatUnreserveApplicationService) {
         this.eventService = eventService;
         this.publisher = publisher;
+        this.seatUnreserveApplicationService = seatUnreserveApplicationService;
     }
 
     @RabbitListener(
             queues = RabbitMQConfig.SEAT_UNRESERVE_REQUEST_QUEUE
     )
     public void handleSeatUnreserveRequest(SeatUnreserveRequest request) {
-
         System.out.println("SeatUnreserveRequestConsumer SeatUnreserveRequest - " + request);
-        boolean success = false;
-
-        try{
-            Event reservedEvent = eventService.releaseSeat(
-                    request.registrationId(),
-                    request.eventId()
-            );
-            success = true;
-            SeatUnreserveResponse seatUnreserveResponse = new SeatUnreserveResponse(
-                    request.registrationId(),
-                    request.eventId(),
-                    success
-            );
-            System.out.println("handleSeatUnreserveRequest - "+request.registrationId());
-
-            publisher.publish(seatUnreserveResponse);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+        seatUnreserveApplicationService.handleSeatUnreserve(request);
     }
 }

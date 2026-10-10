@@ -1,19 +1,20 @@
-package com.laughingenigma.payment_service.publisher;
+package com.laughingenigma.saga_orchestrator.publisher;
 
-import com.laughingenigma.payment_service.dto.PaymentVerifyRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerifyResponse;
-import com.laughingenigma.payment_service.entity.OutboxMessage;
-import com.laughingenigma.payment_service.entity.OutboxMessageType;
-import com.laughingenigma.payment_service.entity.OutboxStatus;
-import com.laughingenigma.payment_service.error.exception.NonRetryableOutboxException;
-import com.laughingenigma.payment_service.repository.OutboxMessageRepository;
+import com.laughingenigma.saga_orchestrator.dto.*;
+import com.laughingenigma.saga_orchestrator.entity.OutboxMessage;
+import com.laughingenigma.saga_orchestrator.entity.OutboxMessageType;
+import com.laughingenigma.saga_orchestrator.entity.OutboxStatus;
+import com.laughingenigma.saga_orchestrator.error.exception.NonRetryableOutboxException;
+import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
+import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
+import com.laughingenigma.saga_orchestrator.repository.OutboxMessageRepository;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,8 +24,16 @@ import java.util.List;
 public class OutboxMessagePublisher {
 
     private final OutboxMessageRepository outboxMessageRepository;
-    private final PaymentVerifyResponsePublisher paymentVerifyResponsePublisher;
     private final ObjectMapper objectMapper;
+
+    //rabbitmq publishers
+    private final CustomerValidationRequestPublisher customerValidationRequestPublisher;
+    private final SeatReservationRequestPublisher  seatReservationRequestPublisher;
+    private final PaymentOrderRequestPublisher paymentOrderRequestPublisher;
+    private final SeatUnreserveRequestPublisher seatUnreserveRequestPublisher;
+
+    //kafka publishers
+    private final KafkaRegistrationEventProducer kafkaRegistrationEventProducer;
 
     /*
         So, scheduler only starts after Application is fully ready
@@ -40,13 +49,24 @@ public class OutboxMessagePublisher {
 
     public OutboxMessagePublisher(
             OutboxMessageRepository outboxMessageRepository,
-            PaymentVerifyResponsePublisher paymentVerifyResponsePublisher,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+
+            CustomerValidationRequestPublisher customerValidationRequestPublisher,
+            SeatReservationRequestPublisher seatReservationRequestPublisher,
+            PaymentOrderRequestPublisher paymentOrderRequestPublisher,
+            SeatUnreserveRequestPublisher seatUnreserveRequestPublisher,
+
+            KafkaRegistrationEventProducer kafkaRegistrationEventProducer) {
 
         this.outboxMessageRepository = outboxMessageRepository;
-        this.paymentVerifyResponsePublisher =
-                paymentVerifyResponsePublisher;
         this.objectMapper = objectMapper;
+
+        this.customerValidationRequestPublisher = customerValidationRequestPublisher;
+        this.seatReservationRequestPublisher = seatReservationRequestPublisher;
+        this.paymentOrderRequestPublisher = paymentOrderRequestPublisher;
+        this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
+
+        this.kafkaRegistrationEventProducer = kafkaRegistrationEventProducer;
     }
 
     @Transactional
@@ -66,14 +86,14 @@ public class OutboxMessagePublisher {
         }
     }
 
-    private PaymentVerifyResponse deserialize(
-            OutboxMessage message) {
+    private <T> T deserialize(
+            OutboxMessage message, Class<T> clazz) {
 
         try {
 
             return objectMapper.readValue(
                     message.getPayload(),
-                    PaymentVerifyResponse.class
+                    clazz
             );
 
         } catch (JacksonException e) {
@@ -91,24 +111,43 @@ public class OutboxMessagePublisher {
         //System.out.println("STARTED publish message: " + message);
 
         try {
-            if (OutboxMessageType.PAYMENT_VERIFY_RESPONSE
-                    .equals(message.getMessageType())) {
+            switch(message.getMessageType()) {
+                case OutboxMessageType.CUSTOMER_VALIDATION_REQUEST:
+                    CustomerValidationRequest customerValidationRequest
+                            = deserialize(message, CustomerValidationRequest.class);
+                    System.out.println("publishing response with registrationId " + customerValidationRequest.registrationId());
+                    customerValidationRequestPublisher.publish(customerValidationRequest);
+                    break;
+                case OutboxMessageType.SEAT_RESERVATION_REQUEST:
+                    SeatReservationRequest seatReservationRequest = deserialize(message, SeatReservationRequest.class);
+                    System.out.println("publishing response with registrationId " + seatReservationRequest.registrationId());
+                    seatReservationRequestPublisher.publish(seatReservationRequest);
+                    break;
+                case OutboxMessageType.PAYMENT_ORDER_REQUEST:
+                    PaymentOrderRequest paymentOrderRequest = deserialize(message, PaymentOrderRequest.class);
+                    System.out.println("publishing response with registrationId " + paymentOrderRequest.registrationId());
+                    paymentOrderRequestPublisher.publish(paymentOrderRequest);
+                    break;
+                case OutboxMessageType.SEAT_UNRESERVE_REQUEST:
+                    SeatUnreserveRequest seatUnreserveRequest = deserialize(message, SeatUnreserveRequest.class);
+                    System.out.println("publishing response with registrationId " + seatUnreserveRequest.registrationId());
+                    seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
+                    break;
+                case OutboxMessageType.REGISTRATION_COMPLETED:
+                case OutboxMessageType.REGISTRATION_FAILED:
+                    RegistrationEvent registrationEvent = deserialize(message, RegistrationEvent.class);
+                    kafkaRegistrationEventProducer.publish(registrationEvent);
+                    break;
+                default:
+                    System.out.println(
+                            "OUTBOX: Unknown message type: " +
+                                    message.getMessageType()
+                    );
 
-                PaymentVerifyResponse response = deserialize(message);
-
-                System.out.println("publishing response with registrationId " + response.registrationId());
-                paymentVerifyResponsePublisher.publish(response);
-
-            } else {
-                System.out.println(
-                        "OUTBOX: Unknown message type: " +
-                                message.getMessageType()
-                );
-
-                throw new NonRetryableOutboxException(
-                        "Unknown Outbox message type: " +
-                                message.getMessageType()
-                );
+                    throw new NonRetryableOutboxException(
+                            "Unknown Outbox message type: " +
+                                    message.getMessageType()
+                    );
             }
 
             System.out.println("published response with payload " + message.getPayload());
@@ -123,7 +162,6 @@ public class OutboxMessagePublisher {
                             "outboxMessageId=" +
                             message.getOutboxMessageId()
             );
-
         } catch (NonRetryableOutboxException e) {
             handleNonRetryableFailure(message, e);
 
@@ -191,8 +229,6 @@ public class OutboxMessagePublisher {
                         exception.getMessage()
         );
 
-        // Keep the message PENDING for now.
-        //
         // Phase 3 will introduce the DLQ state/handling.
         message.setStatus(OutboxStatus.FAILED);
         outboxMessageRepository.save(message);

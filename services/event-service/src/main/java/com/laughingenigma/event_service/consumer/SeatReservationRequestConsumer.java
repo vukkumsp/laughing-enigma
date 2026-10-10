@@ -3,67 +3,45 @@ package com.laughingenigma.event_service.consumer;
 import com.laughingenigma.event_service.config.RabbitMQConfig;
 import com.laughingenigma.event_service.dto.SeatReservationRequest;
 import com.laughingenigma.event_service.dto.SeatReservationResponse;
-import com.laughingenigma.event_service.entity.Event;
+import com.laughingenigma.event_service.entity.*;
 import com.laughingenigma.event_service.publisher.SeatReservationResponsePublisher;
+import com.laughingenigma.event_service.repository.OutboxMessageRepository;
 import com.laughingenigma.event_service.service.EventService;
+import com.laughingenigma.event_service.service.SeatReservationApplicationService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.UUID;
 
 @Component
 public class SeatReservationRequestConsumer {
 
+    private final SeatReservationApplicationService seatReservationApplicationService;
     private final EventService eventService;
     private final SeatReservationResponsePublisher publisher;
+    private final ObjectMapper objectMapper;
+    private final OutboxMessageRepository  outboxMessageRepository;
 
     public SeatReservationRequestConsumer(
-            EventService eventService, SeatReservationResponsePublisher publisher) {
+            EventService eventService, SeatReservationResponsePublisher publisher,
+            ObjectMapper objectMapper, OutboxMessageRepository outboxMessageRepository,
+            SeatReservationApplicationService seatReservationApplicationService) {
         this.eventService = eventService;
         this.publisher = publisher;
+        this.objectMapper = objectMapper;
+        this.outboxMessageRepository = outboxMessageRepository;
+        this.seatReservationApplicationService = seatReservationApplicationService;
     }
 
     @RabbitListener(
             queues = RabbitMQConfig.SEAT_RESERVATION_REQUEST_QUEUE
     )
-    public void handleSeatReservationRequest(
-            SeatReservationRequest request) {
-
+    public void handleSeatReservationRequest(SeatReservationRequest request) {
         System.out.println("SeatReservationRequestConsumer SeatReservationRequest - " + request);
-        boolean success = false;
-
-        try{
-            Event reservedEvent = eventService.reserveSeat(
-                    request.registrationId(),
-                    request.eventId()
-            );
-            success = true;
-            SeatReservationResponse seatReservationResponse = new SeatReservationResponse(
-                    request.registrationId(),
-                    request.eventId(),
-
-                    request.customerId(),
-                    request.username(),
-                    request.email(),
-                    request.firstName(),
-                    request.lastName(),
-
-                    reservedEvent.getName(),
-                    reservedEvent.getEventDate(),
-                    reservedEvent.getPrice(),
-                    reservedEvent.getCurrency(),
-                    success
-            );
-            System.out.println("handleSeatReservationRequest - "+request.registrationId());
-
-            publisher.publish(seatReservationResponse);
-        }
-        catch (Exception e){
-            // TODO: Configure proper RabbitMQ retry/DLQ handling.
-            // Because if we are not throwing any exception out,
-            // then RabbitMQ will ACK thinking it processed the messgae
-            e.printStackTrace();
-        }
+        seatReservationApplicationService.handleSeatReservation(request);
     }
 }

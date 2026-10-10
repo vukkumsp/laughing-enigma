@@ -4,19 +4,19 @@ import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.PaymentOrderResponse;
 import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
-import com.laughingenigma.saga_orchestrator.entity.SagaInstance;
-import com.laughingenigma.saga_orchestrator.entity.SagaStatus;
-import com.laughingenigma.saga_orchestrator.entity.SagaStep;
+import com.laughingenigma.saga_orchestrator.entity.*;
 import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload;
+import com.laughingenigma.saga_orchestrator.repository.OutboxMessageRepository;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.DtoFactory;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
 import com.laughingenigma.saga_orchestrator.service.SseService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -29,15 +29,22 @@ public class PaymentVerifyResponseConsumer {
     private final SagaInstanceRepository sagaInstanceRepository;
     private final DtoFactory dtoFactory;
 
+    private final ObjectMapper objectMapper;
+    private final OutboxMessageRepository outboxMessageRepository;
+
     public PaymentVerifyResponseConsumer(
             RegistrationSaga registrationSaga,
             SseService sseService,
             SagaInstanceRepository sagaInstanceRepository,
-            DtoFactory dtoFactory) {
+            DtoFactory dtoFactory,
+            ObjectMapper objectMapper,
+            OutboxMessageRepository outboxMessageRepository) {
         this.registrationSaga = registrationSaga;
         this.sseService = sseService;
         this.sagaInstanceRepository = sagaInstanceRepository;
         this.dtoFactory = dtoFactory;
+        this.objectMapper = objectMapper;
+        this.outboxMessageRepository = outboxMessageRepository;
     }
 
     @RabbitListener(
@@ -173,6 +180,23 @@ public class PaymentVerifyResponseConsumer {
 
         // TODO: Introduce Outbox Pattern to reliably coordinate
         // saga completion and REGISTRATION_COMPLETED Kafka publication.
-        registrationSaga.sendEmailNotification(event);
+        //registrationSaga.sendEmailNotification(event);
+
+        String kafkaEventPayload = objectMapper.writeValueAsString(event);
+
+        OutboxMessage kafkaOutboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.KAFKA)
+                .messageType(OutboxMessageType.REGISTRATION_COMPLETED)
+                .destinationName(KafkaConfig.REGISTRATION_EVENTS_TOPIC)
+                .routingKey(null)
+                .payload(kafkaEventPayload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(kafkaOutboxMessage);
     }
 }

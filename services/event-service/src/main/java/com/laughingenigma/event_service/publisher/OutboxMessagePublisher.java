@@ -1,19 +1,18 @@
-package com.laughingenigma.payment_service.publisher;
+package com.laughingenigma.event_service.publisher;
 
-import com.laughingenigma.payment_service.dto.PaymentVerifyRequest;
-import com.laughingenigma.payment_service.dto.PaymentVerifyResponse;
-import com.laughingenigma.payment_service.entity.OutboxMessage;
-import com.laughingenigma.payment_service.entity.OutboxMessageType;
-import com.laughingenigma.payment_service.entity.OutboxStatus;
-import com.laughingenigma.payment_service.error.exception.NonRetryableOutboxException;
-import com.laughingenigma.payment_service.repository.OutboxMessageRepository;
+import com.laughingenigma.event_service.dto.*;
+import com.laughingenigma.event_service.entity.OutboxMessage;
+import com.laughingenigma.event_service.entity.OutboxMessageType;
+import com.laughingenigma.event_service.entity.OutboxStatus;
+import com.laughingenigma.event_service.error.exception.NonRetryableOutboxException;
+import com.laughingenigma.event_service.repository.OutboxMessageRepository;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -23,8 +22,11 @@ import java.util.List;
 public class OutboxMessagePublisher {
 
     private final OutboxMessageRepository outboxMessageRepository;
-    private final PaymentVerifyResponsePublisher paymentVerifyResponsePublisher;
     private final ObjectMapper objectMapper;
+
+    //rabbitmq publishers
+    private final SeatReservationResponsePublisher  seatReservationResponsePublisher;
+    private final SeatUnreserveResponsePublisher SeatUnreserveResponsePublisher;
 
     /*
         So, scheduler only starts after Application is fully ready
@@ -40,13 +42,15 @@ public class OutboxMessagePublisher {
 
     public OutboxMessagePublisher(
             OutboxMessageRepository outboxMessageRepository,
-            PaymentVerifyResponsePublisher paymentVerifyResponsePublisher,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            SeatReservationResponsePublisher seatReservationResponsePublisher,
+            SeatUnreserveResponsePublisher SeatUnreserveResponsePublisher) {
 
         this.outboxMessageRepository = outboxMessageRepository;
-        this.paymentVerifyResponsePublisher =
-                paymentVerifyResponsePublisher;
         this.objectMapper = objectMapper;
+
+        this.seatReservationResponsePublisher = seatReservationResponsePublisher;
+        this.SeatUnreserveResponsePublisher = SeatUnreserveResponsePublisher;
     }
 
     @Transactional
@@ -66,14 +70,14 @@ public class OutboxMessagePublisher {
         }
     }
 
-    private PaymentVerifyResponse deserialize(
-            OutboxMessage message) {
+    private <T> T deserialize(
+            OutboxMessage message, Class<T> clazz) {
 
         try {
 
             return objectMapper.readValue(
                     message.getPayload(),
-                    PaymentVerifyResponse.class
+                    clazz
             );
 
         } catch (JacksonException e) {
@@ -91,24 +95,28 @@ public class OutboxMessagePublisher {
         //System.out.println("STARTED publish message: " + message);
 
         try {
-            if (OutboxMessageType.PAYMENT_VERIFY_RESPONSE
-                    .equals(message.getMessageType())) {
+            switch(message.getMessageType()) {
+                case OutboxMessageType.SEAT_RESERVATION_RESPONSE:
+                    SeatReservationResponse seatReservationResponse = deserialize(message, SeatReservationResponse.class);
+                    System.out.println("publishing response with registrationId " + seatReservationResponse.registrationId());
+                    seatReservationResponsePublisher.publish(seatReservationResponse);
+                    break;
+                case OutboxMessageType.SEAT_UNRESERVE_RESPONSE:
+                    SeatUnreserveResponse seatUnreserveResponse = deserialize(message, SeatUnreserveResponse.class);
+                    System.out.println("publishing response with registrationId " + seatUnreserveResponse.registrationId());
+                    SeatUnreserveResponsePublisher.publish(seatUnreserveResponse);
+                    break;
 
-                PaymentVerifyResponse response = deserialize(message);
+                default:
+                    System.out.println(
+                            "OUTBOX: Unknown message type: " +
+                                    message.getMessageType()
+                    );
 
-                System.out.println("publishing response with registrationId " + response.registrationId());
-                paymentVerifyResponsePublisher.publish(response);
-
-            } else {
-                System.out.println(
-                        "OUTBOX: Unknown message type: " +
-                                message.getMessageType()
-                );
-
-                throw new NonRetryableOutboxException(
-                        "Unknown Outbox message type: " +
-                                message.getMessageType()
-                );
+                    throw new NonRetryableOutboxException(
+                            "Unknown Outbox message type: " +
+                                    message.getMessageType()
+                    );
             }
 
             System.out.println("published response with payload " + message.getPayload());
@@ -123,7 +131,6 @@ public class OutboxMessagePublisher {
                             "outboxMessageId=" +
                             message.getOutboxMessageId()
             );
-
         } catch (NonRetryableOutboxException e) {
             handleNonRetryableFailure(message, e);
 
@@ -191,8 +198,6 @@ public class OutboxMessagePublisher {
                         exception.getMessage()
         );
 
-        // Keep the message PENDING for now.
-        //
         // Phase 3 will introduce the DLQ state/handling.
         message.setStatus(OutboxStatus.FAILED);
         outboxMessageRepository.save(message);

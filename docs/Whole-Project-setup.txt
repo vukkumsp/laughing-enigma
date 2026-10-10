@@ -1,4 +1,16 @@
 
+Steps:
+
+1. Start Docker Desktop
+2. RUN 
+	docker compose up --build -d
+3. RUN
+	zrok2 share public localhost:8085 -n public:enigma-payment-service-webhook
+4. Open http://localhost:8025/ for local Mailpit Inbox
+
+
+
+
 visual-enigma
 
 api-gateway
@@ -10,4 +22,8 @@ customer-service
 event-service
 
 payment-service
+
+notification-service
+
+aggregation-service
 
