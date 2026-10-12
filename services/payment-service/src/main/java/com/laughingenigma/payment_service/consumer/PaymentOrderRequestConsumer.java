@@ -28,20 +28,14 @@ public class PaymentOrderRequestConsumer {
     public void handlePaymentOrderRequest(
             PaymentOrderRequest request) {
         System.out.println("PaymentOrderRequestConsumer PaymentOrderRequest - " + request);
+        System.out.println("handlePaymentOrderRequest - "+request.registrationId());
 
         boolean success = false;
 
-        try{
-            //create payment order
-            PaymentOrderResponse paymentOrderResponse = paymentService.createOrder(request);
+        //create payment order
+        paymentService.createOrderAndRespondToSaga(request);
 
-            System.out.println("handlePaymentOrderRequest - "+request.registrationId());
-
-            publisher.publish(paymentOrderResponse);
-        }
-        catch (Exception e){
-            // TODO: Retry/DLQ handling
-            e.printStackTrace();
-        }
+        //publisher.publish(paymentOrderResponse);
+        //use outbox pattern
     }
 }

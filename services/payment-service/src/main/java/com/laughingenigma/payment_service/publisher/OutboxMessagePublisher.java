@@ -1,5 +1,6 @@
 package com.laughingenigma.payment_service.publisher;
 
+import com.laughingenigma.payment_service.dto.PaymentOrderResponse;
 import com.laughingenigma.payment_service.dto.PaymentVerifyRequest;
 import com.laughingenigma.payment_service.dto.PaymentVerifyResponse;
 import com.laughingenigma.payment_service.entity.OutboxMessage;
@@ -24,6 +25,7 @@ public class OutboxMessagePublisher {
 
     private final OutboxMessageRepository outboxMessageRepository;
     private final PaymentVerifyResponsePublisher paymentVerifyResponsePublisher;
+    private final PaymentOrderResponsePublisher paymentOrderResponsePublisher;
     private final ObjectMapper objectMapper;
 
     /*
@@ -41,11 +43,13 @@ public class OutboxMessagePublisher {
     public OutboxMessagePublisher(
             OutboxMessageRepository outboxMessageRepository,
             PaymentVerifyResponsePublisher paymentVerifyResponsePublisher,
+            PaymentOrderResponsePublisher paymentOrderResponsePublisher,
             ObjectMapper objectMapper) {
 
         this.outboxMessageRepository = outboxMessageRepository;
         this.paymentVerifyResponsePublisher =
                 paymentVerifyResponsePublisher;
+        this.paymentOrderResponsePublisher = paymentOrderResponsePublisher;
         this.objectMapper = objectMapper;
     }
 
@@ -66,14 +70,13 @@ public class OutboxMessagePublisher {
         }
     }
 
-    private PaymentVerifyResponse deserialize(
-            OutboxMessage message) {
+    private <T> T deserialize(OutboxMessage message, Class<T> clazz) {
 
         try {
 
             return objectMapper.readValue(
                     message.getPayload(),
-                    PaymentVerifyResponse.class
+                    clazz
             );
 
         } catch (JacksonException e) {
@@ -91,24 +94,27 @@ public class OutboxMessagePublisher {
         //System.out.println("STARTED publish message: " + message);
 
         try {
-            if (OutboxMessageType.PAYMENT_VERIFY_RESPONSE
-                    .equals(message.getMessageType())) {
+            switch(message.getMessageType()) {
+                case OutboxMessageType.PAYMENT_ORDER_RESPONSE:
+                    PaymentOrderResponse paymentOrderResponse = deserialize(message, PaymentOrderResponse.class);
+                    System.out.println("publishing payment order response with registrationId " + paymentOrderResponse.registrationId());
+                    paymentOrderResponsePublisher.publish(paymentOrderResponse);
+                    break;
+                case OutboxMessageType.PAYMENT_VERIFY_RESPONSE:
+                    PaymentVerifyResponse paymentVerifyResponse = deserialize(message, PaymentVerifyResponse.class);
+                    System.out.println("publishing payment verify response with registrationId " + paymentVerifyResponse.registrationId());
+                    paymentVerifyResponsePublisher.publish(paymentVerifyResponse);
+                    break;
+                default:
+                    System.out.println(
+                            "OUTBOX: Unknown message type: " +
+                                    message.getMessageType()
+                    );
 
-                PaymentVerifyResponse response = deserialize(message);
-
-                System.out.println("publishing response with registrationId " + response.registrationId());
-                paymentVerifyResponsePublisher.publish(response);
-
-            } else {
-                System.out.println(
-                        "OUTBOX: Unknown message type: " +
-                                message.getMessageType()
-                );
-
-                throw new NonRetryableOutboxException(
-                        "Unknown Outbox message type: " +
-                                message.getMessageType()
-                );
+                    throw new NonRetryableOutboxException(
+                            "Unknown Outbox message type: " +
+                                    message.getMessageType()
+                    );
             }
 
             System.out.println("published response with payload " + message.getPayload());

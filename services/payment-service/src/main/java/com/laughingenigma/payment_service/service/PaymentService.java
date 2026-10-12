@@ -1,9 +1,10 @@
 package com.laughingenigma.payment_service.service;
 
+import com.laughingenigma.payment_service.config.RabbitMQConfig;
 import com.laughingenigma.payment_service.dto.*;
-import com.laughingenigma.payment_service.entity.Payment;
-import com.laughingenigma.payment_service.entity.PaymentStatus;
+import com.laughingenigma.payment_service.entity.*;
 import com.laughingenigma.payment_service.error.exception.ResourceNotFoundException;
+import com.laughingenigma.payment_service.repository.OutboxMessageRepository;
 import com.laughingenigma.payment_service.repository.PaymentRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
@@ -17,8 +18,11 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.razorpay.Utils;
+import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /*  TODO:
 
@@ -35,18 +39,48 @@ public class PaymentService {
     private final RazorpayClient razorpayClient;
     private final PaymentRepository paymentRepository;
 
+    private final OutboxMessageRepository  outboxMessageRepository;
+    private final ObjectMapper objectMapper;
+
     @Value("${razorpay.key-secret}")
     private String keySecret;
 
     public PaymentService(
             RazorpayClient razorpayClient,
-            PaymentRepository paymentRepository) {
+            PaymentRepository paymentRepository,
+            OutboxMessageRepository outboxMessageRepository,
+            ObjectMapper objectMapper) {
         this.razorpayClient = razorpayClient;
         this.paymentRepository = paymentRepository;
+        this.outboxMessageRepository = outboxMessageRepository;
+        this.objectMapper = objectMapper;
+    }
+
+    @Transactional
+    public void createOrderAndRespondToSaga(PaymentOrderRequest request) {
+
+        // create order
+        PaymentOrderResponse paymentOrderResponse = createOrder(request);
+
+        // save to outbox_messages
+        String payload = objectMapper.writeValueAsString(paymentOrderResponse);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .messageType(OutboxMessageType.PAYMENT_ORDER_RESPONSE)
+                .exchange(RabbitMQConfig.SAGA_RESPONSE_EXCHANGE)
+                .routingKey(RabbitMQConfig.PAYMENT_ORDER_RESPONSE_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
     }
 
     public PaymentOrderResponse createOrder(PaymentOrderRequest request) {
-
         try {
             Optional<Payment> existingPayment =
                     paymentRepository.findByRegistrationId(
@@ -94,6 +128,7 @@ public class PaymentService {
 
             paymentRepository.save(payment);
 
+
             // return order details
             return new PaymentOrderResponse(
                     request.registrationId(),
@@ -112,7 +147,6 @@ public class PaymentService {
                     order.get("id"),
                     status.toString()
             );
-
         } catch (RazorpayException e) {
             throw new RuntimeException("Failed to create Razorpay order",
                     e);
