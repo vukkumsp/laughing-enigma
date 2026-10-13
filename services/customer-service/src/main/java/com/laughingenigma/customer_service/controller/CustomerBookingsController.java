@@ -22,7 +22,7 @@ public class CustomerBookingsController {
     }
 
     @GetMapping("/me/bookings")
-    public ResponseEntity<List<CustomerBooking>> getMyProfile(
+    public ResponseEntity<List<CustomerBooking>> getAllMyBookings(
             @RequestHeader("X-Authenticated-User") String username) {
 
         List<CustomerBooking> bookings = customerBookingService.getCustomerBookings(username);
