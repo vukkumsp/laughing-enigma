@@ -1,0 +1,48 @@
+.app-navigation {
+  margin-top: 20px;
+
+  ul {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}
+
+.navigation-link {
+  display: inline-block;
+  padding: 9px 18px;
+  border: 1px solid #b8c9c2;
+  border-radius: 999px;
+  color: #38534a;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+
+  &:hover {
+    border-color: #217a68;
+    color: #185c4f;
+  }
+
+  &.active {
+    border-color: #217a68;
+    background: #217a68;
+    color: #fff;
+    cursor: default;
+  }
+}
+
+.navigation-disabled .navigation-link {
+  border-color: #d5d9d7;
+  background: #eceeed;
+  color: #9aa29e;
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .app-navigation ul { gap: 6px; }
+  .navigation-link { padding: 8px 14px; }
+}

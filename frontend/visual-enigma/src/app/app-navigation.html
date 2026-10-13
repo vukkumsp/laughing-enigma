@@ -1,0 +1,35 @@
+<nav
+  class="app-navigation"
+  [class.navigation-disabled]="isCurrentRoute('/login')"
+  [attr.aria-disabled]="isCurrentRoute('/login')"
+  aria-label="Main navigation">
+  <ul>
+    @if (isCurrentRoute('/login')) {
+      <li><span class="navigation-link">Home</span></li>
+      <li><span class="navigation-link">Profile</span></li>
+      <li><span class="navigation-link">Events</span></li>
+    } @else {
+      <li>
+        @if (isCurrentRoute('/home')) {
+          <span class="navigation-link active" aria-current="page">Home</span>
+        } @else {
+          <a class="navigation-link" routerLink="/home">Home</a>
+        }
+      </li>
+      <li>
+        @if (isCurrentRoute('/profile')) {
+          <span class="navigation-link active" aria-current="page">Profile</span>
+        } @else {
+          <a class="navigation-link" routerLink="/profile">Profile</a>
+        }
+      </li>
+      <li>
+        @if (isCurrentRoute('/events')) {
+          <span class="navigation-link active" aria-current="page">Events</span>
+        } @else {
+          <a class="navigation-link" routerLink="/events">Events</a>
+        }
+      </li>
+    }
+  </ul>
+</nav>
