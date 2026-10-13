@@ -1,6 +1,6 @@
 package com.laughingenigma.saga_orchestrator.controller;
 
-import com.laughingenigma.saga_orchestrator.service.SseService;
+import com.laughingenigma.saga_orchestrator.service.sse.SseService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

@@ -21,12 +21,19 @@ public class RabbitMQConfig {
             "customer-validation-request-queue";
     public static final String CUSTOMER_VALIDATION_REQUEST_ROUTING_KEY =
             "customer.validation.request";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_QUEUE =
+            "customer-booking-status-update-request-queue";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY =
+            "customer.booking.status.update.request";
+
 
     // Outgoing response
     public static final String SAGA_RESPONSE_EXCHANGE =
             "saga.response.exchange";
     public static final String CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY =
             "customer.validation.response";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_RESPONSE_ROUTING_KEY =
+            "customer.booking.status.update.response";
 
     @Bean
     public TopicExchange sagaCommandExchange() {
@@ -39,6 +46,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue customerBookingStatusUpdateRequestQueue() {
+        return new Queue(CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_QUEUE);
+    }
+
+    @Bean
     public Binding customerValidationRequestBinding(
             Queue customerValidationRequestQueue,
             TopicExchange sagaCommandExchange) {
@@ -47,6 +59,17 @@ public class RabbitMQConfig {
                 .bind(customerValidationRequestQueue)
                 .to(sagaCommandExchange)
                 .with(CUSTOMER_VALIDATION_REQUEST_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding customerBookingStatusUpdateRequestBinding(
+            Queue customerBookingStatusUpdateRequestQueue,
+            TopicExchange sagaCommandExchange) {
+
+        return BindingBuilder
+                .bind(customerBookingStatusUpdateRequestQueue)
+                .to(sagaCommandExchange)
+                .with(CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY);
     }
 
     /* Common */

@@ -1,12 +1,12 @@
-package com.laughingenigma.saga_orchestrator.service;
+package com.laughingenigma.saga_orchestrator.service.sse;
 
 import com.laughingenigma.saga_orchestrator.dto.PaymentOrderResponse;
-import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
+import com.laughingenigma.saga_orchestrator.service.sse.dto.PaymentRequiredDetails;
+import com.laughingenigma.saga_orchestrator.service.sse.dto.PaymentStatusDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,7 +39,7 @@ public class SseService {
         return emitter;
     }
 
-    public void sendPaymentRequiredEvent(PaymentOrderResponse response){
+    public void sendPaymentRequiredEvent(PaymentRequiredDetails response){
         SseEmitter emitter = emitters.get(response.registrationId());
 
         if (emitter == null) {
@@ -90,20 +90,20 @@ public class SseService {
         }
     }
 
-    public void sendPaymentStatusEvent(PaymentOrderResponse response){
-        SseEmitter emitter = emitters.get(response.registrationId());
+    public void sendPaymentStatusEvent(PaymentStatusDetails paymentStatusDetails){
+        SseEmitter emitter = emitters.get(paymentStatusDetails.registrationId());
 
         if (emitter == null) {
-            System.out.println("No SSE connection for " + response.registrationId());
+            System.out.println("No SSE connection for " + paymentStatusDetails.registrationId());
             return;
         }
 
         try {
-            String paymentStatus = response.status()
+            String paymentStatus = paymentStatusDetails.status()
                     .equalsIgnoreCase("success") ?
                         SSE_EVENT.PAYMENT_SUCCESS.name() :
                         SSE_EVENT.PAYMENT_FAILED.name();
-            System.out.println("Sending "+paymentStatus+" event to " + response.registrationId());
+            System.out.println("Sending "+paymentStatus+" event to " + paymentStatusDetails.registrationId());
             emitter.send(
                     SseEmitter.event()
                             .name(paymentStatus)
@@ -115,15 +115,15 @@ public class SseService {
                                   "status": "%s"
                                 }
                                 """.formatted(
-                                    response.registrationId(),
-                                    response.eventId(),
-                                    response.status()))
+                                    paymentStatusDetails.registrationId(),
+                                    paymentStatusDetails.eventId(),
+                                    paymentStatusDetails.status()))
             );
 
             emitter.complete();
-            emitters.remove(response.registrationId());
+            emitters.remove(paymentStatusDetails.registrationId());
         } catch (IOException e) {
-            emitters.remove(response.registrationId());
+            emitters.remove(paymentStatusDetails.registrationId());
             emitter.completeWithError(e);
         }
     }

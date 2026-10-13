@@ -21,6 +21,10 @@ public class RabbitMQConfig {
             "customer-validation-response-queue";
     public static final String CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY =
             "customer.validation.response";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_RESPONSE_QUEUE =
+            "customer-booking-status-update-response-queue";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_RESPONSE_ROUTING_KEY =
+            "customer.booking.status.update.response";
     public static final String SEAT_RESERVATION_RESPONSE_QUEUE =
             "seat-reservation-response-queue";
     public static final String SEAT_RESERVATION_RESPONSE_ROUTING_KEY =
@@ -45,6 +49,10 @@ public class RabbitMQConfig {
             "customer-validation-request-queue";
     public static final String CUSTOMER_VALIDATION_REQUEST_ROUTING_KEY =
             "customer.validation.request";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_QUEUE =
+            "customer-booking-status-update-request-queue";
+    public static final String CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY =
+            "customer.booking.status.update.request";
     public static final String SEAT_RESERVATION_REQUEST_QUEUE =
             "seat-reservation-request-queue";
     public static final String SEAT_RESERVATION_REQUEST_ROUTING_KEY =
@@ -68,6 +76,10 @@ public class RabbitMQConfig {
     @Bean
     public Queue customerValidationResponseQueue() {
         return new Queue(CUSTOMER_VALIDATION_RESPONSE_QUEUE);
+    }
+    @Bean
+    public Queue customerBookingStatusUpdateResponseQueue() {
+        return new Queue(CUSTOMER_BOOKING_STATUS_UPDATE_RESPONSE_QUEUE);
     }
     @Bean
     public Queue seatReservationResponseQueue() {
@@ -95,6 +107,18 @@ public class RabbitMQConfig {
                 .to(sagaResponseExchange)
                 .with(CUSTOMER_VALIDATION_RESPONSE_ROUTING_KEY);
     }
+
+    @Bean
+    public Binding customerBookingStatusUpdateRequestBinding(
+            Queue customerBookingStatusUpdateResponseQueue,
+            TopicExchange sagaCommandExchange) {
+
+        return BindingBuilder
+                .bind(customerBookingStatusUpdateResponseQueue)
+                .to(sagaCommandExchange)
+                .with(CUSTOMER_BOOKING_STATUS_UPDATE_RESPONSE_ROUTING_KEY);
+    }
+
     @Bean
     public Binding seatReservationResponseBinding(
             Queue seatReservationResponseQueue,

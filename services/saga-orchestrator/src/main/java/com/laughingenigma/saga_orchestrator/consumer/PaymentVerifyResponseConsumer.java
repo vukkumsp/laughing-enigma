@@ -2,6 +2,7 @@ package com.laughingenigma.saga_orchestrator.consumer;
 
 import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
+import com.laughingenigma.saga_orchestrator.dto.CustomerBookingStatusUpdateRequest;
 import com.laughingenigma.saga_orchestrator.dto.PaymentOrderResponse;
 import com.laughingenigma.saga_orchestrator.dto.PaymentVerifyResponse;
 import com.laughingenigma.saga_orchestrator.entity.*;
@@ -9,11 +10,13 @@ import com.laughingenigma.saga_orchestrator.kafka.event.EventDetails;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationCompletedPayload;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEvent;
 import com.laughingenigma.saga_orchestrator.kafka.event.RegistrationEventPayload;
+import com.laughingenigma.saga_orchestrator.publisher.CustomerBookingsStatusUpdateRequestPublisher;
 import com.laughingenigma.saga_orchestrator.repository.OutboxMessageRepository;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.DtoFactory;
 import com.laughingenigma.saga_orchestrator.saga.registration_saga.RegistrationSaga;
-import com.laughingenigma.saga_orchestrator.service.SseService;
+import com.laughingenigma.saga_orchestrator.service.sse.SseService;
+import com.laughingenigma.saga_orchestrator.service.sse.dto.PaymentStatusDetails;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
@@ -32,19 +35,25 @@ public class PaymentVerifyResponseConsumer {
     private final ObjectMapper objectMapper;
     private final OutboxMessageRepository outboxMessageRepository;
 
+    private final CustomerBookingsStatusUpdateRequestPublisher publisher;
+
     public PaymentVerifyResponseConsumer(
             RegistrationSaga registrationSaga,
             SseService sseService,
             SagaInstanceRepository sagaInstanceRepository,
             DtoFactory dtoFactory,
             ObjectMapper objectMapper,
-            OutboxMessageRepository outboxMessageRepository) {
+            OutboxMessageRepository outboxMessageRepository,
+
+            CustomerBookingsStatusUpdateRequestPublisher publisher) {
         this.registrationSaga = registrationSaga;
         this.sseService = sseService;
         this.sagaInstanceRepository = sagaInstanceRepository;
         this.dtoFactory = dtoFactory;
         this.objectMapper = objectMapper;
         this.outboxMessageRepository = outboxMessageRepository;
+
+        this.publisher = publisher;
     }
 
     @RabbitListener(
@@ -128,10 +137,26 @@ public class PaymentVerifyResponseConsumer {
             sagaI.setStatus(SagaStatus.FAILED);
             sagaInstanceRepository.save(sagaI);
 
+            //update customer booking status to CANCELLED
+            CustomerBookingStatusUpdateRequest request = new CustomerBookingStatusUpdateRequest(
+                    response.registrationId(), paymentOrderResponse.eventId(), paymentOrderResponse.username(),
+                    response.orderId(),paymentOrderResponse.currency(), paymentOrderResponse.price(),
+                    "CANCELLED"
+            );
+            publisher.publish(request);
+            /*
             //compensation step
             registrationSaga.unreserveSeatsAsCompensation(paymentOrderResponse);
 
-            sseService.sendPaymentStatusEvent(paymentOrderResponse);
+            PaymentStatusDetails paymentStatusDetails = new PaymentStatusDetails(
+                    paymentOrderResponse.registrationId(),
+                    paymentOrderResponse.eventId(),
+                    paymentOrderResponse.status()
+            );
+
+            sseService.sendPaymentStatusEvent(paymentStatusDetails);
+
+             */
             return;
         }
 
@@ -144,10 +169,24 @@ public class PaymentVerifyResponseConsumer {
         sagaI.setStatus(SagaStatus.IN_PROGRESS);
         sagaInstanceRepository.save(sagaI);
 
+        //update customer booking status to CONFIRMED
+        CustomerBookingStatusUpdateRequest request = new CustomerBookingStatusUpdateRequest(
+                response.registrationId(), paymentOrderResponse.eventId(), paymentOrderResponse.username(),
+                response.orderId(),paymentOrderResponse.currency(), paymentOrderResponse.price(),
+                "CONFIRMED"
+        );
+        publisher.publish(request);
+
+        /*
         //IF payment verification is successful then,
         //update status in saga db if needed
         //send SSE event to frontend payment status
-        sseService.sendPaymentStatusEvent(paymentOrderResponse);
+        PaymentStatusDetails paymentStatusDetails = new PaymentStatusDetails(
+                paymentOrderResponse.registrationId(),
+                paymentOrderResponse.eventId(),
+                paymentOrderResponse.status()
+        );
+        sseService.sendPaymentStatusEvent(paymentStatusDetails);
 
         //End of SAGA
         sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPLETED);
@@ -198,5 +237,7 @@ public class PaymentVerifyResponseConsumer {
                 .build();
 
         outboxMessageRepository.save(kafkaOutboxMessage);
+
+         */
     }
 }

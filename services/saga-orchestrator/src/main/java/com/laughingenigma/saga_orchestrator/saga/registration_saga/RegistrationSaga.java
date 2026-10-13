@@ -10,11 +10,15 @@ import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEven
 import com.laughingenigma.saga_orchestrator.publisher.*;
 import com.laughingenigma.saga_orchestrator.repository.OutboxMessageRepository;
 import com.laughingenigma.saga_orchestrator.repository.SagaInstanceRepository;
+import com.laughingenigma.saga_orchestrator.service.sse.SseService;
+import com.laughingenigma.saga_orchestrator.service.sse.dto.PaymentRequiredDetails;
+import com.laughingenigma.saga_orchestrator.service.sse.dto.PaymentStatusDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
@@ -30,8 +34,12 @@ public class RegistrationSaga {
 
     private final OutboxMessageRepository outboxMessageRepository;
     private final ObjectMapper objectMapper;
+    private final DtoFactory dtoFactory;
 
     private final SagaInstanceRepository sagaInstanceRepository;
+
+    private final SseService sseService;
+
 
     public RegistrationSaga(
             CustomerValidationRequestPublisher customerValidationRequestPublisher,
@@ -43,7 +51,11 @@ public class RegistrationSaga {
             KafkaRegistrationEventProducer kafkaRegistrationEventProducer,
 
             OutboxMessageRepository outboxMessageRepository,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+
+            DtoFactory dtoFactory,
+
+            SseService sseService) {
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
         this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
@@ -54,6 +66,10 @@ public class RegistrationSaga {
 
         this.outboxMessageRepository = outboxMessageRepository;
         this.objectMapper = objectMapper;
+
+        this.dtoFactory = dtoFactory;
+
+        this.sseService = sseService;
     }
 
     @Transactional
@@ -370,6 +386,129 @@ public class RegistrationSaga {
                 .build();
 
         outboxMessageRepository.save(kafkaOutboxMessage);
+    }
+
+    public void handleCustomerBookingStatusUpdateResponse(CustomerBookingStatusUpdateResponse response) {
+        //
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
+        switch(response.bookingStatus().toUpperCase()) {
+            case "PENDING":
+                //send SSE for payment required.
+                PaymentRequiredDetails paymentRequiredDetails = new PaymentRequiredDetails(
+                        response.registrationId(),
+                        response.eventId(),
+//-----------------------------------
+                        0L,
+                        response.username(),
+                        "",
+                        "",
+                        "",
+//-----------------------------------
+                        "",
+                        LocalDateTime.now(),
+                        response.amount(),
+                        response.currency(),
+                        response.orderId(),
+                        response.bookingStatus()
+                );
+
+                //TODO: move this SSE call to outbox style pattern for reliability
+                sseService.sendPaymentRequiredEvent(paymentRequiredDetails);
+                break;
+            case "CONFIRMED":
+                //close saga
+
+
+                PaymentOrderResponse paymentOrderSuccessResponse
+                        = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
+                        SagaStep.PAYMENT_SUCCESS,
+                        sagaI.getContext());
+
+                //IF payment verification is successful then,
+                //update status in saga db if needed
+                //send SSE event to frontend payment status
+                PaymentStatusDetails paymentSuccessStatusDetails = new PaymentStatusDetails(
+                        paymentOrderSuccessResponse.registrationId(),
+                        paymentOrderSuccessResponse.eventId(),
+                        paymentOrderSuccessResponse.status()
+                );
+                sseService.sendPaymentStatusEvent(paymentSuccessStatusDetails);
+
+                //End of SAGA
+                sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPLETED);
+                sagaI.setStatus(SagaStatus.COMPLETED);
+                sagaInstanceRepository.save(sagaI);
+
+                //send email notification
+                UUID kafkaEventId = UUID.randomUUID();
+
+                EventDetails eventDetails = new EventDetails(
+                        paymentOrderSuccessResponse.eventId(),
+                        paymentOrderSuccessResponse.eventName(),
+                        paymentOrderSuccessResponse.eventDate().toInstant(ZoneOffset.UTC),
+                        Instant.now()
+                );
+                RegistrationEventPayload payload = new RegistrationCompletedPayload(
+                        paymentOrderSuccessResponse.registrationId(),
+                        paymentOrderSuccessResponse.username(),
+                        paymentOrderSuccessResponse.email(),
+                        eventDetails
+                );
+                RegistrationEvent event = new RegistrationEvent(
+                        kafkaEventId,
+                        KafkaConfig.REGISTRATION_COMPLETED,
+                        1,
+                        Instant.now(),
+                        KafkaConfig.APPLICATION_NAME,
+                        payload
+                );
+
+                // TODO: Introduce Outbox Pattern to reliably coordinate
+                // saga completion and REGISTRATION_COMPLETED Kafka publication.
+                //registrationSaga.sendEmailNotification(event);
+
+                String kafkaEventPayload = objectMapper.writeValueAsString(event);
+
+                OutboxMessage kafkaOutboxMessage = OutboxMessage.builder()
+                        .outboxMessageId(UUID.randomUUID())
+                        .destinationType(DestinationType.KAFKA)
+                        .messageType(OutboxMessageType.REGISTRATION_COMPLETED)
+                        .destinationName(KafkaConfig.REGISTRATION_EVENTS_TOPIC)
+                        .routingKey(null)
+                        .payload(kafkaEventPayload)
+                        .status(OutboxStatus.PENDING)
+                        .createdAt(Instant.now())
+                        .retryCount(0)
+                        .nextRetryAt(null)
+                        .build();
+
+                outboxMessageRepository.save(kafkaOutboxMessage);
+                break;
+            case "CANCELLED":
+                //compensate or recover
+                //compensation step
+
+
+                PaymentOrderResponse paymentOrderFailedResponse
+                        = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
+                        SagaStep.PAYMENT_FAILED ,
+                        sagaI.getContext());
+
+                unreserveSeatsAsCompensation(paymentOrderFailedResponse);
+
+                PaymentStatusDetails paymentFailedStatusDetails = new PaymentStatusDetails(
+                        paymentOrderFailedResponse.registrationId(),
+                        paymentOrderFailedResponse.eventId(),
+                        paymentOrderFailedResponse.status()
+                );
+
+                sseService.sendPaymentStatusEvent(paymentFailedStatusDetails);
+                break;
+            default:
+                //some error, unknown booking status response
+        }
     }
 
     public void sendEmailNotification(RegistrationEvent event){
