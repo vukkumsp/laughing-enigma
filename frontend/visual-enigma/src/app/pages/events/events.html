@@ -1,4 +1,13 @@
 <main class="events-container">
+  @if (awaitingPaymentRequest()) {
+    <div class="payment-loading-overlay" role="status" aria-live="polite" aria-busy="true">
+      <div class="payment-loading-content">
+        <span class="payment-loading-spinner" aria-hidden="true"></span>
+        <p>Preparing your payment...</p>
+      </div>
+    </div>
+  }
+
   <section class="events-content" aria-labelledby="events-title">
     <header class="events-header">
       <p class="events-eyebrow">Discover what is next</p>

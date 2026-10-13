@@ -11,19 +11,22 @@ export class RegistrationEventsService {
     private readonly auth = inject(Auth);
     private controller?: AbortController;
     private readonly eventsSubject = new Subject<SseEvent>();
+    private readonly connectionEndedSubject = new Subject<void>();
 
 readonly events$ =
   this.eventsSubject.asObservable();
+    readonly connectionEnded$ = this.connectionEndedSubject.asObservable();
 
     connect(registrationId: string): void {
 
         // Close an existing connection if there is one
         this.disconnect();
 
-        this.controller = new AbortController();
+        const controller = new AbortController();
+        this.controller = controller;
         const token = this.auth.getAccessToken();
 
-        fetchEventSource(
+        void fetchEventSource(
             `${this.apiUrl}/registrations/${registrationId}/events`,
             {
                 method: 'GET',
@@ -33,9 +36,9 @@ readonly events$ =
                     'Accept': 'text/event-stream'
                 },
 
-                signal: this.controller.signal,
+                signal: controller.signal,
 
-                async onopen(response) {
+                onopen: async (response) => {
                     console.log(
                         'SSE connection opened:',
                         response.status
@@ -76,9 +79,10 @@ readonly events$ =
                     }
                 },
 
-                onerror(error) {
+                onerror: (error) => {
                     if (error instanceof DOMException && error.name === 'AbortError') {
                         console.log('SSE connection aborted');
+                        this.endConnection(controller);
                         return;
                     }
 
@@ -86,21 +90,38 @@ readonly events$ =
                     throw error;
                 },
 
-                onclose() {
+                onclose: () => {
                     console.log('SSE connection closed');
+                    this.endConnection(controller);
                 }
             }
-        );
+        ).catch((error: unknown) => {
+            this.endConnection(controller);
+            if (!(error instanceof DOMException && error.name === 'AbortError')) {
+                console.error('SSE connection failed:', error);
+            }
+        });
     }
 
     disconnect(): void {
 
         if (this.controller) {
+            const controller = this.controller;
             console.log('Aborting SSE connection');
 
-            this.controller.abort();
             this.controller = undefined;
+            this.connectionEndedSubject.next();
+            controller.abort();
         }
+    }
+
+    private endConnection(controller: AbortController): void {
+        if (this.controller !== controller) {
+            return;
+        }
+
+        this.controller = undefined;
+        this.connectionEndedSubject.next();
     }
 }
 

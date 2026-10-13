@@ -33,6 +33,7 @@ export class Events implements OnInit, OnDestroy {
   readonly registrationMessage = signal('');
   readonly registrationError = signal(false);
   readonly registeringEventId = signal<number | null>(null);
+  readonly awaitingPaymentRequest = signal(false);
 
   private readonly registrationEventsService = inject(RegistrationEventsService);
 
@@ -69,12 +70,12 @@ export class Events implements OnInit, OnDestroy {
     const registrationId = crypto.randomUUID();
     console.log('Generated registration ID:', registrationId);
 
-    //open SSE connection to listen for registration events
-    this.registrationEventsService.connect(registrationId);
-
     this.registrationMessage.set('');
     this.registrationError.set(false);
     this.registeringEventId.set(eventId);
+    this.awaitingPaymentRequest.set(true);
+
+    let paymentRequestReceived = false;
 
     //register for events for this registration
     this.registrationEventsService.events$
@@ -87,14 +88,16 @@ export class Events implements OnInit, OnDestroy {
             event.type === 'PAYMENT_FAILED'
           )
         ),
-        // close SSE only if PAYMENT_SUCCESS event is received, otherwise keep listening for events
-        takeWhile(event => event.type !== 'PAYMENT_SUCCESS', true)
+        takeWhile(event => event.type !== 'PAYMENT_SUCCESS' && event.type !== 'PAYMENT_FAILED', true)
       )
       .subscribe(event => {
         console.log('[events.ts] Opening Razorpay checkout with payment details:', event.data);
         if (event.type === 'PAYMENT_REQUIRED') {
+          paymentRequestReceived = true;
+          this.awaitingPaymentRequest.set(false);
           this.paymentCheckoutService.openCheckout(event.data, {
             onPaymentFailed: () => {
+              this.awaitingPaymentRequest.set(false);
               this.registrationError.set(true);
               this.registrationMessage.set('Payment failed. Please try again.');
               this.registeringEventId.set(null);
@@ -103,6 +106,7 @@ export class Events implements OnInit, OnDestroy {
             }
           });
         } else if (event.type === 'PAYMENT_FAILED') {
+          this.awaitingPaymentRequest.set(false);
           this.registrationError.set(true);
           this.registrationMessage.set('Payment failed. Please try again.');
           this.registeringEventId.set(null);
@@ -115,6 +119,7 @@ export class Events implements OnInit, OnDestroy {
               : event
           ));
 
+          this.awaitingPaymentRequest.set(false);
           this.registrationMessage.set('You registered for this event.');
           this.registeringEventId.set(null);
           this.registrationError.set(false);
@@ -123,19 +128,34 @@ export class Events implements OnInit, OnDestroy {
         }
       });
 
+    this.registrationEventsService.connectionEnded$
+      .pipe(
+        take(1)
+      )
+      .subscribe(() => {
+        this.awaitingPaymentRequest.set(false);
+        if (!paymentRequestReceived) {
+          this.registeringEventId.set(null);
+        }
+      });
+
+    // Open the SSE connection after subscribing so an early payment request is not missed.
+    this.registrationEventsService.connect(registrationId);
+
     //send registration request to the backend
     this.http.post(`${this.apiUrl}/registrations`, { eventId, registrationId }).subscribe({
-      next: (response: any) => {
-        console.log('Registration started successfully:', response);
+      next: () => {
+        console.log('Registration started successfully');
 
         this.registrationMessage.set('You are registering for this event.');
-        this.registeringEventId.set(response["status"]);
         this.registrationError.set(false);
       },
       error: () => {
+        this.awaitingPaymentRequest.set(false);
         this.registrationError.set(true);
         this.registrationMessage.set('Registration failed. Please try again.');
         this.registeringEventId.set(null);
+        this.registrationEventsService.disconnect();
       }
     });
 
