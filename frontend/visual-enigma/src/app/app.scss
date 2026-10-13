@@ -15,11 +15,12 @@
 }
 
 .app-title {
-  font-family: $font-system;
+  font-family: $font-default;
   color: black;
   margin: 0;
-  letter-spacing: 2px;
-  font-size: 56px;
+  letter-spacing: 10px;
+  font-size: 80px;
+  font-weight: 800;
 }
 
 @keyframes fadeInDown {

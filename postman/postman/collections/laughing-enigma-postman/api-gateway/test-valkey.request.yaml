@@ -1,5 +1,5 @@
 $kind: http-request
 name: test/valkey
-url: ""
+url: http://localhost:9000/test/valkey
 method: GET
 order: 1789924670869

@@ -7,10 +7,13 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM Event e WHERE e.id = :eventId")
     Optional<Event> findByIdForUpdate(@Param("eventId") Long eventId);
+
+    List<Event> findByIdIn(List<Long> eventIds);
 }

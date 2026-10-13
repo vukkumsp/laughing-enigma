@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class CustomerBookingService {
@@ -19,9 +20,8 @@ public class CustomerBookingService {
         this.customerBookingRepository = customerBookingRepository;
     }
 
-    public CustomerBooking getCustomerBooking(String username){
-        return this.customerBookingRepository.findByCustomerUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer Booking not found for username: " + username));
+    public List<CustomerBooking> getCustomerBookings(String username){
+        return this.customerBookingRepository.findByCustomerUsername(username);
     }
 
     public boolean existsByCustomerBookingByRegistrationIdAndBookingStatus(String registrationId, BookingStatus bookingStatus){
