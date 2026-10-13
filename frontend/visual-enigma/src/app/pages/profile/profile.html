@@ -1,54 +1,57 @@
 <main class="profile-container">
-	<section class="profile-box" aria-labelledby="profile-title">
-		<header class="profile-header">
-			<div class="profile-avatar" aria-hidden="true">
-				@if (customer(); as profile) {
-					{{ (profile['firstName'] || profile['name'] || profile['username'] || 'U').charAt(0).toUpperCase() }}
-                    
-				} @else {
-					U
-				}
-			</div>
-			<div>
-				<p class="profile-eyebrow">Account overview</p>
-				<h1 id="profile-title">Your Profile</h1>
-				<p>Manage your personal information and account details.</p>
-			</div>
-		</header>
+  <section class="profile-content" aria-labelledby="profile-title">
+    <header class="profile-page-header">
+      <p class="profile-eyebrow">Account overview</p>
+      <h1 id="profile-title">Your Profile</h1>
+      <p>Manage your personal information and account details.</p>
+    </header>
 
-		@if (loading()) {
-			<div class="profile-status" role="status">Loading your profile...</div>
-		} @else if (errorMessage()) {
-			<div class="profile-status profile-status-error" role="alert">{{ errorMessage() }}</div>
-		} @else {
-			@if (customer(); as profile) {
-			<div class="profile-details">
-				<div class="profile-detail">
-					<span class="detail-label">Name</span>
-					<strong>{{ profile['firstName'] || profile['name'] || 'Not provided' }}{{ profile['lastName'] ? ' ' + profile['lastName'] : '' }}</strong>
-				</div>
-				<div class="profile-detail">
-					<span class="detail-label">Username</span>
-					<strong>{{ profile['username'] || 'Not provided' }}</strong>
-				</div>
-				<div class="profile-detail">
-					<span class="detail-label">Email</span>
-					<strong>{{ profile['email'] || 'Not provided' }}</strong>
-				</div>
-				<div class="profile-detail">
-					<span class="detail-label">Phone</span>
-					<strong>{{ profile['phone'] || profile['phoneNumber'] || 'Not provided' }}</strong>
-				</div>
-			</div>
+    <section class="profile-box" aria-labelledby="profile-card-title">
+      <header class="profile-card-header">
+        <div class="profile-avatar" aria-hidden="true">
+          @if (customer(); as profile) {
+            {{ (profile['firstName'] || profile['name'] || profile['username'] || 'U').charAt(0).toUpperCase() }}
+          } @else {
+            U
+          }
+        </div>
+        <h2 id="profile-card-title">Account details</h2>
+      </header>
 
-			<footer class="profile-footer">
-				<span class="profile-badge">Account active</span>
-				<div class="profile-actions">
-					<button type="button" class="btn btn-primary">Edit Profile</button>
-					<button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
-				</div>
-			</footer>
-			}
-		}
-	</section>
+      @if (loading()) {
+        <div class="profile-status" role="status">Loading your profile...</div>
+      } @else if (errorMessage()) {
+        <div class="profile-status profile-status-error" role="alert">{{ errorMessage() }}</div>
+      } @else {
+        @if (customer(); as profile) {
+          <div class="profile-details">
+            <div class="profile-detail">
+              <span class="detail-label">Name</span>
+              <strong>{{ profile['firstName'] || profile['name'] || 'Not provided' }}{{ profile['lastName'] ? ' ' + profile['lastName'] : '' }}</strong>
+            </div>
+            <div class="profile-detail">
+              <span class="detail-label">Username</span>
+              <strong>{{ profile['username'] || 'Not provided' }}</strong>
+            </div>
+            <div class="profile-detail">
+              <span class="detail-label">Email</span>
+              <strong>{{ profile['email'] || 'Not provided' }}</strong>
+            </div>
+            <div class="profile-detail">
+              <span class="detail-label">Phone</span>
+              <strong>{{ profile['phone'] || profile['phoneNumber'] || 'Not provided' }}</strong>
+            </div>
+          </div>
+
+          <footer class="profile-footer">
+            <span class="profile-badge">Account active</span>
+            <div class="profile-actions">
+              <button type="button" class="btn btn-primary">Edit Profile</button>
+              <button type="button" class="btn btn-secondary" (click)="logout()">Logout</button>
+            </div>
+          </footer>
+        }
+      }
+    </section>
+  </section>
 </main>

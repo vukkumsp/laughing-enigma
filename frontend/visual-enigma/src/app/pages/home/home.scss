@@ -33,7 +33,7 @@ h1, h2, h3, p { margin-top: 0; }
 h1 {
   margin-bottom: 9px;
   color: #1f2b27;
-  font-size: clamp(30px, 5vw, 46px);
+  font-size: 40px;
   letter-spacing: -0.5px;
 }
 
@@ -131,4 +131,8 @@ h1 {
   .event-row { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
   .status { margin-left: 60px; }
   .event-actions { width: calc(100% - 60px); justify-content: space-between; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 32px; }
 }
