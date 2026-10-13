@@ -109,12 +109,14 @@ h1 {
 .event-date span { font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .event-date strong { font-size: 20px; line-height: 1.1; }
 .event-date-pending { background: #fff1dc; color: #a86c1d; }
+.event-date-cancelled { background: #f1eeee; color: #8a5555; }
 .event-info { flex: 1; min-width: 0; }
 .event-info h3 { margin-bottom: 5px; color: #263832; font-size: 15px; }
 .event-info p { margin-bottom: 0; color: #799088; font-size: 12px; }
 .status { padding: 6px 9px; border-radius: 20px; font-size: 10px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
 .status-confirmed { background: #e5f3ed; color: #217a68; }
 .status-pending { background: #fff1dc; color: #a86c1d; }
+.status-cancelled { background: #f6eaea; color: #a34d4d; }
 .event-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .pay-now { padding: 8px 13px; border: 0; border-radius: 5px; background: #217a68; color: #fff; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
 .pay-now:hover { background: #185c4f; }

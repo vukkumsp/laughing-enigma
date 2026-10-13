@@ -1,6 +1,6 @@
 import { inject, Service } from '@angular/core';
-import { Auth } from './auth';
-import { environment } from '../../environments/environment';
+import { Auth } from '../auth/auth';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
 @Service()

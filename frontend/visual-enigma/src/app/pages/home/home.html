@@ -49,7 +49,18 @@
           <h2 id="events-title">Events at a glance</h2>
         </div>
         <span class="event-count">
-          {{ activeTab() === 'registered' ? registeredEvents.length : paymentPendingEvents.length }} events
+          @switch (activeTab()) {
+            @case ('registered') {
+              {{ registeredEvents.length }}
+            }
+            @case ('payment-pending') {
+              {{ paymentPendingEvents.length }}
+            }
+            @case ('cancelled') {
+              {{ cancelledEvents.length }}
+            }
+          }
+          events
         </span>
       </div>
 
@@ -70,43 +81,71 @@
           (click)="selectTab('payment-pending')">
           Payment pending
         </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="activeTab() === 'cancelled'"
+          [class.active]="activeTab() === 'cancelled'"
+          (click)="selectTab('cancelled')">
+          Cancelled
+        </button>
       </div>
 
-      @if (activeTab() === 'registered') {
-        <div class="event-list" role="tabpanel">
-          @for (event of registeredEvents; track event.id) {
-            <article class="event-row">
-              <div class="event-date" aria-hidden="true">
-                <span>{{ event.month }}</span>
-                <strong>{{ event.day }}</strong>
-              </div>
-              <div class="event-info">
-                <h3>{{ event.name }}</h3>
-                <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
-              </div>
-              <span class="status status-confirmed">{{ event.status }}</span>
-            </article>
-          }
-        </div>
-      } @else {
-        <div class="event-list" role="tabpanel">
-          @for (event of paymentPendingEvents; track event.id) {
-            <article class="event-row">
-              <div class="event-date event-date-pending" aria-hidden="true">
-                <span>{{ event.month }}</span>
-                <strong>{{ event.day }}</strong>
-              </div>
-              <div class="event-info">
-                <h3>{{ event.name }}</h3>
-                <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
-              </div>
-              <div class="event-actions">
-                <span class="status status-pending">{{ event.status }}</span>
-                <button type="button" class="pay-now">Pay now</button>
-              </div>
-            </article>
-          }
-        </div>
+      @switch (activeTab()) {
+        @case ('registered') {
+          <div class="event-list" role="tabpanel">
+            @for (event of registeredEvents; track event.id) {
+              <article class="event-row">
+                <div class="event-date" aria-hidden="true">
+                  <span>{{ event.month }}</span>
+                  <strong>{{ event.day }}</strong>
+                </div>
+                <div class="event-info">
+                  <h3>{{ event.name }}</h3>
+                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                </div>
+                <span class="status status-confirmed">{{ event.status }}</span>
+              </article>
+            }
+          </div>
+        }
+        @case ('payment-pending') {
+          <div class="event-list" role="tabpanel">
+            @for (event of paymentPendingEvents; track event.id) {
+              <article class="event-row">
+                <div class="event-date event-date-pending" aria-hidden="true">
+                  <span>{{ event.month }}</span>
+                  <strong>{{ event.day }}</strong>
+                </div>
+                <div class="event-info">
+                  <h3>{{ event.name }}</h3>
+                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                </div>
+                <div class="event-actions">
+                  <span class="status status-pending">{{ event.status }}</span>
+                  <button type="button" class="pay-now">Pay now</button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+        @case ('cancelled') {
+          <div class="event-list" role="tabpanel">
+            @for (event of cancelledEvents; track event.id) {
+              <article class="event-row">
+                <div class="event-date event-date-cancelled" aria-hidden="true">
+                  <span>{{ event.month }}</span>
+                  <strong>{{ event.day }}</strong>
+                </div>
+                <div class="event-info">
+                  <h3>{{ event.name }}</h3>
+                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                </div>
+                <span class="status status-cancelled">{{ event.status }}</span>
+              </article>
+            }
+          </div>
+        }
       }
     </section>
   </section>

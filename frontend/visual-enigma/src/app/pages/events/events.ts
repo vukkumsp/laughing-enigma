@@ -2,9 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { EventCard } from './event-card';
-import { RegistrationEventsService } from '../../services/registration-events-service';
+import { RegistrationEventsService } from '../../services/registration-events-service/registration-events-service';
 import { filter, take, takeWhile } from 'rxjs';
-import { PaymentCheckout } from '../../services/payment-checkout';
+import { PaymentCheckout } from '../../services/payment-checkout/payment-checkout';
 
 export interface Event {
   id: number;

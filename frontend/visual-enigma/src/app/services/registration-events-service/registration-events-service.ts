@@ -1,8 +1,8 @@
 import { inject, Service } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { Auth } from './auth';
+import { Auth } from '../auth/auth';
 
 @Service()
 export class RegistrationEventsService {

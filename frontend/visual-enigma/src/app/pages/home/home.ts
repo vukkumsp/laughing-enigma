@@ -19,7 +19,7 @@ interface HomeEvent {
   status?: string;
 }
 
-type HomeTab = 'registered' | 'payment-pending';
+type HomeTab = 'registered' | 'payment-pending' | 'cancelled';
 
 @Component({
   selector: 'app-home',
@@ -80,6 +80,27 @@ export class Home implements OnInit {
       day: '15',
       venue: 'Assembly Hall, Chicago',
       status: 'Payment pending',
+    },
+  ];
+
+  readonly cancelledEvents: HomeEvent[] = [
+    {
+      id: 5,
+      name: 'Urban Photography Walk',
+      date: 'September 12, 2026',
+      month: 'Sep',
+      day: '12',
+      venue: 'Old Town, Portland',
+      status: 'Cancelled',
+    },
+    {
+      id: 6,
+      name: 'Startup Founders Workshop',
+      date: 'August 29, 2026',
+      month: 'Aug',
+      day: '29',
+      venue: 'Innovation Hub, Seattle',
+      status: 'Cancelled',
     },
   ];
 

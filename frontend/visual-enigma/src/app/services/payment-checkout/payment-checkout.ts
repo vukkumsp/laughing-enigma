@@ -1,5 +1,5 @@
 import { inject, Service } from '@angular/core';
-import { Payment } from './payment';
+import { Payment } from '../payment/payment';
 
 interface RazorpayPaymentResponse {
     razorpay_order_id: string;
