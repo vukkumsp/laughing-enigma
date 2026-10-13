@@ -4,6 +4,7 @@ import com.laughingenigma.saga_orchestrator.config.KafkaConfig;
 import com.laughingenigma.saga_orchestrator.config.RabbitMQConfig;
 import com.laughingenigma.saga_orchestrator.dto.*;
 import com.laughingenigma.saga_orchestrator.entity.*;
+import com.laughingenigma.saga_orchestrator.error.exception.InvalidBookingStatusException;
 import com.laughingenigma.saga_orchestrator.error.exception.ResourceNotFoundException;
 import com.laughingenigma.saga_orchestrator.kafka.event.*;
 import com.laughingenigma.saga_orchestrator.kafka.producer.KafkaRegistrationEventProducer;
@@ -292,6 +293,208 @@ public class RegistrationSaga {
         outboxMessageRepository.save(outboxMessage);
     }
 
+    public void checkPaymentOrderAndUpdateCustomerBooking(PaymentOrderResponse response){
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
+
+        if (sagaI.getCurrentStep() == SagaStep.PAYMENT_REQUIRED) {
+            System.out.println(
+                    "IDEMPOTENCY: Duplicate payment order response ignored. "
+                            + "registrationId=" + response.registrationId()
+            );
+            return;
+        }
+
+        if (!sagaI.getCurrentStep()
+                .canTransitionTo(SagaStep.PAYMENT_REQUIRED)) {
+            // Duplicate / stale / invalid response
+            System.out.println(
+                    "SAGA TRANSITION REJECTED: "
+                            + sagaI.getCurrentStep()
+                            + " -> "
+                            + SagaStep.PAYMENT_REQUIRED
+                            + ", registrationId="
+                            + response.registrationId()
+            );
+            return;
+        }
+
+        System.out.println("Payment Order response: "+response);
+
+        sagaI.setCurrentStep(SagaStep.PAYMENT_REQUIRED);
+        sagaI.setStatus(SagaStatus.IN_PROGRESS);
+        sagaI.setContext(ContextFactory.buildPaymentOrderResponseContext(response));
+        sagaInstanceRepository.save(sagaI);
+
+        // update customer bookings status
+        // TODO: move this direct publisher call to outbox pattern
+        CustomerBookingStatusUpdateRequest request = new CustomerBookingStatusUpdateRequest(
+                response.registrationId(), response.eventId(), response.username(),
+                response.orderId(),response.currency(), response.price(),
+                "PENDING"
+        );
+
+        //TODO: add to outbox_messages
+        String payload = objectMapper.writeValueAsString(request);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.CUSTOMER_BOOKING_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
+    }
+
+    @Transactional
+    public void checkPaymentVerifyResponseAndUpdateCustomerBooking(PaymentVerifyResponse response){
+        System.out.println("========== PAYMENT VERIFY RESPONSE ==========");
+        System.out.println("response = " + response);
+        System.out.println("registrationId = [" + response.registrationId() + "]");
+
+        SagaInstance sagaI = sagaInstanceRepository
+                .findByCorrelationId(response.registrationId())
+                .orElseThrow();
+
+        System.out.println("Payment Verify response: "+response);
+        System.out.println("sagaI.getCurrentStep(): " + sagaI.getCurrentStep());
+        System.out.println("sagaI.getContext(): "+ sagaI.getContext());
+
+        // PaymentOrderResponse
+        PaymentOrderResponse paymentOrderResponse;
+
+        if (response.status().equalsIgnoreCase("success")) {
+            //success but duplicated
+            if (sagaI.getCurrentStep() == SagaStep.REGISTRATION_COMPLETED) {
+                // duplicate
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate payment success response ignored. "
+                                + "registrationId=" + response.registrationId()
+                );
+                return;
+            }
+
+            if (!sagaI.getCurrentStep()
+                    .canTransitionTo(SagaStep.PAYMENT_SUCCESS)) {
+                // stale/invalid response
+                System.out.println(
+                        "SAGA TRANSITION REJECTED: "
+                                + sagaI.getCurrentStep()
+                                + " -> "
+                                + SagaStep.PAYMENT_SUCCESS
+                                + ", registrationId="
+                                + response.registrationId()
+                );
+                return;
+            }
+            // process success
+        }
+
+        if(!response.status().equalsIgnoreCase("success")) {
+            //failure flow
+            if (sagaI.getCurrentStep() == SagaStep.PAYMENT_FAILED
+                    || sagaI.getCurrentStep() == SagaStep.REGISTRATION_COMPENSATED) {
+
+                System.out.println(
+                        "IDEMPOTENCY: Duplicate payment failure response ignored. "
+                                + "registrationId=" + response.registrationId()
+                );
+                return;
+            }
+
+            if (!sagaI.getCurrentStep()
+                    .canTransitionTo(SagaStep.PAYMENT_FAILED)) {
+                // Duplicate / stale / invalid response
+                System.out.println(
+                        "SAGA TRANSITION REJECTED: " +
+                                sagaI.getCurrentStep() +
+                                " -> " +
+                                SagaStep.PAYMENT_FAILED +
+                                ", registrationId=" +
+                                response.registrationId()
+                );
+                return;
+            }
+
+            paymentOrderResponse
+                    = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
+                    SagaStep.PAYMENT_FAILED ,
+                    sagaI.getContext());
+
+            sagaI.setCurrentStep(SagaStep.PAYMENT_FAILED);
+            sagaI.setStatus(SagaStatus.FAILED);
+            sagaInstanceRepository.save(sagaI);
+
+            //update customer booking status to CANCELLED
+            CustomerBookingStatusUpdateRequest request = new CustomerBookingStatusUpdateRequest(
+                    response.registrationId(), paymentOrderResponse.eventId(), paymentOrderResponse.username(),
+                    response.orderId(),paymentOrderResponse.currency(), paymentOrderResponse.price(),
+                    "CANCELLED"
+            );
+
+            String payload = objectMapper.writeValueAsString(request);
+
+            OutboxMessage outboxMessage = OutboxMessage.builder()
+                    .outboxMessageId(UUID.randomUUID())
+                    .destinationType(DestinationType.RABBITMQ)
+                    .messageType(OutboxMessageType.CUSTOMER_BOOKING_REQUEST)
+                    .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                    .routingKey(RabbitMQConfig.CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY)
+                    .payload(payload)
+                    .status(OutboxStatus.PENDING)
+                    .createdAt(Instant.now())
+                    .retryCount(0)
+                    .nextRetryAt(null)
+                    .build();
+
+            outboxMessageRepository.save(outboxMessage);
+            //publisher.publish(request);
+            return;
+        }
+
+        paymentOrderResponse
+                = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
+                SagaStep.PAYMENT_SUCCESS,
+                sagaI.getContext());
+
+        sagaI.setCurrentStep(SagaStep.PAYMENT_SUCCESS);
+        sagaI.setStatus(SagaStatus.IN_PROGRESS);
+        sagaInstanceRepository.save(sagaI);
+
+        //update customer booking status to CONFIRMED
+        CustomerBookingStatusUpdateRequest request = new CustomerBookingStatusUpdateRequest(
+                response.registrationId(), paymentOrderResponse.eventId(), paymentOrderResponse.username(),
+                response.orderId(),paymentOrderResponse.currency(), paymentOrderResponse.price(),
+                "CONFIRMED"
+        );
+
+        String payload = objectMapper.writeValueAsString(request);
+
+        OutboxMessage outboxMessage = OutboxMessage.builder()
+                .outboxMessageId(UUID.randomUUID())
+                .destinationType(DestinationType.RABBITMQ)
+                .messageType(OutboxMessageType.CUSTOMER_BOOKING_REQUEST)
+                .destinationName(RabbitMQConfig.SAGA_COMMAND_EXCHANGE)
+                .routingKey(RabbitMQConfig.CUSTOMER_BOOKING_STATUS_UPDATE_REQUEST_ROUTING_KEY)
+                .payload(payload)
+                .status(OutboxStatus.PENDING)
+                .createdAt(Instant.now())
+                .retryCount(0)
+                .nextRetryAt(null)
+                .build();
+
+        outboxMessageRepository.save(outboxMessage);
+        //publisher.publish(request);
+    }
+
     @Transactional
     public void unreserveSeatsAsCompensation(PaymentOrderResponse response) {
         SagaInstance sagaI = sagaInstanceRepository.findByCorrelationId(response.registrationId())
@@ -419,8 +622,6 @@ public class RegistrationSaga {
                 break;
             case "CONFIRMED":
                 //close saga
-
-
                 PaymentOrderResponse paymentOrderSuccessResponse
                         = (PaymentOrderResponse) dtoFactory.getRegistrationContextDto(
                         SagaStep.PAYMENT_SUCCESS,
@@ -507,11 +708,9 @@ public class RegistrationSaga {
                 sseService.sendPaymentStatusEvent(paymentFailedStatusDetails);
                 break;
             default:
-                //some error, unknown booking status response
+                //unknown booking status response
+                System.out.println("Invalid booking status received in CustomerBookingStatusUpdateResponse");
+                throw new InvalidBookingStatusException("Invalid booking status received in CustomerBookingStatusUpdateResponse");
         }
-    }
-
-    public void sendEmailNotification(RegistrationEvent event){
-        kafkaRegistrationEventProducer.publish(event);
     }
 }

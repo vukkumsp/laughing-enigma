@@ -28,6 +28,7 @@ public class OutboxMessagePublisher {
 
     //rabbitmq publishers
     private final CustomerValidationRequestPublisher customerValidationRequestPublisher;
+    private final CustomerBookingsStatusUpdateRequestPublisher customerBookingsStatusUpdateRequestPublisher;
     private final SeatReservationRequestPublisher  seatReservationRequestPublisher;
     private final PaymentOrderRequestPublisher paymentOrderRequestPublisher;
     private final SeatUnreserveRequestPublisher seatUnreserveRequestPublisher;
@@ -52,6 +53,7 @@ public class OutboxMessagePublisher {
             ObjectMapper objectMapper,
 
             CustomerValidationRequestPublisher customerValidationRequestPublisher,
+            CustomerBookingsStatusUpdateRequestPublisher customerBookingsStatusUpdateRequestPublisher,
             SeatReservationRequestPublisher seatReservationRequestPublisher,
             PaymentOrderRequestPublisher paymentOrderRequestPublisher,
             SeatUnreserveRequestPublisher seatUnreserveRequestPublisher,
@@ -62,6 +64,7 @@ public class OutboxMessagePublisher {
         this.objectMapper = objectMapper;
 
         this.customerValidationRequestPublisher = customerValidationRequestPublisher;
+        this.customerBookingsStatusUpdateRequestPublisher = customerBookingsStatusUpdateRequestPublisher;
         this.seatReservationRequestPublisher = seatReservationRequestPublisher;
         this.paymentOrderRequestPublisher = paymentOrderRequestPublisher;
         this.seatUnreserveRequestPublisher = seatUnreserveRequestPublisher;
@@ -132,6 +135,11 @@ public class OutboxMessagePublisher {
                     SeatUnreserveRequest seatUnreserveRequest = deserialize(message, SeatUnreserveRequest.class);
                     System.out.println("publishing response with registrationId " + seatUnreserveRequest.registrationId());
                     seatUnreserveRequestPublisher.publish(seatUnreserveRequest);
+                    break;
+                case OutboxMessageType.CUSTOMER_BOOKING_REQUEST:
+                    CustomerBookingStatusUpdateRequest customerBookingStatusUpdateRequest = deserialize(message, CustomerBookingStatusUpdateRequest.class);
+                    System.out.println("publishing response with registrationId " + customerBookingStatusUpdateRequest.registrationId());
+                    customerBookingsStatusUpdateRequestPublisher.publish(customerBookingStatusUpdateRequest);
                     break;
                 case OutboxMessageType.REGISTRATION_COMPLETED:
                 case OutboxMessageType.REGISTRATION_FAILED:

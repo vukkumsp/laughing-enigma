@@ -5,12 +5,16 @@ import com.laughingenigma.customer_service.dto.CustomerBookingStatusUpdateRespon
 import com.laughingenigma.customer_service.dto.CustomerValidationRequest;
 import com.laughingenigma.customer_service.dto.CustomerValidationResponse;
 import com.laughingenigma.customer_service.entity.BookingStatus;
+import com.laughingenigma.customer_service.entity.Currency;
 import com.laughingenigma.customer_service.entity.Customer;
 import com.laughingenigma.customer_service.entity.CustomerBooking;
 import com.laughingenigma.customer_service.error.exception.InvalidBookingStatusException;
+import com.laughingenigma.customer_service.error.exception.ResourceNotFoundException;
 import com.laughingenigma.customer_service.publisher.CustomerBookingStatusUpdateResponsePublisher;
 import com.laughingenigma.customer_service.publisher.CustomerValidationResponsePublisher;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 public class CustomerApplicationService {
@@ -53,9 +57,33 @@ public class CustomerApplicationService {
     public void createOrUpdateCustomerBookingAndRespondToSaga
             (CustomerBookingStatusUpdateRequest customerBookingStatusUpdateRequest){
 
+        String registrationId = customerBookingStatusUpdateRequest.registrationId();
+        BookingStatus bookingStatus = switch(customerBookingStatusUpdateRequest.bookingStatus().toUpperCase()){
+            case "PENDING" -> BookingStatus.PENDING;
+            case "CONFIRMED" -> BookingStatus.CONFIRMED;
+            case "CANCELLED" -> BookingStatus.CANCELLED;
+            default -> throw new InvalidBookingStatusException("Invalid booking status provided");
+        };
+
+        if(customerBookingService.existsByCustomerBookingByRegistrationIdAndBookingStatus(
+                registrationId, bookingStatus
+        )) {
+            // Already received this request
+            System.out.println(
+                    "IDEMPOTENCY CHECK: Duplicate " +
+                            switch(bookingStatus) {
+                                case PENDING -> "Create";
+                                case CONFIRMED, CANCELLED -> "Update";
+                            } + " CustomerBooking request ignored. "
+                              + "registrationId=" + registrationId
+                              + ", bookingStatus=" + bookingStatus.name().toUpperCase()
+            );
+            return;
+        }
+
         CustomerBooking booking;
-        switch (customerBookingStatusUpdateRequest.bookingStatus().toUpperCase()){
-            case "PENDING":
+        switch (bookingStatus){
+            case BookingStatus.PENDING:
                 // means, we need to create the db record
                 booking = customerBookingService.createCustomerBooking(
                         customerBookingStatusUpdateRequest.username(),
@@ -66,8 +94,8 @@ public class CustomerApplicationService {
                         customerBookingStatusUpdateRequest.amount()
                 );
                 break;
-            case "CONFIRMED":
-            case "CANCELLED":
+            case BookingStatus.CONFIRMED:
+            case BookingStatus.CANCELLED:
                 booking = customerBookingService.updateCustomerBookingStatus(
                         customerBookingStatusUpdateRequest.registrationId(),
                         customerBookingStatusUpdateRequest.bookingStatus()

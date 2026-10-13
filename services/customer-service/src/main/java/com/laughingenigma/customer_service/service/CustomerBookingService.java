@@ -24,6 +24,10 @@ public class CustomerBookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer Booking not found for username: " + username));
     }
 
+    public boolean existsByCustomerBookingByRegistrationIdAndBookingStatus(String registrationId, BookingStatus bookingStatus){
+        return this.customerBookingRepository.existsByRegistrationIdAndBookingStatus(registrationId, bookingStatus);
+    }
+
     @Transactional
     public CustomerBooking updateCustomerBookingStatus(String registrationId, String status){
         CustomerBooking booking = customerBookingRepository.findByRegistrationId(registrationId)

@@ -60,6 +60,11 @@ public class PaymentVerifyResponseConsumer {
             queues = RabbitMQConfig.PAYMENT_VERIFY_RESPONSE_QUEUE
     )
     public void handlePaymentVerifyResponse(PaymentVerifyResponse response){
+        System.out.println("PaymentVerify response: "+response);
+        System.out.println("PaymentVerify Status: "+response.status());
+        registrationSaga.checkPaymentVerifyResponseAndUpdateCustomerBooking(response);
+
+
         System.out.println("========== PAYMENT VERIFY RESPONSE ==========");
         System.out.println("response = " + response);
         System.out.println("registrationId = [" + response.registrationId() + "]");
@@ -176,68 +181,5 @@ public class PaymentVerifyResponseConsumer {
                 "CONFIRMED"
         );
         publisher.publish(request);
-
-        /*
-        //IF payment verification is successful then,
-        //update status in saga db if needed
-        //send SSE event to frontend payment status
-        PaymentStatusDetails paymentStatusDetails = new PaymentStatusDetails(
-                paymentOrderResponse.registrationId(),
-                paymentOrderResponse.eventId(),
-                paymentOrderResponse.status()
-        );
-        sseService.sendPaymentStatusEvent(paymentStatusDetails);
-
-        //End of SAGA
-        sagaI.setCurrentStep(SagaStep.REGISTRATION_COMPLETED);
-        sagaI.setStatus(SagaStatus.COMPLETED);
-        sagaInstanceRepository.save(sagaI);
-
-        //send email notification
-        UUID kafkaEventId = UUID.randomUUID();
-
-        EventDetails eventDetails = new EventDetails(
-                paymentOrderResponse.eventId(),
-                paymentOrderResponse.eventName(),
-                paymentOrderResponse.eventDate().toInstant(ZoneOffset.UTC),
-                Instant.now()
-        );
-        RegistrationEventPayload payload = new RegistrationCompletedPayload(
-                paymentOrderResponse.registrationId(),
-                paymentOrderResponse.username(),
-                paymentOrderResponse.email(),
-                eventDetails
-        );
-        RegistrationEvent event = new RegistrationEvent(
-                kafkaEventId,
-                KafkaConfig.REGISTRATION_COMPLETED,
-                1,
-                Instant.now(),
-                KafkaConfig.APPLICATION_NAME,
-                payload
-        );
-
-        // TODO: Introduce Outbox Pattern to reliably coordinate
-        // saga completion and REGISTRATION_COMPLETED Kafka publication.
-        //registrationSaga.sendEmailNotification(event);
-
-        String kafkaEventPayload = objectMapper.writeValueAsString(event);
-
-        OutboxMessage kafkaOutboxMessage = OutboxMessage.builder()
-                .outboxMessageId(UUID.randomUUID())
-                .destinationType(DestinationType.KAFKA)
-                .messageType(OutboxMessageType.REGISTRATION_COMPLETED)
-                .destinationName(KafkaConfig.REGISTRATION_EVENTS_TOPIC)
-                .routingKey(null)
-                .payload(kafkaEventPayload)
-                .status(OutboxStatus.PENDING)
-                .createdAt(Instant.now())
-                .retryCount(0)
-                .nextRetryAt(null)
-                .build();
-
-        outboxMessageRepository.save(kafkaOutboxMessage);
-
-         */
     }
 }

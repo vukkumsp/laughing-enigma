@@ -1,6 +1,7 @@
 package com.laughingenigma.saga_orchestrator.error.handler;
 
 import com.laughingenigma.saga_orchestrator.error.dto.ErrorResponse;
+import com.laughingenigma.saga_orchestrator.error.exception.InvalidBookingStatusException;
 import com.laughingenigma.saga_orchestrator.error.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,24 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
+                .body(response);
+    }
+
+    @ExceptionHandler(InvalidBookingStatusException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBookingStatus(
+            InvalidBookingStatusException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse response = new ErrorResponse(
+                Instant.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
                 .body(response);
     }
 
