@@ -16,7 +16,7 @@ export class PaymentCheckout {
         registrationId: string;
         eventId: string;
 
-        customerId: number;
+        customerId: number | null;
         username: string;
         email: string;
         firstName: string;

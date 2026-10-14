@@ -1,8 +1,13 @@
 package com.laughingenigma.aggregator_service.client;
 
+import com.laughingenigma.aggregator_service.dto.CustomerBookingSummary;
+import com.laughingenigma.aggregator_service.dto.EventSummary;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Component
 public class EventServiceClient {
@@ -17,17 +22,16 @@ public class EventServiceClient {
                 .build();
     }
 
-    public void reserveSeat(Long eventId) {
-        restClient.post()
-                .uri("/events/{eventId}/reserve", eventId)
+    public List<EventSummary> getAllEvents(List<Long> eventIds) {
+        List<EventSummary> eventSummaryList = restClient.post()
+                .uri("/api/v1/events/batch")
+                .body(eventIds)
                 .retrieve()
-                .toBodilessEntity();
-    }
+                .body(new ParameterizedTypeReference<List<EventSummary>>() {});
 
-    public void releaseSeat(Long eventId) {
-        restClient.post()
-                .uri("/events/{eventId}/release", eventId)
-                .retrieve()
-                .toBodilessEntity();
+        System.out.println("List<Long> eventIds: " + eventIds);
+        System.out.println("List<EventSummary> eventSummaryList: " + eventSummaryList);
+
+        return eventSummaryList != null ? eventSummaryList : List.of();
     }
 }

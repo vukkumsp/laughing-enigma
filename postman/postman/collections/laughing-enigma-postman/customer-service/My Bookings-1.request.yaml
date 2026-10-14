@@ -1,8 +1,11 @@
 $kind: http-request
+name: My Bookings
 url: http://localhost:8080/api/v1/customers/me/bookings
 method: GET
+headers:
+  X-Authenticated-User: tester
 auth:
   type: bearer
   credentials:
     token: ""
-order: 2000
+order: 2456

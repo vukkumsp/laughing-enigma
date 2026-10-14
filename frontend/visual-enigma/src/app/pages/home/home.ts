@@ -1,6 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { MyRegistration } from '../../services/my-registrations-service/my-registrations.models';
+import { MyRegistrationsService } from '../../services/my-registrations-service/my-registrations-service';
+import { PaymentCheckout } from '../../services/payment-checkout/payment-checkout';
 
 export interface CurrentUser {
   customerId: number;
@@ -10,13 +13,13 @@ export interface CurrentUser {
 }
 
 interface HomeEvent {
-  id: number;
+  registration: MyRegistration;
+  registrationId: string;
   name: string;
   date: string;
   month: string;
   day: string;
-  venue: string;
-  status?: string;
+  status: string;
 }
 
 type HomeTab = 'registered' | 'payment-pending' | 'cancelled';
@@ -30,79 +33,23 @@ type HomeTab = 'registered' | 'payment-pending' | 'cancelled';
 export class Home implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
+  private readonly myRegistrationsService = inject(MyRegistrationsService);
+  private readonly paymentCheckout = inject(PaymentCheckout);
 
   readonly activeTab = signal<HomeTab>('registered');
   readonly currentUser = signal<CurrentUser | null>(null);
   readonly userLoading = signal(true);
   readonly userError = signal('');
+  readonly registrationsError = signal('');
 
   ngOnInit(): void {
     this.loadCurrentUser();
+    this.loadMyRegistrations();
   }
 
-  // Placeholder data for the dashboard until the home API is available.
-  readonly registeredEvents: HomeEvent[] = [
-    {
-      id: 1,
-      name: 'Design Systems Summit',
-      date: 'October 18, 2026',
-      month: 'Oct',
-      day: '18',
-      venue: 'The Foundry, Austin',
-      status: 'Confirmed',
-    },
-    {
-      id: 2,
-      name: 'Future of Product Night',
-      date: 'November 06, 2026',
-      month: 'Nov',
-      day: '06',
-      venue: 'Pier 27, San Francisco',
-      status: 'Confirmed',
-    },
-  ];
-
-  readonly paymentPendingEvents: HomeEvent[] = [
-    {
-      id: 3,
-      name: 'Creative Technology Forum',
-      date: 'December 02, 2026',
-      month: 'Dec',
-      day: '02',
-      venue: 'The Glasshouse, New York',
-      status: 'Payment pending',
-    },
-    {
-      id: 4,
-      name: 'Independent Makers Meetup',
-      date: 'January 15, 2027',
-      month: 'Jan',
-      day: '15',
-      venue: 'Assembly Hall, Chicago',
-      status: 'Payment pending',
-    },
-  ];
-
-  readonly cancelledEvents: HomeEvent[] = [
-    {
-      id: 5,
-      name: 'Urban Photography Walk',
-      date: 'September 12, 2026',
-      month: 'Sep',
-      day: '12',
-      venue: 'Old Town, Portland',
-      status: 'Cancelled',
-    },
-    {
-      id: 6,
-      name: 'Startup Founders Workshop',
-      date: 'August 29, 2026',
-      month: 'Aug',
-      day: '29',
-      venue: 'Innovation Hub, Seattle',
-      status: 'Cancelled',
-    },
-  ];
+  readonly registeredEvents = signal<HomeEvent[]>([]);
+  readonly paymentPendingEvents = signal<HomeEvent[]>([]);
+  readonly cancelledEvents = signal<HomeEvent[]>([]);
 
   private loadCurrentUser(): void {
     this.http.get<CurrentUser>(`${this.apiUrl}/customers/me`).subscribe({
@@ -115,6 +62,63 @@ export class Home implements OnInit {
         this.userLoading.set(false);
         this.userError.set('We could not load your account details.');
       },
+    });
+  }
+
+  private loadMyRegistrations(): void {
+    this.myRegistrationsService.getMyRegistrations().subscribe({
+      next: (response) => {
+        this.registeredEvents.set(response.registrations
+          .filter((registration) => registration.bookingStatus === 'CONFIRMED')
+          .map((registration) => this.toHomeEvent(registration, 'Confirmed')));
+        this.paymentPendingEvents.set(response.registrations
+          .filter((registration) => registration.bookingStatus === 'PENDING')
+          .map((registration) => this.toHomeEvent(registration, 'Payment pending')));
+        this.cancelledEvents.set(response.registrations
+          .filter((registration) => registration.bookingStatus === 'CANCELLED')
+          .map((registration) => this.toHomeEvent(registration, 'Cancelled')));
+      },
+      error: () => {
+        this.registrationsError.set('We could not load your event registrations.');
+      },
+    });
+  }
+
+  private toHomeEvent(registration: MyRegistration, status: string): HomeEvent {
+    const eventDate = new Date(registration.eventDate);
+
+    return {
+      registration,
+      registrationId: registration.registrationId,
+      name: registration.eventName,
+      date: eventDate.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: '2-digit',
+      }),
+      month: eventDate.toLocaleDateString('en-US', { month: 'short' }),
+      day: eventDate.toLocaleDateString('en-US', { day: '2-digit' }),
+      status,
+    };
+  }
+
+  payNow(event: HomeEvent): void {
+    const user = this.currentUser();
+    const registration = event.registration;
+
+    this.paymentCheckout.openCheckout({
+      registrationId: registration.registrationId,
+      eventId: String(registration.eventId),
+      customerId: user?.customerId ?? null,
+      username: registration.customerUsername,
+      email: '',
+      firstName: user?.firstName ?? '',
+      lastName: user?.lastName ?? '',
+      eventName: registration.eventName,
+      eventDate: registration.eventDate,
+      amount: registration.amount,
+      currency: registration.currency,
+      orderId: registration.orderId,
     });
   }
 

@@ -104,6 +104,9 @@ h1 {
 .tabs button.active::after { opacity: 1; }
 
 .event-list { padding: 6px 0; }
+.empty-state { display: flex; min-height: 180px; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #799088; text-align: center; }
+.empty-state p { margin: 0; font-size: 13px; }
+.empty-state-icon { width: 56px; height: 56px; fill: none; stroke: #8ba69a; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
 .event-row { display: flex; align-items: center; gap: 18px; padding: 19px 0; border-bottom: 1px solid #edf2ef; }
 .event-date { display: flex; width: 48px; height: 54px; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 5px; background: #e5f3ed; color: #217a68; }
 .event-date span { font-size: 10px; font-weight: 700; text-transform: uppercase; }

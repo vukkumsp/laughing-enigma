@@ -51,13 +51,13 @@
         <span class="event-count">
           @switch (activeTab()) {
             @case ('registered') {
-              {{ registeredEvents.length }}
+              {{ registeredEvents().length }}
             }
             @case ('payment-pending') {
-              {{ paymentPendingEvents.length }}
+              {{ paymentPendingEvents().length }}
             }
             @case ('cancelled') {
-              {{ cancelledEvents.length }}
+              {{ cancelledEvents().length }}
             }
           }
           events
@@ -91,10 +91,14 @@
         </button>
       </div>
 
+      @if (registrationsError()) {
+        <p class="user-error" role="alert">{{ registrationsError() }}</p>
+      }
+
       @switch (activeTab()) {
         @case ('registered') {
           <div class="event-list" role="tabpanel">
-            @for (event of registeredEvents; track event.id) {
+            @for (event of registeredEvents(); track event.registrationId) {
               <article class="event-row">
                 <div class="event-date" aria-hidden="true">
                   <span>{{ event.month }}</span>
@@ -102,16 +106,25 @@
                 </div>
                 <div class="event-info">
                   <h3>{{ event.name }}</h3>
-                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                  <p>{{ event.date }}</p>
                 </div>
                 <span class="status status-confirmed">{{ event.status }}</span>
               </article>
+            } @empty {
+              <div class="empty-state">
+                <svg class="empty-state-icon" viewBox="0 0 64 64" aria-hidden="true">
+                  <path d="M17 23h30l3 31H14l3-31Z" />
+                  <path d="M24 25v-6a8 8 0 0 1 16 0v6" />
+                  <path d="M25 34h14" />
+                </svg>
+                <p>No registered events yet.</p>
+              </div>
             }
           </div>
         }
         @case ('payment-pending') {
           <div class="event-list" role="tabpanel">
-            @for (event of paymentPendingEvents; track event.id) {
+            @for (event of paymentPendingEvents(); track event.registrationId) {
               <article class="event-row">
                 <div class="event-date event-date-pending" aria-hidden="true">
                   <span>{{ event.month }}</span>
@@ -119,19 +132,28 @@
                 </div>
                 <div class="event-info">
                   <h3>{{ event.name }}</h3>
-                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                  <p>{{ event.date }}</p>
                 </div>
                 <div class="event-actions">
                   <span class="status status-pending">{{ event.status }}</span>
-                  <button type="button" class="pay-now">Pay now</button>
+                  <button type="button" class="pay-now" (click)="payNow(event)">Pay now</button>
                 </div>
               </article>
+            } @empty {
+              <div class="empty-state">
+                <svg class="empty-state-icon" viewBox="0 0 64 64" aria-hidden="true">
+                  <path d="M17 23h30l3 31H14l3-31Z" />
+                  <path d="M24 25v-6a8 8 0 0 1 16 0v6" />
+                  <path d="M25 34h14" />
+                </svg>
+                <p>No payments are pending.</p>
+              </div>
             }
           </div>
         }
         @case ('cancelled') {
           <div class="event-list" role="tabpanel">
-            @for (event of cancelledEvents; track event.id) {
+            @for (event of cancelledEvents(); track event.registrationId) {
               <article class="event-row">
                 <div class="event-date event-date-cancelled" aria-hidden="true">
                   <span>{{ event.month }}</span>
@@ -139,10 +161,19 @@
                 </div>
                 <div class="event-info">
                   <h3>{{ event.name }}</h3>
-                  <p>{{ event.date }} <span aria-hidden="true">&#8226;</span> {{ event.venue }}</p>
+                  <p>{{ event.date }}</p>
                 </div>
                 <span class="status status-cancelled">{{ event.status }}</span>
               </article>
+            } @empty {
+              <div class="empty-state">
+                <svg class="empty-state-icon" viewBox="0 0 64 64" aria-hidden="true">
+                  <path d="M17 23h30l3 31H14l3-31Z" />
+                  <path d="M24 25v-6a8 8 0 0 1 16 0v6" />
+                  <path d="M25 34h14" />
+                </svg>
+                <p>No cancelled events.</p>
+              </div>
             }
           </div>
         }

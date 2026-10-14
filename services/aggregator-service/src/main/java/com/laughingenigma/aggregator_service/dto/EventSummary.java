@@ -1,10 +1,18 @@
 package com.laughingenigma.aggregator_service.dto;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record EventSummary(
-        String eventId,
-        String name,
-        LocalDateTime eventDate
+         long id,
+         String name,
+         String description,
+         LocalDateTime eventDate,
+         int availableSeats,
+         String currency,
+         BigDecimal price,
+         Instant createdAt,
+         Instant updatedAt
 ) {
 }

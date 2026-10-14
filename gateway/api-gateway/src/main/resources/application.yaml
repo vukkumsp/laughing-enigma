@@ -131,6 +131,27 @@ spring:
                 redis-rate-limiter.burstCapacity: 5
                 redis-rate-limiter.requestedTokens: 1
                 key-resolver: "#{@ipKeyResolver}"
+
+        # =========================
+        # AGGREGATOR
+        # =========================
+        - id: aggregator-service
+          uri: ${AGGREGATOR_SERVICE_URL}
+          predicates:
+            - Path=/api/v1/me/registrations
+            - Method=POST
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: sagaServiceCircuitBreaker
+                fallbackUri: forward:/fallback/saga
+
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 2
+                redis-rate-limiter.burstCapacity: 5
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
         # =========================
         # SSE CONNECTION FOR SAGA REGISTRATION
         # =========================

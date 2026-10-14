@@ -1,0 +1,9 @@
+$kind: http-request
+url: http://localhost:8080/api/v1/me/registrations
+method: POST
+body:
+  type: json
+  content: '"tester"'
+auth:
+  type: bearer
+order: 1000
