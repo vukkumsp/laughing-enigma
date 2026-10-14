@@ -9,6 +9,9 @@ Steps:
 4. Open http://localhost:8025/ for local Mailpit Inbox
 
 
+Using Aiven for - postgreSQL, Kafka, Valkey (Redis like)
+Using amqpcloud for - RabbitMQ
+Using Mongodb Atlas for - mongodb
 
 
 visual-enigma
