@@ -5,14 +5,7 @@ import { EventCard } from './event-card';
 import { RegistrationEventsService } from '../../services/registration-events-service/registration-events-service';
 import { filter, take, takeWhile } from 'rxjs';
 import { PaymentCheckout } from '../../services/payment-checkout/payment-checkout';
-
-export interface Event {
-  id: number;
-  name: string;
-  description: string;
-  eventDate: string;
-  availableSeats: number;
-}
+import { Event } from '../../models/event.models';
 
 @Component({
   selector: 'app-events',

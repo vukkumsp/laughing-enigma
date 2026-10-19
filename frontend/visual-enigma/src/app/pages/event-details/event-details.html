@@ -1,0 +1,91 @@
+<main class="event-details-container">
+  <a class="back-link" routerLink="/events">Back to events</a>
+
+  @if (loading()) {
+    <p class="event-not-found" role="status">Loading event details...</p>
+  } @else if (errorMessage()) {
+    <p class="event-not-found" role="alert">{{ errorMessage() }}</p>
+  } @else if (event(); as eventDetails) {
+    <article class="event-details-card">
+      <div class="event-banner">
+        <img [src]="eventDetails.bannerImageUrl" [alt]="eventDetails.name + ' event banner'">
+        <span class="event-category">{{ eventDetails.category }}</span>
+        <span class="event-format">{{ eventDetails.format }}</span>
+      </div>
+
+      <div class="event-content">
+        <p class="event-eyebrow">Event #{{ eventDetails.id }}</p>
+        <h1>{{ eventDetails.name }}</h1>
+        <p class="event-description">{{ eventDetails.description }}</p>
+
+        <dl class="event-facts">
+          <div>
+            <dt>Date</dt>
+            <dd>{{ eventDetails.eventDate | date: 'EEEE, MMMM d, y' }}</dd>
+          </div>
+          <div>
+            <dt>Time</dt>
+            <dd>{{ eventDetails.duration }}</dd>
+          </div>
+          <div>
+            <dt>Format & location</dt>
+            @switch (eventDetails.format) {
+              @case ('offline') {
+                <dd>{{ eventDetails.venue.name }}<span>{{ eventDetails.venue.address }}</span><span>{{ eventDetails.venue.timezone }}</span></dd>
+              }
+              @case ('online') {
+                <dd>Online · {{ eventDetails.venue.platform }}<span>{{ eventDetails.venue.timezone }}</span><span>{{ eventDetails.venue.accessInstructions }}</span></dd>
+              }
+              @case ('hybrid') {
+                <dd>In person · {{ eventDetails.venue.inPerson.name }}<span>{{ eventDetails.venue.inPerson.address }}</span><span>{{ eventDetails.venue.inPerson.timezone }}</span></dd>
+                <dd class="online-venue">Online · {{ eventDetails.venue.online.platform }}<span>{{ eventDetails.venue.online.timezone }}</span><span>{{ eventDetails.venue.online.accessInstructions }}</span></dd>
+              }
+            }
+          </div>
+          <div>
+            <dt>Tickets</dt>
+            <dd>{{ eventDetails.ticketPrice }} · {{ eventDetails.availableSeats }} seats left</dd>
+          </div>
+        </dl>
+
+        <section class="event-section" aria-labelledby="highlights-title">
+          <h2 id="highlights-title">What to expect</h2>
+          <ul class="highlight-list">
+            @for (highlight of eventDetails.highlights; track highlight) {
+              <li>{{ highlight }}</li>
+            }
+          </ul>
+        </section>
+
+        <section class="event-section" aria-labelledby="agenda-title">
+          <h2 id="agenda-title">Schedule</h2>
+          <ol class="agenda-list">
+            @for (item of eventDetails.agenda; track item.time) {
+              <li class="agenda-item">
+                <time>{{ item.time }}</time>
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.description }}</p>
+                </div>
+              </li>
+            }
+          </ol>
+        </section>
+
+        <section class="host-section" aria-labelledby="host-title">
+          <h2 id="host-title">Meet your host</h2>
+          <div class="host-profile">
+            <img class="host-image" [src]="eventDetails.host.imageUrl" [alt]="eventDetails.host.name">
+            <div class="host-info">
+              <h3>{{ eventDetails.host.name }}</h3>
+              <p class="host-title">{{ eventDetails.host.title }}</p>
+              <p class="host-bio">{{ eventDetails.host.bio }}</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </article>
+  } @else {
+    <p class="event-not-found" role="alert">We could not find that event.</p>
+  }
+</main>

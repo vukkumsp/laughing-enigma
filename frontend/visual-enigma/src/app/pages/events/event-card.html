@@ -9,11 +9,14 @@
     <span>{{ event().eventDate | date: 'h:mm a' }}</span>
     <span class="event-id">Event #{{ event().id }}</span>
   </div>
-  <button
-    type="button"
-    class="register-button"
-    [disabled]="event().availableSeats === 0 || isRegistering()"
-    (click)="registerEvent.emit(event().id)">
-    {{ event().availableSeats === 0 ? 'Sold out' : isRegistering() ? 'Registering...' : 'Register' }}
-  </button>
+  <div class="event-card-actions">
+    <a class="details-button" [routerLink]="['/events', event().id]">View details</a>
+    <button
+      type="button"
+      class="register-button"
+      [disabled]="event().availableSeats === 0 || isRegistering()"
+      (click)="registerEvent.emit(event().id)">
+      {{ event().availableSeats === 0 ? 'Sold out' : isRegistering() ? 'Registering...' : 'Register' }}
+    </button>
+  </div>
 </article>

@@ -1,0 +1,159 @@
+[
+  {
+    "id": 1,
+    "name": "Creative Tech Summit 2026",
+    "description": "Join designers, developers, and creative technologists for a full day of talks, hands-on workshops, and conversations about the ideas shaping the future of digital experiences.",
+    "eventDate": "2026-11-14T09:00:00",
+    "availableSeats": 128,
+    "category": "Design & technology",
+    "format": "offline",
+    "bannerImageUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1800&q=85",
+    "duration": "9:00 AM - 5:30 PM",
+    "ticketPrice": "$49",
+    "venue": {
+      "name": "The Glasshouse",
+      "address": "25 River Street, Brooklyn, NY",
+      "timezone": "America/New_York"
+    },
+    "host": {
+      "name": "Maya Chen",
+      "title": "Creative technologist & community builder",
+      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=320&h=320&q=85",
+      "bio": "Maya brings creative teams together to explore how emerging technology can make digital experiences more human. She has spent the last decade building products and organizing events for the design community."
+    },
+    "highlights": [
+      "Hear practical perspectives from leaders in design and engineering",
+      "Take part in a hands-on prototyping workshop",
+      "Meet and collaborate with a community of creative technologists"
+    ],
+    "agenda": [
+      {
+        "time": "9:00 AM",
+        "title": "Doors open & coffee",
+        "description": "Check in, grab a coffee, and meet fellow attendees."
+      },
+      {
+        "time": "10:00 AM",
+        "title": "Designing for what comes next",
+        "description": "A keynote on building thoughtful experiences with emerging technology."
+      },
+      {
+        "time": "1:30 PM",
+        "title": "From idea to interactive prototype",
+        "description": "A practical, collaborative workshop led by the summit speakers."
+      },
+      {
+        "time": "4:30 PM",
+        "title": "Community showcase & closing",
+        "description": "Share what you made and continue the conversation."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "The Future of Responsible AI",
+    "description": "Explore practical ways to build AI products that are transparent, inclusive, and useful. This online event brings together product leaders and researchers for a focused afternoon of talks and audience Q&A.",
+    "eventDate": "2026-12-03T13:00:00",
+    "availableSeats": 350,
+    "category": "Technology & AI",
+    "format": "online",
+    "bannerImageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1800&q=85",
+    "duration": "1:00 PM - 4:00 PM",
+    "ticketPrice": "Free",
+    "venue": {
+      "platform": "Zoom Webinar",
+      "timezone": "America/New_York",
+      "accessInstructions": "The private joining link will be emailed to registered attendees before the event."
+    },
+    "host": {
+      "name": "Jordan Rivera",
+      "title": "AI product researcher",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=320&h=320&q=85",
+      "bio": "Jordan works with research and product teams to make AI systems more understandable and accountable. He regularly hosts conversations that connect technical research with real-world product decisions."
+    },
+    "highlights": [
+      "Learn practical approaches to responsible AI product design",
+      "Hear perspectives from researchers and product teams",
+      "Join a live audience Q&A from anywhere"
+    ],
+    "agenda": [
+      {
+        "time": "1:00 PM",
+        "title": "Welcome & introduction",
+        "description": "Get oriented and meet the speakers in the online event space."
+      },
+      {
+        "time": "1:15 PM",
+        "title": "Building trust into AI products",
+        "description": "A practical talk on transparency, user expectations, and responsible design."
+      },
+      {
+        "time": "2:30 PM",
+        "title": "Research panel & audience Q&A",
+        "description": "Discuss current challenges with the speakers and attendees."
+      },
+      {
+        "time": "3:30 PM",
+        "title": "Closing reflections",
+        "description": "Key takeaways and resources to continue learning."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Product Makers Community Day",
+    "description": "Spend a day learning, sharing, and connecting with product makers. Attend in person in San Francisco or join the talks and community sessions online.",
+    "eventDate": "2027-01-22T10:00:00",
+    "availableSeats": 90,
+    "category": "Product & community",
+    "format": "hybrid",
+    "bannerImageUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1800&q=85",
+    "duration": "10:00 AM - 6:00 PM",
+    "ticketPrice": "$35 in person · Free online",
+    "venue": {
+      "inPerson": {
+        "name": "The Foundry",
+        "address": "400 Howard Street, San Francisco, CA",
+        "timezone": "America/Los_Angeles"
+      },
+      "online": {
+        "platform": "Zoom Events",
+        "timezone": "America/Los_Angeles",
+        "accessInstructions": "The private joining link and online schedule will be emailed to registered attendees."
+      }
+    },
+    "host": {
+      "name": "Alex Morgan",
+      "title": "Product strategist & community organizer",
+      "imageUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=320&h=320&q=85",
+      "bio": "Alex helps teams turn ambitious ideas into products people love. She also brings product communities together to share lessons, build new connections, and support one another."
+    },
+    "highlights": [
+      "Choose an in-person or online way to participate",
+      "Join interactive sessions with product practitioners",
+      "Connect with a welcoming community of makers"
+    ],
+    "agenda": [
+      {
+        "time": "10:00 AM",
+        "title": "Welcome & community coffee",
+        "description": "Meet attendees in person or join the online networking room."
+      },
+      {
+        "time": "11:00 AM",
+        "title": "Making products with purpose",
+        "description": "Stories and lessons from teams building meaningful products."
+      },
+      {
+        "time": "2:00 PM",
+        "title": "Interactive maker sessions",
+        "description": "Small-group discussions available both onsite and online."
+      },
+      {
+        "time": "5:00 PM",
+        "title": "Showcase & closing",
+        "description": "Share ideas from the day and wrap up together."
+      }
+    ]
+  }
+]

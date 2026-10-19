@@ -27,6 +27,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'events/:id',
+    loadComponent: () => import('./pages/event-details/event-details').then(m => m.EventDetails),
+    canActivate: [authGuard]
+  },
+  {
     path: 'forbidden',
     loadComponent: () => import('./pages/forbidden/forbidden').then(m => m.Forbidden)
   },

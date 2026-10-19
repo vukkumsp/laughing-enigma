@@ -27,6 +27,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "event-details.json",
+                "input": "src/app/models",
+                "output": "assets"
               }
             ],
             "styles": [
