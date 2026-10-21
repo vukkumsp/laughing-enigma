@@ -26,25 +26,27 @@ interface DetailedEventContent extends Event {
 }
 
 export interface PhysicalVenue {
+  type: 'in-person';
   name: string;
   address: string;
   timezone: string;
 }
 
 export interface OnlineVenue {
+  type: 'online';
   platform: string;
   timezone: string;
   accessInstructions: string;
 }
 
-export type DetailedEvent = DetailedEventContent & (
-  | { format: 'offline'; venue: PhysicalVenue }
-  | { format: 'online'; venue: OnlineVenue }
-  | {
-      format: 'hybrid';
-      venue: {
-        inPerson: PhysicalVenue;
-        online: OnlineVenue;
-      };
-    }
-);
+export interface HybridVenue {
+  type: 'hybrid';
+  inPerson: PhysicalVenue;
+  online: OnlineVenue;
+}
+
+export type EventVenue = PhysicalVenue | OnlineVenue | HybridVenue;
+
+export type DetailedEvent = DetailedEventContent & {
+  venue: EventVenue;
+};

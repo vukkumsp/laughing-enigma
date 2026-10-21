@@ -6,11 +6,11 @@
     "eventDate": "2026-11-14T09:00:00",
     "availableSeats": 128,
     "category": "Design & technology",
-    "format": "offline",
     "bannerImageUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1800&q=85",
     "duration": "9:00 AM - 5:30 PM",
     "ticketPrice": "$49",
     "venue": {
+      "type": "in-person",
       "name": "The Glasshouse",
       "address": "25 River Street, Brooklyn, NY",
       "timezone": "America/New_York"
@@ -56,11 +56,11 @@
     "eventDate": "2026-12-03T13:00:00",
     "availableSeats": 350,
     "category": "Technology & AI",
-    "format": "online",
     "bannerImageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1800&q=85",
     "duration": "1:00 PM - 4:00 PM",
     "ticketPrice": "Free",
     "venue": {
+      "type": "online",
       "platform": "Zoom Webinar",
       "timezone": "America/New_York",
       "accessInstructions": "The private joining link will be emailed to registered attendees before the event."
@@ -106,17 +106,19 @@
     "eventDate": "2027-01-22T10:00:00",
     "availableSeats": 90,
     "category": "Product & community",
-    "format": "hybrid",
     "bannerImageUrl": "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1800&q=85",
     "duration": "10:00 AM - 6:00 PM",
     "ticketPrice": "$35 in person · Free online",
     "venue": {
+      "type": "hybrid",
       "inPerson": {
+        "type": "in-person",
         "name": "The Foundry",
         "address": "400 Howard Street, San Francisco, CA",
         "timezone": "America/Los_Angeles"
       },
       "online": {
+        "type": "online",
         "platform": "Zoom Events",
         "timezone": "America/Los_Angeles",
         "accessInstructions": "The private joining link and online schedule will be emailed to registered attendees."

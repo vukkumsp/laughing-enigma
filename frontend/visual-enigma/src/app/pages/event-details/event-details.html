@@ -10,7 +10,7 @@
       <div class="event-banner">
         <img [src]="eventDetails.bannerImageUrl" [alt]="eventDetails.name + ' event banner'">
         <span class="event-category">{{ eventDetails.category }}</span>
-        <span class="event-format">{{ eventDetails.format }}</span>
+        <span class="event-format">{{ venueFormat(eventDetails.venue) }}</span>
       </div>
 
       <div class="event-content">
@@ -29,17 +29,18 @@
           </div>
           <div>
             <dt>Format & location</dt>
-            @switch (eventDetails.format) {
-              @case ('offline') {
-                <dd>{{ eventDetails.venue.name }}<span>{{ eventDetails.venue.address }}</span><span>{{ eventDetails.venue.timezone }}</span></dd>
-              }
-              @case ('online') {
-                <dd>Online · {{ eventDetails.venue.platform }}<span>{{ eventDetails.venue.timezone }}</span><span>{{ eventDetails.venue.accessInstructions }}</span></dd>
-              }
-              @case ('hybrid') {
-                <dd>In person · {{ eventDetails.venue.inPerson.name }}<span>{{ eventDetails.venue.inPerson.address }}</span><span>{{ eventDetails.venue.inPerson.timezone }}</span></dd>
-                <dd class="online-venue">Online · {{ eventDetails.venue.online.platform }}<span>{{ eventDetails.venue.online.timezone }}</span><span>{{ eventDetails.venue.online.accessInstructions }}</span></dd>
-              }
+            @let venueLocations = venueDetails(eventDetails.venue);
+            @for (venue of venueLocations; track venue.type) {
+              <dd [class.online-venue]="venue.type === 'online' && venueLocations.length > 1">
+                {{ venue.heading }} · {{ venue.name }}
+                @if (venue.location) {
+                  <span>{{ venue.location }}</span>
+                }
+                <span>{{ venue.timezone }}</span>
+                @if (venue.accessInstructions) {
+                  <span>{{ venue.accessInstructions }}</span>
+                }
+              </dd>
             }
           </div>
           <div>
