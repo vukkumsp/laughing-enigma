@@ -11,6 +11,7 @@ interface DetailedEventContent extends Event {
   bannerImageUrl: string;
   duration: string;
   ticketPrice: string;
+  currency: string;
   host: {
     name: string;
     title: string;

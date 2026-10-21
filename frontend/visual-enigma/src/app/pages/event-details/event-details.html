@@ -45,7 +45,7 @@
           </div>
           <div>
             <dt>Tickets</dt>
-            <dd>{{ eventDetails.ticketPrice }} · {{ eventDetails.availableSeats }} seats left</dd>
+            <dd>{{ eventDetails.currency === 'INR' ? '₹' : '' }}{{ eventDetails.ticketPrice }} · {{ eventDetails.availableSeats }} seats left</dd>
           </div>
         </dl>
 

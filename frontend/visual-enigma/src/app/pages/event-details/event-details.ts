@@ -1,15 +1,17 @@
 import { HttpClient } from '@angular/common/http';
 import { DatePipe } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { combineLatest } from 'rxjs';
+import { catchError, EMPTY, switchMap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { DetailedEvent, EventVenue, OnlineVenue, PhysicalVenue } from '../../models/event.models';
 
 interface VenueDisplay {
   type: 'in-person' | 'online';
   heading: string;
   name: string;
-  location: string;
+  location?: string;
   timezone: string;
   accessInstructions?: string;
 }
@@ -23,6 +25,8 @@ interface VenueDisplay {
 export class EventDetails implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly apiUrl = environment.apiUrl;
 
   readonly loading = signal(true);
   readonly errorMessage = signal('');
@@ -54,17 +58,32 @@ export class EventDetails implements OnInit {
   }
 
   ngOnInit(): void {
-    combineLatest({
-      events: this.http.get<DetailedEvent[]>('/assets/event-details.json'),
-      params: this.route.paramMap,
-    }).subscribe({
-      next: ({ events, params }) => {
-        const eventId = Number(params.get('id'));
-        this.event.set(events.find(sampleEvent => sampleEvent.id === eventId) ?? null);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.errorMessage.set('We could not load this event. Please try again later.');
+    this.route.paramMap.pipe(
+      switchMap(params => {
+        const eventId = params.get('id');
+        this.event.set(null);
+        this.errorMessage.set('');
+        this.loading.set(true);
+
+        if (!eventId) {
+          this.loading.set(false);
+          return EMPTY;
+        }
+
+        return this.http.get<DetailedEvent>(
+          `${this.apiUrl}/events/${encodeURIComponent(eventId)}/details`,
+        ).pipe(
+          catchError(() => {
+            this.errorMessage.set('We could not load this event. Please try again later.');
+            this.loading.set(false);
+            return EMPTY;
+          }),
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: event => {
+        this.event.set(event);
         this.loading.set(false);
       },
     });
@@ -85,7 +104,6 @@ export class EventDetails implements OnInit {
       type: 'online',
       heading: 'Online',
       name: venue.platform,
-      location: '',
       timezone: venue.timezone,
       accessInstructions: venue.accessInstructions,
     };

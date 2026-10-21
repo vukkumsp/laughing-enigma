@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public record EventDetailsResponse(
-        Long eventId,
+        Long id,
         String name,
         String description,
         String eventDate,
