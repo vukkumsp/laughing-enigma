@@ -3,13 +3,7 @@ import http from "node:http";
 import type { Server } from "node:http";
 import { once } from "node:events";
 import test from "node:test";
-import { createApp } from "../app.js";
-
-async function startServer(): Promise<Server> {
-  const server = createApp().listen(0, "127.0.0.1");
-  await once(server, "listening");
-  return server;
-}
+import { createApp } from "../src/app.js";
 
 function getResponse(
   server: Server,
@@ -35,20 +29,45 @@ function getResponse(
 }
 
 test("GET /health returns the service health status", async () => {
-  const server = await startServer();
+  let databaseChecked = false;
+  const server = createApp(async () => {
+    databaseChecked = true;
+  }).listen(0, "127.0.0.1");
+  await once(server, "listening");
 
   try {
     const response = await getResponse(server, "/health");
     assert.equal(response.statusCode, 200);
     assert.deepEqual(JSON.parse(response.body), { status: "ok" });
+    assert.equal(databaseChecked, true);
   } finally {
     server.close();
     await once(server, "close");
   }
 });
 
+test("GET /health returns 503 when the database is unavailable", async () => {
+  const originalConsoleError = console.error;
+  console.error = () => {};
+  const server = createApp(async () => {
+    throw new Error("Database unavailable");
+  }).listen(0, "127.0.0.1");
+  await once(server, "listening");
+
+  try {
+    const response = await getResponse(server, "/health");
+    assert.equal(response.statusCode, 503);
+    assert.deepEqual(JSON.parse(response.body), { status: "unavailable" });
+  } finally {
+    console.error = originalConsoleError;
+    server.close();
+    await once(server, "close");
+  }
+});
+
 test("unknown routes return a JSON 404", async () => {
-  const server = await startServer();
+  const server = createApp(async () => {}).listen(0, "127.0.0.1");
+  await once(server, "listening");
 
   try {
     const response = await getResponse(server, "/missing");

@@ -30,6 +30,7 @@ docker compose up -d --build saga-orchestrator
 docker compose up -d --build customer-service
 docker compose up -d --build event-service
 docker compose up -d --build payment-service
+docker compose up -d --build incentive-service
 docker compose up -d --build mailpit
 docker compose up -d --build notification-service
 
