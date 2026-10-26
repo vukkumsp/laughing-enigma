@@ -92,6 +92,16 @@ services:
       - "8087:8080"
     networks:
       - app-network
+      
+  incentive-service:
+    build:
+      context: ../services/incentive-service
+    env_file:
+      - ../services/incentive-service/.env
+    ports:
+      - "8088:8080"
+    networks:
+      - app-network
 
   mailpit:
     image: axllent/mailpit:latest

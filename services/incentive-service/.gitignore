@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# TypeScript build output and test coverage
+dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+secrets
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Operating system files
+.DS_Store
+Thumbs.db
