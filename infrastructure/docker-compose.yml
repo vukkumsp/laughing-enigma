@@ -1,4 +1,17 @@
 services:
+  angular-app:
+    build:
+      context: ../frontend/visual-enigma
+    container_name: laughing-enigma-frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      # Mount Angular source code for hot reload
+      - ../frontend/visual-enigma:/app
+      # Prevent host node_modules from overwriting container dependencies
+      - /app/node_modules
+    depends_on:
+      - api-gateway
 
   api-gateway:
     build:
