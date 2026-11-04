@@ -1,0 +1,180 @@
+<main class="checkout-container">
+  <a
+    class="back-link"
+    [routerLink]="backRoute()"
+    [queryParams]="fromPendingPayments() ? { tab: 'payment-pending' } : null">
+    {{ backLabel() }}
+  </a>
+
+  @if (payment() || eventCheckout()) {
+    <header class="checkout-header">
+      <p class="checkout-eyebrow">Almost there</p>
+      <h1>Complete your registration</h1>
+      <p>Review your booking, then continue to secure payment.</p>
+    </header>
+
+    <div class="checkout-layout">
+      <section class="checkout-card booking-card" aria-labelledby="booking-title">
+        <div class="card-heading">
+          <span class="step-number" aria-hidden="true">1</span>
+          <div>
+            <p class="card-eyebrow">Your booking</p>
+            <h2 id="booking-title">Event details</h2>
+          </div>
+        </div>
+
+        <div class="event-summary">
+          <div class="event-mark" aria-hidden="true">E</div>
+          <div>
+            <h3>{{ eventName() }}</h3>
+            <p>{{ eventDate() | date: 'EEEE, MMMM d, y' }}</p>
+          </div>
+        </div>
+
+        <dl class="booking-details">
+          <div>
+            <dt>Attendee</dt>
+            <dd>{{ attendeeName() }}</dd>
+          </div>
+          <div>
+            <dt>Account</dt>
+            <dd>{{ accountName() }}</dd>
+          </div>
+          <div>
+            <dt>Registration</dt>
+            <dd>{{ registrationComplete() ? 'Confirmed' : registrationInProgress() ? 'In progress' : payment() ? 'Payment pending' : 'Ready to start' }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <aside class="checkout-card order-card" aria-labelledby="order-title">
+        <div class="card-heading">
+          <span class="step-number" aria-hidden="true">2</span>
+          <div>
+            <p class="card-eyebrow">Order summary</p>
+            <h2 id="order-title">Payment</h2>
+          </div>
+        </div>
+
+        <div class="price-row">
+          <span>Event registration</span>
+          <strong>
+            @if (subtotal() !== null) {
+              {{ subtotal() | currency: orderCurrency() }}
+            } @else {
+              Loading price...
+            }
+          </strong>
+        </div>
+        <div class="coupon-field">
+          <label for="coupon-code">Coupon code</label>
+          <div class="coupon-input-wrap">
+            <input
+              id="coupon-code"
+              name="couponCode"
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Enter coupon code"
+              [value]="couponCode()"
+              (input)="updateCouponCode($event)">
+            @if (appliedCoupon()) {
+              <button
+                class="coupon-remove-button"
+                type="button"
+                aria-label="Remove applied coupon"
+                title="Remove coupon"
+                (click)="removeCoupon()">
+                ×
+              </button>
+            }
+          </div>
+          <button
+            class="coupon-apply-button"
+            type="button"
+            [disabled]="!couponCode().trim()"
+            (click)="applyCoupon()">
+            Apply coupon
+          </button>
+        </div>
+        @if (couponMessage()) {
+          <p class="coupon-message" role="status">{{ couponMessage() }}</p>
+        }
+        @if (appliedCoupon()) {
+          <div class="discount-row">
+            <span>Coupon {{ appliedCoupon() }} (10% off)</span>
+            <strong>−{{ couponDiscount() | currency: orderCurrency() }}</strong>
+          </div>
+        }
+        <div class="total-row">
+          <span>Total due</span>
+          <strong>
+            @if (subtotal() !== null) {
+              {{ totalDue() | currency: orderCurrency() }}
+            } @else {
+              Loading price...
+            }
+          </strong>
+        </div>
+
+        @if (loadingEvent()) {
+          <p class="checkout-status" role="status">Loading event details...</p>
+        }
+        @if (eventLoadError()) {
+          <p class="payment-error" role="alert">{{ eventLoadError() }}</p>
+        }
+        @if (errorMessage()) {
+          <p class="payment-error" role="alert">{{ errorMessage() }}</p>
+        }
+        @if (registrationComplete()) {
+          <p class="checkout-success" role="status">Your registration is confirmed. See you at the event!</p>
+        }
+
+        <button
+          class="pay-button"
+          type="button"
+          [disabled]="paymentStarted() || registrationInProgress() || registrationComplete() || loadingEvent() || eventLoadError().length > 0"
+          (click)="startPayment()">
+          @if (registrationComplete()) {
+            Registration confirmed
+          } @else if (registrationInProgress()) {
+            Preparing your payment...
+          } @else if (paymentStarted()) {
+            Waiting for payment...
+          } @else {
+            Continue to secure payment
+          }
+        </button>
+
+        <p class="secure-note">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M5 8V5.8a5 5 0 0 1 10 0V8m-11 0h12v9H4V8Z" />
+          </svg>
+          Payments are securely processed by Razorpay.
+        </p>
+
+        <div class="next-step">
+          <h3>What happens next?</h3>
+          <p>
+            @if (payment()) {
+              A secure payment window will open. Your registration will be confirmed once payment succeeds.
+            } @else {
+              Clicking continue reserves your place and starts registration. Then a secure payment window will open.
+            }
+          </p>
+        </div>
+
+        @if (registrationComplete()) {
+          <a class="return-link" routerLink="/home">Go to your events</a>
+        }
+      </aside>
+    </div>
+  } @else {
+    <section class="checkout-card unavailable-card" aria-labelledby="checkout-unavailable-title">
+      <p class="checkout-eyebrow">Checkout unavailable</p>
+      <h1 id="checkout-unavailable-title">We couldn’t find an event or booking</h1>
+      <p>Open checkout from an event or a pending registration to continue.</p>
+      <a class="return-link" routerLink="/events">Browse events</a>
+    </section>
+  }
+</main>

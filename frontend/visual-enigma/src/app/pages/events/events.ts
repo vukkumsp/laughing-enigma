@@ -1,10 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { EventCard } from './event-card';
-import { RegistrationEventsService } from '../../services/registration-events-service/registration-events-service';
-import { filter, take, takeWhile } from 'rxjs';
-import { PaymentCheckout } from '../../services/payment-checkout/payment-checkout';
 import { Event } from '../../models/event.models';
 
 @Component({
@@ -13,10 +11,10 @@ import { Event } from '../../models/event.models';
   templateUrl: './events.html',
   styleUrl: './events.scss',
 })
-export class Events implements OnInit, OnDestroy {
+export class Events implements OnInit {
 
   private readonly http = inject(HttpClient);
-  private readonly paymentCheckoutService = inject(PaymentCheckout);
+  private readonly router = inject(Router);
   
   private readonly apiUrl = environment.apiUrl;
 
@@ -26,19 +24,9 @@ export class Events implements OnInit, OnDestroy {
   readonly registrationMessage = signal('');
   readonly registrationError = signal(false);
   readonly registeringEventId = signal<number | null>(null);
-  readonly awaitingPaymentRequest = signal(false);
-
-  private readonly registrationEventsService = inject(RegistrationEventsService);
-
-  constructor() {
-  }
 
   ngOnInit() {
     this.loadEvents();
-  }
-
-  ngOnDestroy() {
-    this.registrationEventsService.disconnect();
   }
 
   private loadEvents(): void {
@@ -55,103 +43,37 @@ export class Events implements OnInit, OnDestroy {
   }
 
   registerForEvent(eventId: number): void {
-
-    if (this.registeringEventId() !== null) {
+    if (this.registeringEventId() !== null || this.events().find(event => event.id === eventId)?.availableSeats === 0) {
       return;
     }
-
-    const registrationId = crypto.randomUUID();
-    console.log('Generated registration ID:', registrationId);
 
     this.registrationMessage.set('');
     this.registrationError.set(false);
     this.registeringEventId.set(eventId);
-    this.awaitingPaymentRequest.set(true);
+    const event = this.events().find(candidate => candidate.id === eventId);
+    if (!event) {
+      this.registeringEventId.set(null);
+      return;
+    }
 
-    let paymentRequestReceived = false;
-
-    //register for events for this registration
-    this.registrationEventsService.events$
-      .pipe(
-        filter(event =>
-          event.data.registrationId === registrationId &&
-          (
-            event.type === 'PAYMENT_REQUIRED' ||
-            event.type === 'PAYMENT_SUCCESS' ||
-            event.type === 'PAYMENT_FAILED'
-          )
-        ),
-        takeWhile(event => event.type !== 'PAYMENT_SUCCESS' && event.type !== 'PAYMENT_FAILED', true)
-      )
-      .subscribe(event => {
-        console.log('[events.ts] Opening Razorpay checkout with payment details:', event.data);
-        if (event.type === 'PAYMENT_REQUIRED') {
-          paymentRequestReceived = true;
-          this.awaitingPaymentRequest.set(false);
-          this.paymentCheckoutService.openCheckout(event.data, {
-            onPaymentFailed: () => {
-              this.awaitingPaymentRequest.set(false);
-              this.registrationError.set(true);
-              this.registrationMessage.set('Payment failed. Please try again.');
-              this.registeringEventId.set(null);
-              // Close the SSE connection after either payment success or failure
-              this.registrationEventsService.disconnect();
-            }
-          });
-        } else if (event.type === 'PAYMENT_FAILED') {
-          this.awaitingPaymentRequest.set(false);
-          this.registrationError.set(true);
-          this.registrationMessage.set('Payment failed. Please try again.');
-          this.registeringEventId.set(null);
-          // Close the SSE connection after either payment success or failure
-          this.registrationEventsService.disconnect();
-        } else if (event.type === 'PAYMENT_SUCCESS') {
-          this.events.update(events => events.map(event =>
-            event.id === eventId
-              ? { ...event, availableSeats: Math.max(0, event.availableSeats - 1) }
-              : event
-          ));
-
-          this.awaitingPaymentRequest.set(false);
-          this.registrationMessage.set('You registered for this event.');
-          this.registeringEventId.set(null);
-          this.registrationError.set(false);
-          // Close the SSE connection after either payment success or failure
-          this.registrationEventsService.disconnect();
-        }
-      });
-
-    this.registrationEventsService.connectionEnded$
-      .pipe(
-        take(1)
-      )
-      .subscribe(() => {
-        this.awaitingPaymentRequest.set(false);
-        if (!paymentRequestReceived) {
-          this.registeringEventId.set(null);
-        }
-      });
-
-    // Open the SSE connection after subscribing so an early payment request is not missed.
-    this.registrationEventsService.connect(registrationId);
-
-    //send registration request to the backend
-    this.http.post(`${this.apiUrl}/registrations`, { eventId, registrationId }).subscribe({
-      next: () => {
-        console.log('Registration started successfully');
-
-        this.registrationMessage.set('You are registering for this event.');
-        this.registrationError.set(false);
+    void this.router.navigate(['/checkout'], {
+      state: {
+        eventCheckout: {
+          eventId: event.id,
+          eventName: event.name,
+          eventDate: event.eventDate,
+        },
       },
-      error: () => {
-        this.awaitingPaymentRequest.set(false);
+    }).then(navigated => {
+      if (!navigated) {
         this.registrationError.set(true);
-        this.registrationMessage.set('Registration failed. Please try again.');
-        this.registeringEventId.set(null);
-        this.registrationEventsService.disconnect();
+        this.registrationMessage.set('Unable to open checkout. Please try again.');
       }
+    }).catch(() => {
+      this.registrationError.set(true);
+      this.registrationMessage.set('Unable to open checkout. Please try again.');
+    }).finally(() => {
+      this.registeringEventId.set(null);
     });
-
-
   }
 }

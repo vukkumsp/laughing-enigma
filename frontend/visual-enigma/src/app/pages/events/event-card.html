@@ -16,7 +16,7 @@
       class="register-button"
       [disabled]="event().availableSeats === 0 || isRegistering()"
       (click)="registerEvent.emit(event().id)">
-      {{ event().availableSeats === 0 ? 'Sold out' : isRegistering() ? 'Registering...' : 'Register' }}
+      {{ event().availableSeats === 0 ? 'Sold out' : isRegistering() ? 'Opening checkout...' : 'Register' }}
     </button>
   </div>
 </article>

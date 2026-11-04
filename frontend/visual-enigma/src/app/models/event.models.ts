@@ -10,7 +10,7 @@ interface DetailedEventContent extends Event {
   category: string;
   bannerImageUrl: string;
   duration: string;
-  ticketPrice: string;
+  ticketPrice: number;
   currency: string;
   host: {
     name: string;
