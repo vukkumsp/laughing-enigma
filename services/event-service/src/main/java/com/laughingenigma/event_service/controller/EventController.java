@@ -1,5 +1,6 @@
 package com.laughingenigma.event_service.controller;
 
+import com.laughingenigma.event_service.dto.EventDetailsResponse;
 import com.laughingenigma.event_service.entity.Event;
 import com.laughingenigma.event_service.service.EventService;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,12 @@ public class EventController {
     @GetMapping
     public ResponseEntity<List<Event>> getEvents() {
         return ResponseEntity.ok(eventService.getAllEvents());
+    }
+
+    @GetMapping("/{eventId}")
+    public ResponseEntity<Event> getEvent(
+            @PathVariable Long eventId) {
+        return ResponseEntity.ok(eventService.getEventById(eventId));
     }
 
     @PostMapping("/{eventId}/reserve")

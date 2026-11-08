@@ -33,6 +33,10 @@ public class EventService {
         return eventRepository.findAll();
     }
 
+    public Event getEventById(long id) {
+        return eventRepository.findByEventId(id).orElseThrow();
+    }
+
 
     @Transactional
     public Event reserveSeat(String registrationId, Long eventId) {
@@ -47,11 +51,11 @@ public class EventService {
                             + "registrationId=" + registrationId
                             + ", eventId=" + eventId
             );
-            return eventRepository.findById(eventId)
+            return eventRepository.findByEventId(eventId)
                     .orElseThrow();
         }
 
-        Event event = eventRepository.findByIdForUpdate(eventId)
+        Event event = eventRepository.findByEventIdForUpdate(eventId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Event with eventId " + eventId + " was not found"
@@ -88,16 +92,16 @@ public class EventService {
                             + "registrationId=" + registrationId
                             + ", eventId=" + eventId
             );
-            return eventRepository.findById(eventId)
+            return eventRepository.findByEventId(eventId)
                     .orElseThrow();
         }
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-
-        if (event.getAvailableSeats() <= 0) {
-            throw new RuntimeException("No seats available");
-        }
+        Event event = eventRepository.findByEventIdForUpdate(eventId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Event with eventId " + eventId + " was not found"
+                        )
+                );
 
         event.setAvailableSeats(event.getAvailableSeats() + 1);
         eventRepository.save(event);

@@ -17,6 +17,6 @@ public class EventsBatchService {
     }
 
     public List<Event> fetchEvents(List<Long> eventIds) {
-        return eventRepository.findByIdIn(eventIds);
+        return eventRepository.findByEventIdIn(eventIds);
     }
 }

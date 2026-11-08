@@ -63,3 +63,8 @@ SET
     price = 50,
     updated_at = CURRENT_TIMESTAMP
 WHERE id = 3;
+
+--
+
+UPDATE events
+SET event_id = id;

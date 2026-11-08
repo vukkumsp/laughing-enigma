@@ -11,9 +11,18 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EventRepository extends JpaRepository<Event, Long> {
+    // -- Deprecated START --
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM Event e WHERE e.id = :eventId")
     Optional<Event> findByIdForUpdate(@Param("eventId") Long eventId);
 
     List<Event> findByIdIn(List<Long> eventIds);
+    // -- Deprecated END --
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT e FROM Event e WHERE e.eventId = :eventId")
+    Optional<Event> findByEventIdForUpdate(@Param("eventId") Long eventId);
+
+    List<Event> findByEventIdIn(List<Long> eventIds);
+    Optional<Event> findByEventId(Long eventId);
 }
