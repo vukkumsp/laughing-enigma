@@ -1,0 +1,111 @@
+Tool		| Responsibility
+----------------------------------------------------------------------------------------
+Kind		| Run your local Kubernetes cluster
+Skaffold	| Build Docker images and make them available to your Kind cluster
+kubectl		| Create/update Deployments, Services, ConfigMaps, Secrets, namespaces, etc.
+
+
+
+
+Kubernates Notes:
+=================
+
+starting docker nodes for kind cluster nodes:
+---------------------------------------------
+docker start laughing-enigma-control-plane laughing-enigma-worker
+kubectl get nodes --context kind-laughing-enigma
+
+checking the kubernates status:
+-------------------------------
+kubectl config current-context
+kubectl get nodes
+kubectl get pods -A
+
+kubectl get namespaces
+kubectl get pods --namespace laughing-enigma
+
+
+
+stopping docker nodes for kind cluster nodes:
+---------------------------------------------
+docker stop laughing-enigma-control-plane laughing-enigma-worker
+kubectl get nodes --context kind-laughing-enigma
+
+Kind Cluster Notes:
+===================
+kind get clusters
+
+To Start empty Kind Cluster for testing kind:
+---------------------------------------------
+kind create cluster --name laughing-enigma --wait 5m
+kind create cluster --name laughing-enigma-test --retain --wait 5m
+
+To start cluster using kind with kind config file:
+--------------------------------------------------
+kind create cluster --config k8s/cluster/kind-config.yaml
+kind create cluster --config k8s/cluster/kind-config.yaml --verbosity 4
+kind create cluster --config k8s/cluster/kind-config.yaml --verbosity 4 --retain
+
+
+
+docker inspect laughing-enigma-control-plane
+
+
+
+Kubectl Commands:
+=================
+kubectl apply -f k8s/apps/nginx/deployment.yaml
+kubectl apply -f k8s/apps/nginx/service.yaml
+
+Get all deployments:
+--------------------
+kubectl get deployments
+kubectl get services
+kubectl get pods
+
+kubectl get pods -o wide
+kubectl get pods --show-labels
+
+kubectl get replicasets
+
+
+kubectl delete pod nginx-demo-c7cd46b8b-kgbnv 
+
+kubectl get pods
+
+
+
+kubectl delete service nginx-demo
+kubectl delete deployment nginx-demo
+
+docker stop laughing-enigma-control-plane laughing-enigma-worker
+
+
+
+
+
+
+
+Scaffold:
+=========
+It is to build build docker images for kubernates to use.
+
+skaffold version
+
+
+skaffold diagnose -f k8s/skaffold.yaml
+
+skaffold build -f k8s/skaffold.yaml
+
+skaffold build -f k8s/skaffold.yaml --cache-artifacts=false
+
+docker exec laughing-enigma-control-plane crictl images | findstr laughing-enigma
+docker exec laughing-enigma-worker crictl images | findstr laughing-enigma
+
+docker exec laughing-enigma-worker crictl rmi IMAGE_ID
+docker exec laughing-enigma-worker crictl rmi 94d653214bd91
+docker exec laughing-enigma-control-plane crictl rmi 94d653214bd91
+
+docker images laughing-enigma/api-gateway
+
+kind load docker-image laughing-enigma/api-gateway:41d9499 --name laughing-enigma

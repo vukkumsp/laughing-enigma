@@ -1,0 +1,145 @@
+
+apiVersion: skaffold/v4beta14
+kind: Config
+metadata:
+  name: laughing-enigma
+
+build:
+  artifacts:
+
+    - image: laughing-enigma/angular-app
+      context: frontend/visual-enigma
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/api-gateway
+      context: gateway/api-gateway
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/security-service
+      context: services/security-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/saga-orchestrator
+      context: services/saga-orchestrator
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/customer-service
+      context: services/customer-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/event-service
+      context: services/event-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/payment-service
+      context: services/payment-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/notification-service
+      context: services/notification-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/aggregator-service
+      context: services/aggregator-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+    - image: laughing-enigma/incentive-service
+      context: services/incentive-service
+      docker:
+        dockerfile: Dockerfile
+      hooks:
+        after:
+          - command:
+              - powershell.exe
+              - -NoProfile
+              - -Command
+              - 'kind load docker-image $env:SKAFFOLD_IMAGE --name laughing-enigma; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }'
+            os: [windows]
+
+  tagPolicy:
+    gitCommit: {}
+
+  local:
+    push: false
+    useBuildkit: true
