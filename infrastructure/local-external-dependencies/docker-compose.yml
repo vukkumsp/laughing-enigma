@@ -1,0 +1,32 @@
+services:
+  # postgres-local:
+  #   networks:
+  #     - app-network
+
+  # mongodb-local:
+  #   networks:
+  #     - app-network
+
+  mailpit-local:
+    image: axllent/mailpit:latest
+    container_name: mailpit
+    ports:
+      - "8025:8025" # Web UI & API
+      - "1025:1025" # SMTP Server
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8025/api/v1/info"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - app-network
+      
+# --- create zrok2 public tunnel for saga-orchestrator webhooks ---
+
+networks:
+  app-network:
+    driver: bridge
+    name: local-shared-network
+    
+volumes:
+  zrok_env:

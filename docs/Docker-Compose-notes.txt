@@ -33,8 +33,9 @@ docker compose up -d --build customer-service
 docker compose up -d --build event-service
 docker compose up -d --build payment-service
 docker compose up -d --build incentive-service
-docker compose up -d --build mailpit
 docker compose up -d --build notification-service
+
+docker compose up -d --build mailpit-local
 
 If you've changed configuration/environment and want to make absolutely sure the container is recreated:
 --------------------------------------------------------------------------------------------------------

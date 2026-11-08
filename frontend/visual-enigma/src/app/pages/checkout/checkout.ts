@@ -224,8 +224,44 @@ export class Checkout implements OnInit, OnDestroy {
   }
 
   private openPaymentWindow(payment: CheckoutPayment): void {
+    let paymentRequestReceived = false;
+    const registrationId = payment.registrationId;
+
     this.errorMessage.set('');
     this.paymentStarted.set(true);
+
+    this.registrationEvents.disconnect();
+    
+    this.registrationEvents.events$.pipe(
+      filter(event =>
+        event.data?.registrationId === registrationId
+        && ['PAYMENT_SUCCESS', 'PAYMENT_FAILED'].includes(event.type),
+      ),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(event => {
+      if (event.type === 'PAYMENT_SUCCESS') {
+        paymentRequestReceived = true;
+        this.paymentStarted.set(false);
+        this.registrationInProgress.set(false);
+        this.registrationComplete.set(true);
+        this.errorMessage.set('');
+        this.registrationEvents.disconnect();
+      } else if (event.type === 'PAYMENT_FAILED') {
+        paymentRequestReceived = true;
+        this.failRegistration('Payment failed. You can try again.');
+        this.registrationEvents.disconnect();
+      }
+    });
+
+    this.registrationEvents.connectionEnded$.pipe(
+      take(1),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
+      if (!paymentRequestReceived && this.registrationInProgress()) {
+        this.failRegistration('We could not start checkout. Please try again.');
+      }
+    });
+    this.registrationEvents.connect(registrationId);
 
     try {
       this.paymentCheckout.openCheckout(payment, {
@@ -283,6 +319,8 @@ export class Checkout implements OnInit, OnDestroy {
       return false;
     }
 
+    console.log('************* Checking if value is CheckoutPayment **********', value);
+
     const details = value as Record<string, unknown>;
     return typeof details['registrationId'] === 'string'
       && details['registrationId'].length > 0
@@ -295,7 +333,7 @@ export class Checkout implements OnInit, OnDestroy {
       && typeof details['firstName'] === 'string'
       && typeof details['lastName'] === 'string'
       && typeof details['eventName'] === 'string'
-      && details['eventName'].trim().length > 0
+      // && details['eventName'].trim().length > 0
       && typeof details['eventDate'] === 'string'
       && Number.isFinite(Date.parse(details['eventDate']))
       && typeof details['amount'] === 'number'
