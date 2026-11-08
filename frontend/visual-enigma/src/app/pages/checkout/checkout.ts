@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink } from '@angular/router';
 import { catchError, EMPTY, filter, take } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { DetailedEvent } from '../../models/event.models';
+import { Event as EventContent } from '../../models/event.models';
 import { RegistrationEventsService } from '../../services/registration-events-service/registration-events-service';
 import { PaymentCheckout } from '../../services/payment-checkout/payment-checkout';
 
@@ -47,7 +47,7 @@ export class Checkout implements OnInit, OnDestroy {
   readonly payment = signal(this.readCheckoutPayment());
   readonly eventCheckout = signal(this.readEventCheckout());
   readonly fromPendingPayments = signal(this.navigationState()?.['checkoutOrigin'] === 'payment-pending');
-  readonly eventDetails = signal<DetailedEvent | null>(null);
+  readonly eventContent = signal<EventContent | null>(null);
   readonly loadingEvent = signal(false);
   readonly eventLoadError = signal('');
   readonly paymentStarted = signal(false);
@@ -58,19 +58,23 @@ export class Checkout implements OnInit, OnDestroy {
   readonly appliedCoupon = signal('');
   readonly couponMessage = signal('');
 
-  readonly subtotal = computed(() => this.payment()?.amount ?? this.eventDetails()?.ticketPrice ?? null);
-  readonly orderCurrency = computed(() => this.payment()?.currency ?? this.eventDetails()?.currency ?? 'USD');
+  // Event
+  readonly subtotal = computed(() => this.payment()?.amount ?? this.eventContent()?.price ?? null);
+  readonly orderCurrency = computed(() => this.payment()?.currency ?? this.eventContent()?.currency ?? 'INR');
+  readonly eventName = computed(() =>
+    this.payment()?.eventName ?? this.eventCheckout()?.eventName ?? this.eventContent()?.name ?? '',
+  );
+  readonly eventDate = computed(() =>
+    this.payment()?.eventDate ?? this.eventCheckout()?.eventDate ?? this.eventContent()?.eventDate ?? '',
+  );
+
+  // Coupon
   readonly couponDiscount = computed(() => {
     const subtotal = this.subtotal();
     return this.appliedCoupon() && subtotal !== null ? subtotal * 0.1 : 0;
   });
   readonly totalDue = computed(() => Math.max(0, (this.subtotal() ?? 0) - this.couponDiscount()));
-  readonly eventName = computed(() =>
-    this.payment()?.eventName ?? this.eventCheckout()?.eventName ?? this.eventDetails()?.name ?? '',
-  );
-  readonly eventDate = computed(() =>
-    this.payment()?.eventDate ?? this.eventCheckout()?.eventDate ?? this.eventDetails()?.eventDate ?? '',
-  );
+ 
   readonly attendeeName = computed(() => {
     const payment = this.payment();
     return payment ? `${payment.firstName} ${payment.lastName}`.trim() : 'Signed-in attendee';
@@ -115,12 +119,14 @@ export class Checkout implements OnInit, OnDestroy {
   ngOnInit(): void {
     const eventCheckout = this.eventCheckout();
     if (!eventCheckout || this.payment()) {
+      // Load Event Details only if we are in the event checkout flow and not in the payment flow
+      // For payment flow, the event details are already available in the payment object via payment pending events
       return;
     }
 
     this.loadingEvent.set(true);
-    this.http.get<DetailedEvent>(
-      `${this.apiUrl}/events/${encodeURIComponent(String(eventCheckout.eventId))}/details`,
+    this.http.get<EventContent>(
+      `${this.apiUrl}/events/${encodeURIComponent(String(eventCheckout.eventId))}`,
     ).pipe(
       catchError(() => {
         this.eventLoadError.set('We could not load this event. Please go back and try again.');
@@ -128,8 +134,8 @@ export class Checkout implements OnInit, OnDestroy {
         return EMPTY;
       }),
       takeUntilDestroyed(this.destroyRef),
-    ).subscribe(eventDetails => {
-      this.eventDetails.set(eventDetails);
+    ).subscribe(event => {
+      this.eventContent.set(event);
       this.loadingEvent.set(false);
     });
   }
@@ -150,7 +156,7 @@ export class Checkout implements OnInit, OnDestroy {
     }
 
     const eventCheckout = this.eventCheckout();
-    if (!eventCheckout || !this.eventDetails() || this.loadingEvent()) {
+    if (!eventCheckout || !this.eventContent() || this.loadingEvent()) {
       return;
     }
 

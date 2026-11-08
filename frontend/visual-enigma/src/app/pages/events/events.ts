@@ -43,18 +43,20 @@ export class Events implements OnInit {
   }
 
   registerForEvent(eventId: number): void {
-    if (this.registeringEventId() !== null || this.events().find(event => event.id === eventId)?.availableSeats === 0) {
+    const event = this.events().find(candidate => candidate.id === eventId);
+
+    if (!event) {
+      this.registeringEventId.set(null);
+      return;
+    }
+
+    if (this.registeringEventId() !== null || event?.availableSeats === 0) {
       return;
     }
 
     this.registrationMessage.set('');
     this.registrationError.set(false);
     this.registeringEventId.set(eventId);
-    const event = this.events().find(candidate => candidate.id === eventId);
-    if (!event) {
-      this.registeringEventId.set(null);
-      return;
-    }
 
     void this.router.navigate(['/checkout'], {
       state: {

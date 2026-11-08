@@ -1,9 +1,12 @@
 export interface Event {
   id: number;
+  eventId: number;
   name: string;
   description: string;
   eventDate: string;
   availableSeats: number;
+  currency: string;
+  price: number;
 }
 
 interface DetailedEventContent extends Event {
@@ -11,7 +14,6 @@ interface DetailedEventContent extends Event {
   bannerImageUrl: string;
   duration: string;
   ticketPrice: number;
-  currency: string;
   host: {
     name: string;
     title: string;
