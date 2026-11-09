@@ -66,6 +66,9 @@ services:
       context: ../services/event-service
     env_file:
       - ../services/event-service/.env
+      # Use local environment files for Postgres and MongoDB when running locally
+      - ../infrastructure/local-external-dependencies/event-service/local-postgresql-event-service.env
+      - ../infrastructure/local-external-dependencies/event-service/local-mongodb-event-service.env
     ports:
       - "8084:8080"
     networks:
