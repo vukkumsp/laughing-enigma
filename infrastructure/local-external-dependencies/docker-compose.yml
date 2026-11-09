@@ -1,11 +1,49 @@
 services:
-  # postgres-local:
-  #   networks:
-  #     - app-network
+  postgres-local:
+    image: postgres:17
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laughing_enigma
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d # Mount the init scripts directory
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d laughing_enigma"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
-  # mongodb-local:
-  #   networks:
-  #     - app-network
+  mongodb-local:
+    image: mongo:8
+    container_name: mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: mongo123
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb_data:/data/db
+      - ./mongodb/init:/docker-entrypoint-initdb.d:ro # Mount the init scripts directory
+    healthcheck:
+      test:
+        - CMD
+        - mongosh
+        - --quiet
+        - --eval
+        - "db.adminCommand('ping').ok"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
 
   mailpit-local:
     image: axllent/mailpit:latest
@@ -29,4 +67,5 @@ networks:
     name: local-shared-network
     
 volumes:
-  zrok_env:
+  postgres_data:
+  mongodb_data:
