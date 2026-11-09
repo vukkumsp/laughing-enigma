@@ -1,10 +1,8 @@
 # See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # Docker Volumes
-./postgres_data
-./postgres_data/*
-./mongodb_data
-./mongodb_data/*
+postgres_data/
+mongodb_data/
 
 # sensitive files
 .env
